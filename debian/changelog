@@ -1,5 +1,6 @@
-pyqt6 (6.2.3-2) UNRELEASED; urgency=medium
+pyqt6 (6.3.0-1) UNRELEASED; urgency=medium
 
+  * New upstream release.
   * Build-depend on qt6-base-dev ≥ 6.2.4+dfsg-3~ which depends on libgl-dev.
 
  -- Dmitry Shachnev <mitya57@debian.org>  Mon, 11 Apr 2022 20:37:22 +0300
