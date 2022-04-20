@@ -508,51 +508,6 @@ class QtCore(PyQtBindings):
 
         super().__init__(project, 'QtCore', qmake_QT=['-gui'])
 
-    def generate(self):
-        """ Generate the bindings source code and return the corresponding
-        buildable.
-        """
-
-        # This is re-implemented so that we can update the buildable to include
-        # the embedded sip flags.  Note that this support is deprecated and can
-        # be removed once support for sip4 has been dropped.
-
-        project = self.project
-
-        # The embedded flags.
-        sip_flags = ['-n', project.sip_module]
-
-        if project.py_debug:
-            sip_flags.append('-D')
-
-        for tag in self.tags:
-            sip_flags.append('-t')
-            sip_flags.append(tag)
-
-        for bindings in project.bindings.values():
-            for feature in bindings.disabled_features:
-                sip_flags.append('-x')
-                sip_flags.append(feature)
-
-        buildable = super().generate()
-
-        cpp = 'qpycore_post_init.cpp'
-        in_path = os.path.join(project.root_dir, 'qpy', 'QtCore', cpp + '.in')
-        out_path = os.path.join(buildable.build_dir, cpp)
-
-        out_f = project.open_for_writing(out_path)
-
-        with open(in_path) as in_f:
-            code = in_f.read()
-            code = code.replace('@@PYQT_SIP_FLAGS@@', ' '.join(sip_flags))
-            out_f.write(code)
-
-        out_f.close()
-
-        buildable.sources.append(cpp)
-
-        return buildable
-
     def handle_test_output(self, test_output):
         """ Handle the output from the external test program and return True if
         the bindings are buildable.
