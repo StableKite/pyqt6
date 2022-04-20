@@ -27,7 +27,7 @@
 // Create the slot for a callable.
 PyQtSlot::PyQtSlot(PyObject *callable, bool callable_is_method,
         const Chimera::Signature *slot_signature)
-    : mself(0), mself_wr(0), other(0), signature(slot_signature)
+    : mfunc(0), mself(0), mself_wr(0), other(0), signature(slot_signature)
 {
     if (callable_is_method)
     {
@@ -53,12 +53,16 @@ PyQtSlot::PyQtSlot(PyObject *callable, bool callable_is_method,
             other = callable;
         }
     }
+
+    // If the slot is a method then keep the function object alive.
+    Py_XINCREF(mfunc);
 }
 
 
 // Destroy the slot.
 PyQtSlot::~PyQtSlot()
 {
+    Py_XDECREF(mfunc);
     Py_XDECREF(mself_wr);
     Py_XDECREF(other);
 }

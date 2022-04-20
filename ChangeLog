@@ -1,4 +1,56 @@
+2022-04-01  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* PyQt6.msp:
+	Fixes for when building without protected being public.
+	[373bc2a6447e] [6.3.0]
+
+	* NEWS, project.py, qpy/QtCore/qpycore_post_init.cpp,
+	qpy/QtCore/qpycore_post_init.cpp.in:
+	Removed some legacy SIP v4 support.
+	[184d70406908]
+
+2022-03-31  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* PyQt6.msp:
+	Updated the remaining modules for Qt v6.3.0rc.
+	[1c4354d61062]
+
+	* PyQt6.msp:
+	Updated QtHelp, QtMultimedia, QtMultimediaWidgets and QtNetwork for
+	Qt v6.3.0rc.
+	[0566b82df55b]
+
+	* PyQt6.msp, qpy/QtBluetooth/qpybluetooth_qmultihash.sip:
+	Updated QtBluetooth, QtDBus, QtDesigner and QtGui for Qt v6.3.0rc.
+	[cd140f0de691]
+
+	* NEWS, PyQt6.msp:
+	Updated QtCore for Qt v6.3.0rc.
+	[a87a5ea93c97]
+
+2022-03-28  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS:
+	Merged the 6.2-maint branch.
+	[962af9bda6d0]
+
+2022-03-18  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, qpy/QtCore/qpycore_pyqtslot.cpp:
+	Keep a strong reference to methods when they are used as slots.
+	[d70742ec07e0] <6.2-maint>
+
+2022-02-26  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, qpy/QtQml/qpyqml_listdata.cpp:
+	Fixed a bug in the tidying up of QQmlListProperty.
+	[3ce5cad6fbfe] <6.2-maint>
+
 2022-02-01  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* .hgtags:
+	Added tag 6.2.3 for changeset bf840012bc47
+	[76ccb7cf3d45] <6.2-maint>
 
 	* qpy/QtCore/qpycore_pyqtpyobject.cpp,
 	qpy/QtCore/qpycore_pyqtpyobject.h:
