@@ -22,3 +22,6 @@ export PYBUILD_INSTALL_ARGS=$(MAKE) -C {build_dir} install INSTALL_ROOT={destdir
 
 execute_after_dh_auto_install:
 	sed -i -E 's,exec /usr/bin/python3\.[0-9]+,exec /usr/bin/python3,' debian/tmp/usr/bin/*
+
+override_dh_installdocs:
+	dh_installdocs -A NEWS
