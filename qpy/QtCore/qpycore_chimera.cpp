@@ -1501,10 +1501,23 @@ PyObject *Chimera::toPyObject(void *cpp) const
         {
             // SIP knows the type (therefore it isn't really wrapped in a
             // PyQt_PyObject) but it's not registered with Qt.
+            if (sipTypeIsEnum(_type))
+                return sipConvertFromEnum(*reinterpret_cast<int *>(cpp), _type);
+
             if (_name.endsWith('*'))
                 cpp = *reinterpret_cast<void **>(cpp);
 
             return sipConvertFromType(cpp, _type, 0);
+        }
+        else if (_is_char_star)
+        {
+            char *s = *reinterpret_cast<char **>(cpp);
+
+            if (s)
+                return PyBytes_FromString(s);
+
+            Py_INCREF(Py_None);
+            return Py_None;
         }
         else
         {
@@ -1527,7 +1540,7 @@ PyObject *Chimera::toPyObject(void *cpp) const
 
     PyObject *py = 0;
 
-    switch (typeId())
+    switch (metatype.id())
     {
     case QMetaType::Nullptr:
         py = Py_None;
@@ -1633,23 +1646,6 @@ PyObject *Chimera::toPyObject(void *cpp) const
     case QMetaType::QVariantPair:
         py = variant_pair.fromMappedType(cpp);
         break;
-
-    case -1:
-        {
-            char *s = *reinterpret_cast<char **>(cpp);
-
-            if (s)
-            {
-                py = PyBytes_FromString(s);
-            }
-            else
-            {
-                Py_INCREF(Py_None);
-                py = Py_None;
-            }
-
-            break;
-        }
 
     default:
         if (_type)

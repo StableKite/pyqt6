@@ -1,3 +1,68 @@
+2022-06-17  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, qpy/QtCore/qpycore_chimera.cpp,
+	qpy/QtCore/qpycore_chimera_storage.cpp:
+	Fixed issues when emitting signals with enum arguments.
+	[247d2c1d453c] [6.3.1] <6.3-maint>
+
+2022-06-15  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, PyQt6.msp:
+	Added qRegisterResourceData() and qUnregisterResourceData.
+	[4302c2940491] <6.3-maint>
+
+2022-06-06  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, PyQt6.msp:
+	Reordered QPainter methods so that QPolygon[F] are not handled as
+	sequences.
+	[eeab18cf3dc2] <6.3-maint>
+
+2022-06-05  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, qpy/QtCore/qpycore_chimera.cpp:
+	Fixed the handling of char* slot arguments.
+	[d367df954b70] <6.3-maint>
+
+2022-05-20  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, PyQt6.msp:
+	Refactored the QPainter draw methods to exploit sip.array objects.
+	[c6715cccc537] <6.3-maint>
+
+2022-05-17  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS:
+	Updated the NEWS file for sip.array.
+	[1adefd1499a6] <6.3-maint>
+
+2022-05-15  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, PyQt6.msp, project.py:
+	v13.4 of the sip ABI is now required (for the missing enum member
+	support). Reverted the support for using an int instead of a
+	Qt.GestureType. Deprecated (rather than removed) the QEvent ctor
+	that takes an int argument.
+	[d2ec9265d699] <6.3-maint>
+
+2022-05-01  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, PyQt6.msp:
+	Fixes for building against a debug version of Python.
+	[94918729af61] <6.3-maint>
+
+2022-04-19  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, PyQt6.msp:
+	Added resize() to QPolygon, QPolygonF and QXmlStreamAttributes.
+	[b6869cdce5ce] <6.3-maint>
+
+2022-04-12  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* .hgtags:
+	Added tag 6.3.0 for changeset 373bc2a6447e
+	[22bcfae615cd]
+
 2022-04-01  Phil Thompson  <phil@riverbankcomputing.com>
 
 	* PyQt6.msp:
