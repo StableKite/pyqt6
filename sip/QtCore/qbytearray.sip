@@ -99,13 +99,20 @@ return 0;
 %End
 
 %BIGetBufferCode
-    Q_UNUSED(sipSelf);
+    // We may be building against a debug Python build.
     
-    sipBuffer->bd_buffer = sipCpp->data();
-    sipBuffer->bd_length = sipCpp->size();
-    sipBuffer->bd_readonly = 0;
+    #if defined(Py_LIMITED_API)
+        Q_UNUSED(sipSelf);
     
-    sipRes = 0;
+        sipBuffer->bd_buffer = sipCpp->data();
+        sipBuffer->bd_length = sipCpp->size();
+        sipBuffer->bd_readonly = 0;
+    
+        sipRes = 0;
+    #else
+        sipRes = PyBuffer_FillInfo(sipBuffer, sipSelf, sipCpp->data(),
+                sipCpp->size(), 0, sipFlags);
+    #endif
 %End
 
 %PickleCode

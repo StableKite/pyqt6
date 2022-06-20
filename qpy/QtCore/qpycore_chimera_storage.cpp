@@ -96,6 +96,9 @@ void *Chimera::Storage::address()
 // Return true if the value is a pointer type.
 bool Chimera::Storage::isPointerType() const
 {
+    if (_parsed_type->isEnumOrFlag())
+        return false;
+
     return (_parsed_type->metatype == QMetaType::fromType<PyQt_PyObject>() &&
             _parsed_type->typeDef());
 }

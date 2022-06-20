@@ -469,16 +469,8 @@ public:
     QGraphicsProxyWidget *graphicsProxyWidget() const;
     QGraphicsEffect *graphicsEffect() const;
     void setGraphicsEffect(QGraphicsEffect *effect /Transfer/);
-    void grabGesture(int type, Qt::GestureFlags flags = Qt::GestureFlags());
-%MethodCode
-        sipCpp->grabGesture(Qt::GestureType(a0), *a1);
-%End
-
-    void ungrabGesture(int type);
-%MethodCode
-        sipCpp->ungrabGesture(Qt::GestureType(a0));
-%End
-
+    void grabGesture(Qt::GestureType type, Qt::GestureFlags flags = Qt::GestureFlags());
+    void ungrabGesture(Qt::GestureType type);
     void setContentsMargins(const QMargins &margins);
     QMargins contentsMargins() const;
     QWidget *previousInFocusChain() const;
