@@ -53,6 +53,9 @@ public:
     QString whatsThis(int column) const;
     QFont font(int column) const;
     int textAlignment(int column) const;
+%If (Qt_6_4_0 -)
+    void setTextAlignment(int column, Qt::Alignment alignment);
+%End
     void setTextAlignment(int column, int alignment);
     Qt::CheckState checkState(int column) const;
     void setCheckState(int column, Qt::CheckState state);

@@ -114,4 +114,22 @@ public:
     QFormLayout::TakeRowResult takeRow(int row);
     QFormLayout::TakeRowResult takeRow(QWidget *widget);
     QFormLayout::TakeRowResult takeRow(QLayout *layout);
+%If (Qt_6_4_0 -)
+    void setRowVisible(QLayout *layout, bool on);
+%End
+%If (Qt_6_4_0 -)
+    void setRowVisible(QWidget *widget, bool on);
+%End
+%If (Qt_6_4_0 -)
+    void setRowVisible(int row, bool on);
+%End
+%If (Qt_6_4_0 -)
+    bool isRowVisible(QLayout *layout) const;
+%End
+%If (Qt_6_4_0 -)
+    bool isRowVisible(QWidget *widget) const;
+%End
+%If (Qt_6_4_0 -)
+    bool isRowVisible(int row) const;
+%End
 };

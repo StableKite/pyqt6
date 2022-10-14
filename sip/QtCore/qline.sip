@@ -73,6 +73,9 @@ public:
     void setPoints(const QPoint &aP1, const QPoint &aP2);
     void setLine(int aX1, int aY1, int aX2, int aY2);
     QPoint center() const;
+%If (Qt_6_4_0 -)
+    QLineF toLineF() const;
+%End
 };
 
 QDataStream &operator<<(QDataStream &, const QLine &) /ReleaseGIL/;

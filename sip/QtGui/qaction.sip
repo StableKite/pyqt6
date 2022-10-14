@@ -20,6 +20,8 @@
 // WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+class QMenu /External/;
+
 class QAction : QObject
 {
 %TypeHeaderCode
@@ -107,6 +109,25 @@ public:
     bool autoRepeat() const;
     void setMenuRole(QAction::MenuRole menuRole);
     QAction::MenuRole menuRole() const;
+    QMenu *menu() const;
+%MethodCode
+        typedef QMenu *(*pyqt6_qtgui_qaction_menu_t)(const QAction *);
+        
+        pyqt6_qtgui_qaction_menu_t pyqt6_qtgui_qaction_menu = (pyqt6_qtgui_qaction_menu_t)sipImportSymbol("pyqt6_qaction_menu");
+        
+        sipRes = (pyqt6_qtgui_qaction_menu ? pyqt6_qtgui_qaction_menu(sipCpp) : SIP_NULLPTR);
+%End
+
+    void setMenu(QMenu *menu);
+%MethodCode
+        typedef void *(*pyqt6_qtgui_qaction_set_menu_t)(QAction *, QMenu *);
+        
+        pyqt6_qtgui_qaction_set_menu_t pyqt6_qtgui_qaction_set_menu = (pyqt6_qtgui_qaction_set_menu_t)sipImportSymbol("pyqt6_qaction_set_menu");
+        
+        if (pyqt6_qtgui_qaction_set_menu)
+            pyqt6_qtgui_qaction_set_menu(sipCpp, a0);
+%End
+
     void setIconVisibleInMenu(bool visible);
     bool isIconVisibleInMenu() const;
 

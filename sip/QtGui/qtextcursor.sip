@@ -152,4 +152,7 @@ public:
     void setKeepPositionOnInsert(bool b);
     bool keepPositionOnInsert() const;
     void swap(QTextCursor &other /Constrained/);
+%If (Qt_6_4_0 -)
+    void insertMarkdown(const QString &markdown, QTextDocument::MarkdownFeatures features = QTextDocument::MarkdownDialectGitHub);
+%End
 };

@@ -82,4 +82,7 @@ class QSGDynamicTexture : QSGTexture
 public:
     QSGDynamicTexture();
     virtual bool updateTexture() = 0;
+%If (Qt_6_4_0 -)
+    virtual ~QSGDynamicTexture();
+%End
 };

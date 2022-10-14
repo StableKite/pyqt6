@@ -229,6 +229,9 @@ public:
         OldFontLetterSpacingType,
         OldFontStretch,
         OldTextUnderlineColor,
+%If (Qt_6_4_0 -)
+        OldFontFamily,
+%End
         UserProperty,
     };
 

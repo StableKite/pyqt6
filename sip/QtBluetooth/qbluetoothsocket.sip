@@ -50,6 +50,9 @@ public:
         NetworkError,
         UnsupportedProtocolError,
         OperationError,
+%If (Qt_6_4_0 -)
+        MissingPermissionsError,
+%End
     };
 
     QBluetoothSocket(QBluetoothServiceInfo::Protocol socketType, QObject *parent /TransferThis/ = 0);

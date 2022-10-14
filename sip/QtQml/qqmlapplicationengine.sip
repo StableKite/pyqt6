@@ -42,4 +42,7 @@ public slots:
 
 signals:
     void objectCreated(QObject *object, const QUrl &url);
+%If (Qt_6_4_0 -)
+    void objectCreationFailed(const QUrl &url);
+%End
 };

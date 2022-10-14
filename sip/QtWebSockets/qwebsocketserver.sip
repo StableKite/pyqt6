@@ -88,6 +88,12 @@ signals:
 public:
     void setHandshakeTimeout(int msec);
     int handshakeTimeoutMS() const;
+%If (Qt_6_4_0 -)
+    void setSupportedSubprotocols(const QStringList &protocols);
+%End
+%If (Qt_6_4_0 -)
+    QStringList supportedSubprotocols() const;
+%End
 };
 
 %End

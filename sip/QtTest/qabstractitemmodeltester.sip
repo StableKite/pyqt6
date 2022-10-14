@@ -41,4 +41,7 @@ public:
     QAbstractItemModelTester(QAbstractItemModel *model /KeepReference=1/, QAbstractItemModelTester::FailureReportingMode mode, QObject *parent /TransferThis/ = 0);
     QAbstractItemModel *model() const;
     QAbstractItemModelTester::FailureReportingMode failureReportingMode() const;
+%If (Qt_6_4_0 -)
+    void setUseFetchMore(bool value);
+%End
 };

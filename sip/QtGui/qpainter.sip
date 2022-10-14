@@ -72,6 +72,9 @@ public:
 %If (Qt_6_1_0 -)
         VerticalSubpixelPositioning,
 %End
+%If (Qt_6_4_0 -)
+        NonCosmeticBrushPatterns,
+%End
     };
 
     typedef QFlags<QPainter::RenderHint> RenderHints;

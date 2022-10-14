@@ -41,7 +41,7 @@ public:
     QGestureRecognizer();
     virtual ~QGestureRecognizer();
     virtual QGesture *create(QObject *target) /Factory/;
-    virtual QFlags<QGestureRecognizer::ResultFlag> recognize(QGesture *state, QObject *watched, QEvent *event) = 0;
+    virtual QGestureRecognizer::Result recognize(QGesture *state, QObject *watched, QEvent *event) = 0;
     virtual void reset(QGesture *state);
     static Qt::GestureType registerRecognizer(QGestureRecognizer *recognizer /Transfer/);
     static void unregisterRecognizer(Qt::GestureType type);

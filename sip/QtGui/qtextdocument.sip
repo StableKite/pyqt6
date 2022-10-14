@@ -94,7 +94,7 @@ public:
     void print(QPagedPaintDevice *printer) const;
 %End
 
-    enum ResourceType
+    enum ResourceType /BaseType=IntEnum/
     {
         UnknownResource,
         HtmlResource,
@@ -370,5 +370,11 @@ public:
         }
 %End
 
+%End
+%If (Qt_6_4_0 -)
+    void setLayoutEnabled(bool b);
+%End
+%If (Qt_6_4_0 -)
+    bool isLayoutEnabled() const;
 %End
 };

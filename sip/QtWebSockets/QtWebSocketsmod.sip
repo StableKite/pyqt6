@@ -49,5 +49,6 @@ WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 %Include qmaskgenerator.sip
 %Include qwebsocket.sip
 %Include qwebsocketcorsauthenticator.sip
+%Include qwebsockethandshakeoptions.sip
 %Include qwebsocketprotocol.sip
 %Include qwebsocketserver.sip

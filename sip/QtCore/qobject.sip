@@ -423,7 +423,12 @@ callable.
 %End
 
     QString objectName() const;
+%If (Qt_6_4_0 -)
+    void setObjectName(QAnyStringView name);
+%End
+%If (- Qt_6_4_0)
     void setObjectName(const QString &name);
+%End
     bool isWidgetType() const;
     bool isWindowType() const;
     bool signalsBlocked() const;
@@ -531,6 +536,10 @@ public:
     SIP_PYOBJECT disconnect() const /TypeHint=""/;
 %MethodCode
         sipRes = qpycore_qobject_disconnect(sipCpp);
+%End
+
+%If (Qt_6_4_0 -)
+    bool isQuickItemType() const;
 %End
 
 private:

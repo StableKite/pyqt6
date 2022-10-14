@@ -96,6 +96,9 @@ public:
 %If (Qt_6_2_0 -)
     QString junctionTarget() const;
 %End
+%If (Qt_6_4_0 -)
+    bool isAlias() const;
+%End
 };
 
 typedef QList<QFileInfo> QFileInfoList;

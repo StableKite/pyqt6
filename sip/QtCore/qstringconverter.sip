@@ -20,6 +20,8 @@
 // WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+%If (- Qt_6_4_0)
+
 class QStringConverterBase
 {
 %TypeHeaderCode
@@ -38,6 +40,9 @@ public:
 
     typedef QFlags<QStringConverterBase::Flag> Flags;
 };
+
+%End
+%If (- Qt_6_4_0)
 
 class QStringConverter : QStringConverterBase
 {
@@ -74,6 +79,8 @@ private:
     QStringConverter(const QStringConverter &);
 };
 
+%End
+
 class QStringEncoder : QStringConverter
 {
 %TypeHeaderCode
@@ -100,4 +107,7 @@ public:
     QStringDecoder(const char *name, QStringConverterBase::Flags flags = QStringConverterBase::Flag::Default);
     QString operator()(QByteArrayView ba) [QStringDecoder::EncodedData<QByteArrayView> (QByteArrayView ba)];
     QString decode(QByteArrayView ba) [QStringDecoder::EncodedData<QByteArrayView> (QByteArrayView ba)];
+%If (Qt_6_4_0 -)
+    static QStringDecoder decoderForHtml(QByteArrayView data);
+%End
 };

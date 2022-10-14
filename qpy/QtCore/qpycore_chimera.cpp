@@ -1497,19 +1497,7 @@ PyObject *Chimera::toPyObject(void *cpp) const
 {
     if (metatype == QMetaType::fromType<PyQt_PyObject>())
     {
-        if (_type)
-        {
-            // SIP knows the type (therefore it isn't really wrapped in a
-            // PyQt_PyObject) but it's not registered with Qt.
-            if (sipTypeIsEnum(_type))
-                return sipConvertFromEnum(*reinterpret_cast<int *>(cpp), _type);
-
-            if (_name.endsWith('*'))
-                cpp = *reinterpret_cast<void **>(cpp);
-
-            return sipConvertFromType(cpp, _type, 0);
-        }
-        else if (_is_char_star)
+        if (_is_char_star)
         {
             char *s = *reinterpret_cast<char **>(cpp);
 
@@ -1519,23 +1507,29 @@ PyObject *Chimera::toPyObject(void *cpp) const
             Py_INCREF(Py_None);
             return Py_None;
         }
-        else
+
+        if (_type && !sipTypeIsEnum(_type))
         {
-            // Otherwise unwrap the Python object.
-            PyQt_PyObject *pyobj_wrapper = reinterpret_cast<PyQt_PyObject *>(cpp);
+            if (_name.endsWith('*'))
+                cpp = *reinterpret_cast<void **>(cpp);
 
-            if (!pyobj_wrapper->pyobject)
-            {
-                PyErr_SetString(PyExc_TypeError,
-                        "unable to convert a QVariant back to a Python object");
-
-                return 0;
-            }
-
-            Py_INCREF(pyobj_wrapper->pyobject);
-
-            return pyobj_wrapper->pyobject;
+            return sipConvertFromType(cpp, _type, 0);
         }
+
+        // Unwrap a Python object.
+        PyQt_PyObject *pyobj_wrapper = reinterpret_cast<PyQt_PyObject *>(cpp);
+
+        if (!pyobj_wrapper->pyobject)
+        {
+            PyErr_SetString(PyExc_TypeError,
+                    "unable to convert a QVariant back to a Python object");
+
+            return 0;
+        }
+
+        Py_INCREF(pyobj_wrapper->pyobject);
+
+        return pyobj_wrapper->pyobject;
     }
 
     PyObject *py = 0;
@@ -1652,6 +1646,8 @@ PyObject *Chimera::toPyObject(void *cpp) const
         {
             if (sipTypeIsEnum(_type))
             {
+                // This enum must have been registered (presumably by a host
+                // C++ application) and have it's own meta-type id.
                 py = sipConvertFromEnum(*reinterpret_cast<int *>(cpp), _type);
             }
             else if (_name.endsWith('*'))

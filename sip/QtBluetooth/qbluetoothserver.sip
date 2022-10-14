@@ -71,6 +71,9 @@ public:
         InputOutputError,
         ServiceAlreadyRegisteredError,
         UnsupportedProtocolError,
+%If (Qt_6_4_0 -)
+        MissingPermissionsError,
+%End
     };
 
     QBluetoothServer(QBluetoothServiceInfo::Protocol serverType, QObject *parent /TransferThis/ = 0);

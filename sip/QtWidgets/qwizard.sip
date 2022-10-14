@@ -155,6 +155,11 @@ public:
 signals:
     void pageAdded(int id);
     void pageRemoved(int id);
+
+public slots:
+%If (Qt_6_4_0 -)
+    void setCurrentId(int id);
+%End
 };
 
 class QWizardPage : QWidget

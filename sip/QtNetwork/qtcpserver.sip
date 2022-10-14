@@ -63,4 +63,9 @@ public:
 %If (Qt_6_3_0 -)
     int listenBacklogSize() const;
 %End
+
+signals:
+%If (Qt_6_4_0 -)
+    void pendingConnectionAvailable();
+%End
 };

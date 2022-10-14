@@ -38,6 +38,9 @@ public:
         UnsupportedPlatformError,
         UnsupportedDiscoveryMethod,
         LocationServiceTurnedOffError,
+%If (Qt_6_4_0 -)
+        MissingPermissionsError,
+%End
         UnknownError,
     };
 

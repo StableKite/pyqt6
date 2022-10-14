@@ -138,6 +138,9 @@ public:
     QRect &operator-=(const QMargins &margins);
     QRect transposed() const;
     static QRect span(const QPoint &p1, const QPoint &p2);
+%If (Qt_6_4_0 -)
+    QRectF toRectF() const;
+%End
 };
 
 QDataStream &operator<<(QDataStream &, const QRect &) /ReleaseGIL/;

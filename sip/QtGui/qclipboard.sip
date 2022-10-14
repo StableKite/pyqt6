@@ -89,7 +89,4 @@ signals:
     void dataChanged();
     void findBufferChanged();
     void selectionChanged();
-
-private:
-    QClipboard(const QClipboard &);
 };
