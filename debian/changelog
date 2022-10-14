@@ -1,6 +1,7 @@
 pyqt6 (6.4.0-1) UNRELEASED; urgency=medium
 
   * New upstream release.
+  * Update debian/source/lintian-overrides for Lintian pointed hints.
 
  -- Dmitry Shachnev <mitya57@debian.org>  Fri, 14 Oct 2022 19:21:32 +0300
 
