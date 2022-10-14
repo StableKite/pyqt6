@@ -123,7 +123,7 @@ namespace Qt
 
     typedef QFlags<Qt::Orientation> Orientations;
 
-    enum FocusPolicy /BaseType=Flag/
+    enum FocusPolicy /BaseType=IntFlag/
     {
         NoFocus,
         TabFocus,

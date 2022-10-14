@@ -125,6 +125,9 @@ public:
     QByteArray(const QByteArray &a);
     ~QByteArray();
     void resize(qsizetype size);
+%If (Qt_6_4_0 -)
+    void resize(qsizetype size, char c);
+%End
     QByteArray &fill(char c /Encoding="None"/, qsizetype size = -1);
     void clear();
     qsizetype indexOf(QByteArrayView bv, qsizetype from = 0) const;
@@ -408,6 +411,9 @@ public:
     QByteArray sliced(qsizetype pos, qsizetype n) const;
 %If (Qt_6_3_0 -)
     bool isValidUtf8() const;
+%End
+%If (Qt_6_4_0 -)
+    QByteArray percentDecoded(char percent = '%') const;
 %End
 };
 

@@ -146,6 +146,16 @@ class TranslationFile(User):
                             "Updated message '{0}'".format(
                                     self.pretty(message.source)))
 
+                    # Go through any translations making sure they are not
+                    # 'vanished' which might happen if we have restored a
+                    # previously obsolete message.
+                    for translation_el in message_el.findall('translation'):
+                        if translation_el.get('type') == 'vanished':
+                            if translation_el.text:
+                                del translation_el.attrib['type']
+                            else:
+                                translation_el.set('type', 'unfinished')
+
                     # Don't count another copy of a new message as an existing
                     # one.
                     if message_el in self._new_message_els:

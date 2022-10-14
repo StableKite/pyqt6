@@ -102,6 +102,16 @@ public:
             CullFront,
             CullBack,
         };
+
+%If (Qt_6_4_0 -)
+
+        enum PolygonMode
+        {
+            Fill,
+            Line,
+        };
+
+%End
     };
 
     enum Flag /BaseType=Flag/
@@ -125,6 +135,9 @@ public:
     QSGMaterialShader::Flags flags() const;
     void setFlag(QSGMaterialShader::Flags flags, bool on = true);
     void setFlags(QSGMaterialShader::Flags flags);
+%If (Qt_6_4_0 -)
+    int combinedImageSamplerCount(int binding) const;
+%End
 
 protected:
     void setShaderFileName(QSGMaterialShader::Stage stage, const QString &filename);

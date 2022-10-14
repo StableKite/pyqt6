@@ -46,6 +46,9 @@ public:
     QMargins &operator/=(qreal divisor);
     QMargins &operator+=(int margin);
     QMargins &operator-=(int margin);
+%If (Qt_6_4_0 -)
+    QMarginsF toMarginsF() const;
+%End
 };
 
 bool operator==(const QMargins &m1, const QMargins &m2);

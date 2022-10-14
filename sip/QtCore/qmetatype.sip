@@ -151,6 +151,13 @@ public:
     static QMetaType fromName(QByteArrayView name);
     static bool canConvert(QMetaType fromType, QMetaType toType);
     static bool canView(QMetaType fromType, QMetaType toType);
+%If (Qt_6_4_0 -)
+    Py_hash_t __hash__() const;
+%MethodCode
+        sipRes = qHash(*sipCpp);
+%End
+
+%End
 
 private:
     QMetaType(const QMetaType &);

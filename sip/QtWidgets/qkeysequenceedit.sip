@@ -45,4 +45,15 @@ protected:
     virtual void keyPressEvent(QKeyEvent *);
     virtual void keyReleaseEvent(QKeyEvent *);
     virtual void timerEvent(QTimerEvent *);
+%If (Qt_6_4_0 -)
+    virtual void focusOutEvent(QFocusEvent *);
+%End
+
+public:
+%If (Qt_6_4_0 -)
+    void setClearButtonEnabled(bool enable);
+%End
+%If (Qt_6_4_0 -)
+    bool isClearButtonEnabled() const;
+%End
 };

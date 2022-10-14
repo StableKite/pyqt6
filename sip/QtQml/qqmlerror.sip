@@ -44,6 +44,9 @@ public:
     void setObject(QObject *);
     QtMsgType messageType() const;
     void setMessageType(QtMsgType messageType);
+%If (Qt_6_4_0 -)
+    void swap(QQmlError &other);
+%End
 };
 
 bool operator==(const QQmlError &a, const QQmlError &b);

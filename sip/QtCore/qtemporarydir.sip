@@ -37,6 +37,9 @@ public:
     QString path() const;
     QString errorString() const;
     QString filePath(const QString &fileName) const;
+%If (Qt_6_4_0 -)
+    void swap(QTemporaryDir &other);
+%End
 
 private:
     QTemporaryDir(const QTemporaryDir &);

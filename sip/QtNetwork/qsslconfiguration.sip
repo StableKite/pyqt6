@@ -100,16 +100,24 @@ public:
     void setMissingCertificateIsFatal(bool cannotRecover);
     static const char *NextProtocolHttp1_1 /Encoding="None",NoSetter/;
 %If (Qt_6_3_0 -)
+%If (PyQt_DTLS)
     bool dtlsCookieVerificationEnabled() const;
 %End
+%End
 %If (Qt_6_3_0 -)
+%If (PyQt_DTLS)
     void setDtlsCookieVerificationEnabled(bool enable);
 %End
-%If (Qt_6_3_0 -)
-    static QSslConfiguration defaultDtlsConfiguration();
 %End
 %If (Qt_6_3_0 -)
+%If (PyQt_DTLS)
+    static QSslConfiguration defaultDtlsConfiguration();
+%End
+%End
+%If (Qt_6_3_0 -)
+%If (PyQt_DTLS)
     static void setDefaultDtlsConfiguration(const QSslConfiguration &configuration);
+%End
 %End
 };
 

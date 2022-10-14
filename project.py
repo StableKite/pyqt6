@@ -45,16 +45,14 @@ class PyQt(PyQtProject):
                     'pyuic6 = PyQt6.uic.pyuic:main'])
 
         # Each set of bindings must appear after any set they depend on.
+        # QtLocation is still to be ported to Qt6.
         self.bindings_factories = [QtCore, QtNetwork, QtGui, QtQml, QtWidgets,
                 QtDBus, QtDesigner, QtHelp, QtOpenGL, QtOpenGLWidgets,
                 QtPrintSupport, QtQuick, QtQuick3D, QtQuickWidgets, QtSql,
                 QtSvg, QtSvgWidgets, QtTest, QtXml, QtMultimedia,
                 QtMultimediaWidgets, QtPositioning, QtRemoteObjects, QtSensors,
                 QtSerialPort, QtWebChannel, QtWebSockets, QtBluetooth, QtNfc,
-                QAxContainer]
-
-        # These are still to be ported to Qt6:
-        #   QtLocation, QtTextToSpeech
+                QtPdf, QtPdfWidgets, QtTextToSpeech, QAxContainer]
 
     def apply_user_defaults(self, tool):
         """ Set default values where needed. """
@@ -652,6 +650,28 @@ class QtOpenGLWidgets(PyQtBindings):
                 test_statement='new QOpenGLWidget()')
 
 
+class QtPdf(PyQtBindings):
+    """ The QtPdf bindings. """
+
+    def __init__(self, project):
+        """ Initialise the bindings. """
+
+        super().__init__(project, 'QtPdf', qmake_QT=['pdf'],
+                test_headers=['qpdfdocument.h'],
+                test_statement='new QPdfDocument(nullptr)')
+
+
+class QtPdfWidgets(PyQtBindings):
+    """ The QtPdfWidgets bindings. """
+
+    def __init__(self, project):
+        """ Initialise the bindings. """
+
+        super().__init__(project, 'QtPdfWidgets', qmake_QT=['pdfwidgets'],
+                test_headers=['qpdfview.h'],
+                test_statement='new QPdfView(nullptr)')
+
+
 class QtPositioning(PyQtBindings):
     """ The QtPositioning bindings. """
 
@@ -799,7 +819,7 @@ class QtTextToSpeech(PyQtBindings):
         """ Initialise the bindings. """
 
         super().__init__(project, 'QtTextToSpeech',
-                qmake_QT=['texttospeech', '-gui'],
+                qmake_QT=['texttospeech', '-gui', 'qmlintegration'],
                 test_headers=['QTextToSpeech'],
                 test_statement='new QTextToSpeech()')
 

@@ -48,6 +48,9 @@ public:
     QString whatsThis() const;
     QFont font() const;
     int textAlignment() const;
+%If (Qt_6_4_0 -)
+    void setTextAlignment(Qt::Alignment alignment);
+%End
     void setTextAlignment(int alignment);
     Qt::CheckState checkState() const;
     void setCheckState(Qt::CheckState state);

@@ -37,7 +37,9 @@ public:
     explicit QByteArrayMatcher(QByteArrayView pattern);
 %End
 %If (- Qt_6_3_0)
+%If (Qt_6_4_0 -)
     explicit QByteArrayMatcher(const QByteArray &pattern);
+%End
 %End
     QByteArrayMatcher();
     QByteArrayMatcher(const QByteArrayMatcher &other);

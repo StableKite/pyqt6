@@ -88,6 +88,12 @@ public:
     static const QOperatingSystemVersionBase Windows10_21H1;
     static const QOperatingSystemVersionBase Windows10_21H2;
     static const QOperatingSystemVersionBase Windows11;
+%If (Qt_6_4_0 -)
+    static const QOperatingSystemVersionBase Windows11_21H2;
+%End
+%If (Qt_6_4_0 -)
+    static const QOperatingSystemVersionBase Windows11_22H2;
+%End
     QOperatingSystemVersion(QOperatingSystemVersion::OSType osType, int vmajor, int vminor = -1, int vmicro = -1);
     static QOperatingSystemVersion current();
     static QOperatingSystemVersion::OSType currentType();

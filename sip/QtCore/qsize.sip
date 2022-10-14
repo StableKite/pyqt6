@@ -77,6 +77,9 @@ public:
     QSize transposed() const;
     QSize grownBy(QMargins m) const;
     QSize shrunkBy(QMargins m) const;
+%If (Qt_6_4_0 -)
+    QSizeF toSizeF() const;
+%End
 };
 
 QDataStream &operator<<(QDataStream &, const QSize &) /ReleaseGIL/;

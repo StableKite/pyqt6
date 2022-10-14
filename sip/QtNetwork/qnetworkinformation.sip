@@ -108,6 +108,14 @@ signals:
     void isMeteredChanged(bool isMetered);
 %End
 
+public:
+%If (Qt_6_4_0 -)
+    static bool loadBackendByName(QStringView backend);
+%End
+%If (Qt_6_4_0 -)
+    static bool loadBackendByFeatures(QNetworkInformation::Features features);
+%End
+
 private:
     virtual ~QNetworkInformation();
 };

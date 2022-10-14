@@ -66,6 +66,11 @@ public:
     QList<QMediaMetaData::Key> keys() const;
     QString stringValue(QMediaMetaData::Key k) const;
     static QString metaDataKeyToString(QMediaMetaData::Key k);
+
+protected:
+%If (Qt_6_4_0 -)
+    static QMetaType keyType(QMediaMetaData::Key key);
+%End
 };
 
 %End

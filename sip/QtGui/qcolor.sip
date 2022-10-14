@@ -202,6 +202,12 @@ public:
     static QColor fromRgba64(ushort r, ushort g, ushort b, ushort alpha = USHRT_MAX);
     static QColor fromRgba64(QRgba64 rgba);
     QColor toExtendedRgb() const;
+%If (Qt_6_4_0 -)
+    static QColor fromString(QAnyStringView name);
+%End
+%If (Qt_6_4_0 -)
+    static bool isValidColorName(QAnyStringView);
+%End
 };
 
 QDataStream &operator<<(QDataStream &, const QColor &) /ReleaseGIL/;

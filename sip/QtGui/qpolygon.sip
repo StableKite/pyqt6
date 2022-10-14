@@ -260,6 +260,9 @@ int __contains__(const QPoint &value);
 %MethodCode
 sipRes = bool(sipCpp->contains(*a0));
 %End
+%If (Qt_6_4_0 -)
+    QPolygonF toPolygonF() const;
+%End
 };
 
 QDataStream &operator<<(QDataStream &stream, const QPolygon &polygon) /ReleaseGIL/;

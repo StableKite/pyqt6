@@ -34,14 +34,26 @@ public:
 %If (PyQt_OpenGL)
     static QQuickRenderTarget fromOpenGLTexture(uint textureId, const QSize &pixelSize, int sampleCount = 1);
 %End
+%If (Qt_6_4_0 -)
+    static QQuickRenderTarget fromOpenGLTexture(uint textureId, uint format, const QSize &pixelSize, int sampleCount = 1);
+%End
 %If (Qt_6_2_0 -)
     static QQuickRenderTarget fromOpenGLRenderBuffer(uint renderbufferId, const QSize &pixelSize, int sampleCount = 1);
+%End
+%If (Qt_6_4_0 -)
+    static QQuickRenderTarget fromPaintDevice(QPaintDevice *device);
 %End
 %If (Qt_6_3_0 -)
     qreal devicePixelRatio() const;
 %End
 %If (Qt_6_3_0 -)
     void setDevicePixelRatio(qreal ratio);
+%End
+%If (Qt_6_4_0 -)
+    bool mirrorVertically() const;
+%End
+%If (Qt_6_4_0 -)
+    void setMirrorVertically(bool enable);
 %End
 };
 

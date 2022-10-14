@@ -305,6 +305,9 @@ public:
 %If (Qt_6_2_0 -)
     QSizeF deviceIndependentSize() const;
 %End
+%If (Qt_6_4_0 -)
+    QImage colorTransformed(const QColorTransform &transform) const;
+%End
 };
 
 QDataStream &operator<<(QDataStream &, const QImage &) /ReleaseGIL/;

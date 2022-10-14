@@ -25,5 +25,9 @@ int main(int argc, char **argv)
     out << "PyQt_SSL\n";
 #endif
 
+#if !QT_CONFIG(dtls)
+    out << "PyQt_DTLS\n";
+#endif
+
     return 0;
 }

@@ -54,6 +54,9 @@ public:
     int minimumChannelCount() const;
     int maximumChannelCount() const;
     QList<QAudioFormat::SampleFormat> supportedSampleFormats() const;
+%If (Qt_6_4_0 -)
+    QAudioFormat::ChannelConfig channelConfiguration() const;
+%End
 };
 
 %End

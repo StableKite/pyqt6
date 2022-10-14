@@ -48,6 +48,12 @@ public:
         AppDataLocation,
         AppLocalDataLocation,
         AppConfigLocation,
+%If (Qt_6_4_0 -)
+        PublicShareLocation,
+%End
+%If (Qt_6_4_0 -)
+        TemplatesLocation,
+%End
     };
 
     static QString writableLocation(QStandardPaths::StandardLocation type);

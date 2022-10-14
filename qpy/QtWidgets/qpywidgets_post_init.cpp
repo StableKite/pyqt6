@@ -20,6 +20,7 @@
 
 #include "qpywidgets_api.h"
 #include "qpywidgets_chimera_helpers.h"
+#include "qpywidgets_qaction_helpers.h"
 
 #include "sipAPIQtWidgets.h"
 
@@ -32,4 +33,9 @@ void qpywidgets_post_init()
     register_to_qvariant_convertor = (void (*)(ToQVariantConvertorFn))sipImportSymbol("pyqt6_register_to_qvariant_convertor");
     Q_ASSERT(register_to_qvariant_convertor);
     register_to_qvariant_convertor(qpywidgets_to_qvariant_convertor);
+
+    // Export the QAction helpers.
+    sipExportSymbol("pyqt6_qaction_menu", (void *)qpywidgets_qaction_menu);
+    sipExportSymbol("pyqt6_qaction_set_menu",
+            (void *)qpywidgets_qaction_set_menu);
 }

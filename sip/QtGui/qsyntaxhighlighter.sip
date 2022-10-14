@@ -86,7 +86,4 @@ protected:
 
     QTextBlockUserData *currentBlockUserData() const;
     QTextBlock currentBlock() const;
-
-private:
-    QSyntaxHighlighter(const QSyntaxHighlighter &);
 };

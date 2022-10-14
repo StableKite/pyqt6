@@ -60,6 +60,9 @@ public:
         RhiSwapchainResource,
         RhiRedirectCommandBuffer,
         RhiRedirectRenderTarget,
+%If (Qt_6_4_0 -)
+        RedirectPaintDevice,
+%End
     };
 
     enum ShaderType
