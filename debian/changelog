@@ -1,5 +1,6 @@
 pyqt6 (6.4.0-2) UNRELEASED; urgency=medium
 
+  [ Pino Toscano ]
   * Team upload
   * Make pyqt6 buildable on non-Linux architectures:
     - limit the qt6-connectivity-dev build dependency as linux-any, as the
@@ -7,6 +8,9 @@ pyqt6 (6.4.0-2) UNRELEASED; urgency=medium
       Unix OSes)
     - limit the python3-pyqt6.qtbluetooth, and python3-pyqt6.qtnfc binaries
       as linux-any, as they use libraries of Qt Connectivity
+
+  [ Dmitry Shachnev ]
+  * Use the new names for Qt 6 -dev packages.
 
  -- Pino Toscano <team+python@tracker.debian.org>  Wed, 19 Oct 2022 07:28:54 +0200
 
