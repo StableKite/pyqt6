@@ -37,6 +37,11 @@ Test-Command: debian/tests/test_import.sh PyQt6.QtNfc
 Depends: python3-all-dbg, python3-pyqt6.qtnfc
 Restrictions: superficial
 
+Test-Command: debian/tests/test_import.sh PyQt6.QtPdf PyQt6.QtPdfWidgets
+Architecture: amd64 arm64 armhf i386
+Depends: python3-all-dbg, python3-pyqt6.qtpdf
+Restrictions: superficial
+
 Test-Command: debian/tests/test_import.sh PyQt6.QtPositioning
 Depends: python3-all-dbg, python3-pyqt6.qtpositioning
 Restrictions: superficial
@@ -67,6 +72,10 @@ Restrictions: superficial
 
 Test-Command: debian/tests/test_import.sh PyQt6.QtSvg PyQt6.QtSvgWidgets
 Depends: python3-all-dbg, python3-pyqt6.qtsvg
+Restrictions: superficial
+
+Test-Command: debian/tests/test_import.sh PyQt6.QtTextToSpeech
+Depends: python3-all-dbg, python3-pyqt6.qttexttospeech
 Restrictions: superficial
 
 Test-Command: debian/tests/test_import.sh PyQt6.QtWebChannel

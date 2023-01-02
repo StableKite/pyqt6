@@ -15,12 +15,14 @@ Build-Depends: debhelper-compat (= 13),
                qt6-connectivity-dev [linux-any],
                qt6-declarative-dev,
                qt6-multimedia-dev,
+               qt6-pdf-dev [amd64 arm64 armhf i386],
                qt6-positioning-dev,
                qt6-quick3d-dev,
                qt6-remoteobjects-dev,
                qt6-sensors-dev,
                qt6-serialport-dev,
                qt6-shadertools-dev,
+               qt6-speech-dev,
                qt6-svg-dev,
                qt6-tools-dev,
                qt6-webchannel-dev,
@@ -150,6 +152,17 @@ Description: Python bindings for Qt 6 NFC module
  .
  This package contains the QtNfc module of PyQt6.
 
+Package: python3-pyqt6.qtpdf
+Architecture: amd64 arm64 armhf i386
+Depends: python3-pyqt6 (= ${binary:Version}),
+         ${misc:Depends},
+         ${python3:Depends},
+         ${shlibs:Depends}
+Description: Python bindings for Qt 6 PDF module
+ Qt PDF API contains classes and functions for rendering PDF documents.
+ .
+ This package contains the QtPdf and QtPdfWidgets modules of PyQt6.
+
 Package: python3-pyqt6.qtpositioning
 Architecture: any
 Depends: python3-pyqt6 (= ${binary:Version}),
@@ -246,6 +259,18 @@ Description: Python bindings for Qt 6 SVG module
  widgets and on other paint devices.
  .
  This package contains the QtSvg and QtSvgWidgets modules of PyQt6.
+
+Package: python3-pyqt6.qttexttospeech
+Architecture: any
+Depends: python3-pyqt6 (= ${binary:Version}),
+         ${misc:Depends},
+         ${python3:Depends},
+         ${shlibs:Depends}
+Description: Python bindings for Qt 6 TextToSpeech module
+ Qt TextToSpeech API enables a Qt application to read out text by using speech
+ synthesis.
+ .
+ This package contains the QtTextToSpeech module of PyQt6.
 
 Package: python3-pyqt6.qtwebchannel
 Architecture: any
