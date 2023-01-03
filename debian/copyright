@@ -56,7 +56,7 @@ Copyright: 2006,      Thorsten Marek
 License: BSD-3-clause
 
 Files: debian/*
-Copyright: 2022, Dmitry Shachnev <mitya57@debian.org>
+Copyright: 2022-2023, Dmitry Shachnev <mitya57@debian.org>
 License: GPL-3
 
 License: GPL-2+
