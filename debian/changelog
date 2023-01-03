@@ -1,7 +1,6 @@
-pyqt6 (6.4.0-2) UNRELEASED; urgency=medium
+pyqt6 (6.4.0-2) experimental; urgency=medium
 
   [ Pino Toscano ]
-  * Team upload
   * Make pyqt6 buildable on non-Linux architectures:
     - limit the qt6-connectivity-dev build dependency as linux-any, as the
       Qt Connectivity modules are supported only on Linux (at least w.r.t.
@@ -13,7 +12,7 @@ pyqt6 (6.4.0-2) UNRELEASED; urgency=medium
   * Use the new names for Qt 6 -dev packages.
   * Add packages for QtPdf and QtTextToSpeech modules (closes: #1021209).
 
- -- Pino Toscano <team+python@tracker.debian.org>  Wed, 19 Oct 2022 07:28:54 +0200
+ -- Dmitry Shachnev <mitya57@debian.org>  Tue, 03 Jan 2023 13:12:52 +0300
 
 pyqt6 (6.4.0-1) unstable; urgency=medium
 
