@@ -1,6 +1,7 @@
-pyqt6 (6.4.0-3) UNRELEASED; urgency=medium
+pyqt6 (6.4.0-3) unstable; urgency=medium
 
   * Bump Standards-Version to 4.6.2, no changes needed.
+  * Upload to unstable.
 
  -- Dmitry Shachnev <mitya57@debian.org>  Sat, 07 Jan 2023 18:04:24 +0400
 
