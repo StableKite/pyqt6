@@ -1,6 +1,6 @@
 // This is the implementation of the Chimera class.
 //
-// Copyright (c) 2022 Riverbank Computing Limited <info@riverbankcomputing.com>
+// Copyright (c) 2023 Riverbank Computing Limited <info@riverbankcomputing.com>
 // 
 // This file is part of PyQt6.
 // 
@@ -482,6 +482,10 @@ bool Chimera::parse_py_type(PyTypeObject *type_obj)
         if (sipTypeIsEnum(td))
         {
             metatype = QMetaType::fromName(_name);
+
+            // Unregistered enums are handled as integers.
+            if (!metatype.isValid())
+                metatype = QMetaType(QMetaType::Int);
         }
         else if (_is_qflags)
         {
@@ -553,7 +557,7 @@ bool Chimera::parse_py_type(PyTypeObject *type_obj)
     }
 
     // Fallback to using a PyQt_PyObject.
-    if (metatype.id() == QMetaType::UnknownType)
+    if (!metatype.isValid())
         metatype = QMetaType::fromType<PyQt_PyObject>();
 
     // If there is no name so far then use the meta-type name.
@@ -711,8 +715,10 @@ bool Chimera::parse_cpp_type(const QByteArray &type)
     // See if the type is known to Qt.
     metatype = QMetaType::fromName(resolved);
 
-    // If not then use the PyQt_PyObject wrapper.
-    if (!metatype.isValid())
+    // If not then use the PyQt_PyObject wrapper for now.
+    bool valid = metatype.isValid();
+
+    if (!valid)
         metatype = QMetaType::fromType<PyQt_PyObject>();
 
     // See if the type (without a pointer) is known to SIP.
@@ -765,7 +771,8 @@ bool Chimera::parse_cpp_type(const QByteArray &type)
 
     set_qflags(_type);
 
-    if (_is_qflags)
+    // We always pass these as integers.
+    if ((!valid && sipTypeIsEnum(_type)) || _is_qflags)
         metatype = QMetaType(QMetaType::Int);
 
     if (is_ptr)
@@ -818,8 +825,16 @@ bool Chimera::fromPyObject(PyObject *py, void *cpp) const
         break;
 
     case QMetaType::Int:
-        *reinterpret_cast<int *>(cpp) = PyLong_AsLong(py);
-        break;
+        {
+            int ival = PyLong_AsLong(py);
+
+            if (isEnumOrFlag())
+                *reinterpret_cast<QVariant *>(cpp) = QVariant(ival);
+            else
+                *reinterpret_cast<int *>(cpp) = ival;
+
+            break;
+        }
 
     case QMetaType::UInt:
         *reinterpret_cast<unsigned int *>(cpp) = sipLong_AsUnsignedLong(py);
@@ -1109,7 +1124,12 @@ bool Chimera::fromPyObject(PyObject *py, QVariant *var, bool strict) const
         break;
 
     case QMetaType::Int:
-        if (_inexact)
+        if (_type && sipTypeIsEnum(_type))
+        {
+            // Note that this will be an unregistered enum.
+            tmp_storage.tmp_int = sipConvertToEnum(py, _type);
+        }
+        else if (_inexact)
         {
             // Fit it into the smallest C++ type we can.
 
@@ -1330,6 +1350,7 @@ bool Chimera::fromPyObject(PyObject *py, QVariant *var, bool strict) const
         {
             if (sipTypeIsEnum(_type))
             {
+                // Note that this will be a registered enum.
                 tmp_storage.tmp_int = sipConvertToEnum(py, _type);
             }
             else if (_name.endsWith('*'))
@@ -1546,7 +1567,12 @@ PyObject *Chimera::toPyObject(void *cpp) const
         break;
 
     case QMetaType::Int:
-        if (_is_qflags)
+        if (_type && sipTypeIsEnum(_type))
+        {
+            // Note that this will be an unregistered enum.
+            py = sipConvertFromEnum(*reinterpret_cast<int *>(cpp), _type);
+        }
+        else if (_is_qflags)
         {
             py = sipConvertFromType(cpp, _type, 0);
         }
@@ -1646,8 +1672,7 @@ PyObject *Chimera::toPyObject(void *cpp) const
         {
             if (sipTypeIsEnum(_type))
             {
-                // This enum must have been registered (presumably by a host
-                // C++ application) and have it's own meta-type id.
+                // Note that this will be a registered enum.
                 py = sipConvertFromEnum(*reinterpret_cast<int *>(cpp), _type);
             }
             else if (_name.endsWith('*'))

@@ -1,6 +1,6 @@
 // This contains the support for QOpenGLVersionFunctionsFactory.get().
 //
-// Copyright (c) 2022 Riverbank Computing Limited <info@riverbankcomputing.com>
+// Copyright (c) 2023 Riverbank Computing Limited <info@riverbankcomputing.com>
 // 
 // This file is part of PyQt6.
 // 
