@@ -1,7 +1,7 @@
 // This implements the conversion of a QVariant to a Python object and is part
 // of the public API.
 //
-// Copyright (c) 2022 Riverbank Computing Limited <info@riverbankcomputing.com>
+// Copyright (c) 2023 Riverbank Computing Limited <info@riverbankcomputing.com>
 // 
 // This file is part of PyQt6.
 // 
@@ -60,7 +60,10 @@ PyObject *pyqt6_from_qvariant_by_type(QVariant &value, PyObject *type)
             // If we have a QStringList but are not wanting one then convert it
             // to a QVariantList.
             if (wanted != QMetaType::QStringList && value_type == QMetaType::QStringList)
+            {
                 value.convert(QMetaType(QMetaType::QVariantList));
+                value_type = QMetaType::QVariantList;
+            }
 
             // If we have a container but are not wanting one then assume we
             // want a container with elements of the wanted type.

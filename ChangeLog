@@ -1,4 +1,114 @@
+2023-01-27  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, qpy/QtCore/qpycore_qt_conf.cpp:
+	Fixed the embedded qt.conf on Windows where there are non-ASCII
+	characters in the pathname of the installation directory.
+	[f633ac74eeef] [6.4.1] <6.4-maint>
+
+2023-01-22  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* qpy/QtCore/qpycore_qvariant_value.cpp:
+	Fixed the implementation of QSettings.value() for a list of strings.
+	[a4b3ad49321b] <6.4-maint>
+
+	* NEWS, PyQt6.msp:
+	Fixed the base types of the QPdfBookmarkModel.Role and
+	QPdfSearchModel.Role enums.
+	[78cd78751823] <6.4-maint>
+
+2023-01-15  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* PyQt6.msp:
+	More Windows build fixes.
+	[557383d31eef] <6.4-maint>
+
+	* NEWS, PyQt6.msp:
+	Fixed build errors on Windows.
+	[2c160e7075fb] <6.4-maint>
+
+2023-01-13  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* PyQt6.msp:
+	Fixed the base type of the QPdfDocument.PageModelRole enum.
+	[c31b80437d87] <6.4-maint>
+
+	* extras/uic/Compiler/compiler.py,
+	extras/uic/Compiler/qobjectcreator.py,
+	extras/uic/Compiler/qtproxies.py, extras/uic/Loader/loader.py,
+	extras/uic/Loader/qobjectcreator.py, extras/uic/icon_cache.py,
+	extras/uic/objcreator.py, extras/uic/properties.py,
+	extras/uic/uiparser.py:
+	Refactored pyuic so that parent objects are specified as keyword
+	arguments when possible so that custom widgets can have additional,
+	preceding optional arguments.
+	[5e44e8a15f2a] <6.4-maint>
+
+	* NEWS, pyproject.toml, qpy/QtCore/qpycore_chimera.cpp:
+	Backout the removal of support for unregistered enums as we still
+	have to support protected enums and classes without a QMetaObject.
+	[77ec5687a5fc] <6.4-maint>
+
+2023-01-12  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, pyproject.toml, qpy/QtCore/qpycore_chimera.cpp:
+	Require SIP v6.7.6 so that all enums are registered with Qt.
+	Simplify the enum support when converting types now that all will be
+	registered.
+	[79807338ba98] <6.4-maint>
+
+2023-01-11  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, qpy/QtCore/qpycore_chimera.cpp:
+	Fixed regressions related to the handling of global enums in
+	connections.
+	[4f773319fd9a] <6.4-maint>
+
+2022-12-14  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, qpy/QtCore/qpycore_chimera.cpp:
+	Fixed the handling of Qt properties when the type was a Python enum.
+	[255ebf0c8996] <6.4-maint>
+
+2022-12-04  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, PyQt6.msp:
+	Added toHBITMAP(), fromHBITMAP(), toHICON() and fromHICON() to
+	QImage.
+	[1a471b580467] <6.4-maint>
+
+2022-10-28  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* extras/lupdate/lupdate.py:
+	plupdate will now properly exclude subdirectories.
+	[ccf01ff6a08e] <6.4-maint>
+
+	* extras/lupdate/lupdate.py:
+	pylupdate will ignore hidden files and directories when reading a
+	directory.
+	[301190b67f05] <6.4-maint>
+
+	* NEWS, extras/uic/compile_ui.py:
+	Fixed uic.compileUiDir() when the default system encoding is not
+	UTF8.
+	[9d65afef0172] <6.4-maint>
+
+2022-10-10  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, PyQt6.msp:
+	Fixed QBoxLayout.insertItem() ownership bug.
+	[ed33831448da] <6.4-maint>
+
+2022-10-03  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, PyQt6.msp:
+	Added allocationLimit() and setAllocationLimit() to QImageReader.
+	[aec5200df9d5] <6.4-maint>
+
 2022-09-30  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* .hgtags:
+	Added tag 6.4.0 for changeset 72aaf7b1fea2
+	[e028d20626d7]
 
 	* NEWS, PyQt6.msp:
 	Updated for Qt v6.4.0.
