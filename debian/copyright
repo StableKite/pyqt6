@@ -3,7 +3,7 @@ Upstream-Contact: pyqt@riverbankcomputing.com
 Upstream-Name: PyQt6
 
 Files: *
-Copyright: 2022, Riverbank Computing Limited
+Copyright: 2023, Riverbank Computing Limited
 License: GPL-3
 
 Files: dbus/*
