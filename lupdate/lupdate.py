@@ -45,8 +45,8 @@ def lupdate(sources, translation_files, no_obsolete=False, no_summary=True,
     for source in sources:
         if os.path.isdir(source):
             for dirpath, dirnames, filenames in os.walk(source):
-                _remove_excludes(dirnames)
-                _remove_excludes(filenames)
+                _remove_excludes(dirnames, excludes)
+                _remove_excludes(filenames, excludes)
 
                 for fn in filenames:
                     filename = os.path.join(dirpath, fn)
@@ -89,14 +89,10 @@ def _remove_excludes(names, excludes):
     """ Remove all implicitly and explicitly excluded names from a list. """
 
     for name in list(names):
-        if fn.startswith('.'):
+        if name.startswith('.'):
             names.remove(name)
         else:
             for exclude in excludes:
-                if fnmatch.fnmatch(fn, exclude):
+                if fnmatch.fnmatch(name, exclude):
                     names.remove(name)
-                    fn = None
                     break
-
-            if fn is None:
-                continue

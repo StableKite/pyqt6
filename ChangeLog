@@ -1,4 +1,14 @@
+2023-01-28  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, extras/lupdate/lupdate.py:
+	Fixed a regression in pylupdate.
+	[0cf0f5deb862] [6.4.2] <6.4-maint>
+
 2023-01-27  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* .hgtags:
+	Added tag 6.4.1 for changeset f633ac74eeef
+	[ffbaf766f709] <6.4-maint>
 
 	* NEWS, qpy/QtCore/qpycore_qt_conf.cpp:
 	Fixed the embedded qt.conf on Windows where there are non-ASCII
