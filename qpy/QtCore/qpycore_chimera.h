@@ -29,7 +29,6 @@
 #include <QList>
 #include <QMetaType>
 #include <QMetaProperty>
-#include <QSet>
 #include <QVariant>
 
 #include "sipAPIQtCore.h"
@@ -224,7 +223,8 @@ public:
     const sipTypeDef *typeDef() const {return _type;}
 
     // Register a type as a Python enum.
-    static void registerPyEnum(PyObject *enum_type);
+    static void registerPyEnum(PyObject *enum_type,
+            const QByteArray &cpp_qualname);
 
     // The Qt meta-type.
     QMetaType metatype;
@@ -254,8 +254,8 @@ private:
     // Set if the C++ type is char *.  This needs special handling.
     bool _is_char_star;
 
-    // The registered int types.
-    static QSet<PyObject *> _py_enum_types;
+    // The registered user-defined enums.
+    static QHash<PyObject *, QByteArray> _py_enum_types;
 
     // The cache of previously parsed argument type lists.
     static QHash<QByteArray, QList<const Chimera *> > _previously_parsed;
@@ -273,6 +273,8 @@ private:
     static QVariant keep_as_pyobject(PyObject *py);
     static int extract_raw_type(const QByteArray &type, QByteArray &raw_type);
     static QByteArray resolve_types(const QByteArray &type);
+    int get_enum_value(PyObject *py) const;
+    PyObject *get_enum_key(int cpp) const;
 
     Chimera &operator=(const Chimera &);
 };

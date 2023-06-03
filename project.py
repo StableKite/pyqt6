@@ -52,7 +52,8 @@ class PyQt(PyQtProject):
                 QtSvg, QtSvgWidgets, QtTest, QtXml, QtMultimedia,
                 QtMultimediaWidgets, QtPositioning, QtRemoteObjects, QtSensors,
                 QtSerialPort, QtWebChannel, QtWebSockets, QtBluetooth, QtNfc,
-                QtPdf, QtPdfWidgets, QtTextToSpeech, QAxContainer]
+                QtPdf, QtPdfWidgets, QtSpatialAudio, QtTextToSpeech,
+                QAxContainer]
 
     def apply_user_defaults(self, tool):
         """ Set default values where needed. """
@@ -516,7 +517,42 @@ class QtCore(PyQtBindings):
         if not project.qt_shared and test_output[0] == 'shared':
             project.qt_shared = True
 
+            # If permissions are available make sure the static plugins get
+            # compiled in.
+            if 'PyQt_Permissions' not in test_output:
+                self.builder_settings.append('CONFIG += permssions')
+                self.builder_settings.append(
+                        'QMAKE_INFO_PLIST = ' + self._info_plist())
+
         return super().handle_test_output(test_output[1:])
+
+    def _info_plist(self):
+        """ Create an Info.plist that contains entries for all supported
+        permissions and return the absolute name of the file.
+        """
+
+        keys = ('NSBluetoothAlwaysUsageDescription',
+                'NSCalendarsUsageDescription', 'NSCameraUsageDescription',
+                'NSContactsUsageDescription', 'NSLocationUsageDescription',
+                'NSMicrophoneUsageDescription')
+
+        content = '\n'.join(
+                ['<key>{}</key><string>Dummy</string>'.format(k) for k in keys])
+
+        info_plist = os.path.join(self.project.build_dir, 'Info.plist')
+
+        with open(info_plist, 'w') as f:
+            f.write(
+'''<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+{}
+</dict>
+</plist>
+'''.format(content))
+
+        return info_plist
 
 
 class QtDBus(PyQtBindings):
@@ -767,6 +803,17 @@ class QtSerialPort(PyQtBindings):
         super().__init__(project, 'QtSerialPort', qmake_QT=['serialport'],
                 test_headers=['qserialport.h'],
                 test_statement='new QSerialPort()')
+
+
+class QtSpatialAudio(PyQtBindings):
+    """ The QtSpatialAudio bindings. """
+
+    def __init__(self, project):
+        """ Initialise the bindings. """
+
+        super().__init__(project, 'QtSpatialAudio', qmake_QT=['spatialaudio'],
+                test_headers=['qaudioengine.h'],
+                test_statement='new QAudioEngine()')
 
 
 class QtSql(PyQtBindings):

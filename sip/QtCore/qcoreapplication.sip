@@ -132,6 +132,43 @@ public:
         // Make sure the QCoreApplication is destroyed.
         delete sipCpp;
 %End
+
+%If (Qt_6_5_0 -)
+%If (PyQt_Permissions)
+    Qt::PermissionStatus checkPermission(const QPermission &permission);
+%End
+%End
+%If (Qt_6_5_0 -)
+%If (PyQt_Permissions)
+    void requestPermission(const QPermission &permission, SIP_PYCALLABLE handler /TypeHint="Callable[[QPermission], None]"/) /ReleaseGIL/;
+%MethodCode
+        // Make sure the callable doesn't get garbage collected until it is invoked.
+        Py_INCREF(a1);
+        
+        Py_BEGIN_ALLOW_THREADS
+        
+        sipCpp->requestPermission(*a0, [a1](const QPermission &arg0) {
+            SIP_BLOCK_THREADS
+        
+            PyObject *res;
+        
+            res = sipCallMethod(NULL, a1, "N", new QPermission(arg0), sipType_QPermission, NULL);
+        
+            Py_DECREF(a1);
+        
+            if (!res)
+                pyqt6_err_print();
+            else
+                Py_DECREF(res);
+        
+            SIP_UNBLOCK_THREADS
+        });
+        
+        Py_END_ALLOW_THREADS
+%End
+
+%End
+%End
 };
 
 void qAddPostRoutine(SIP_PYCALLABLE);

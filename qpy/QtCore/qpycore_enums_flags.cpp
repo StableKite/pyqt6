@@ -112,8 +112,23 @@ static PyObject *decorator(PyObject *, PyObject *enum_cls)
     if (!ok)
         return 0;
 
+    // Get the pseudo fully qualified C++ name.
+    static PyObject *qualname_s = 0;
+
+    if (!objectify("__qualname__", &qualname_s))
+        return 0;
+
+    PyObject *qualname = PyObject_GetAttr(enum_cls, qualname_s);
+    if (!qualname)
+        return 0;
+
+    QByteArray cpp_qualname = qpycore_convert_ASCII(qualname);
+    Py_DECREF(qualname);
+
+    cpp_qualname.replace(QByteArray("."), QByteArray("::"));
+
     // Register the enum with our type system.
-    Chimera::registerPyEnum(enum_cls);
+    Chimera::registerPyEnum(enum_cls, cpp_qualname);
 
     // Save the parsed enum for later.
     Py_INCREF(enum_cls);

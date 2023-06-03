@@ -1,3 +1,150 @@
+2023-05-26  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, qpy/QtCore/qpycore_pyqtboundsignal.cpp:
+	Fixed a regression that broke pyqtSlot arguments that where
+	typedefs.
+	[443f350df939] [6.5.1] <6.5-maint>
+
+2023-05-25  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, project.py:
+	Ensure the permission plugins are built in.
+	[dea56beea30d] <6.5-maint>
+
+2023-05-23  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* PyQt6.msp:
+	Fixed the conversion of QPermission.
+	[ba763ef07730] <6.5-maint>
+
+2023-05-22  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* PyQt6.msp, config-tests/cfgtest_QtCore.cpp:
+	Fixed build issues with the permissions support.
+	[04c3b8f59a6c] <6.5-maint>
+
+	* NEWS, PyQt6.msp, config-tests/cfgtest_QtCore.cpp:
+	Added support for QPermission et al.
+	[f673353b1366] <6.5-maint>
+
+2023-04-24  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* extras/uic/pyuic.py:
+	pyuic6 doesn't, for consistency reasons, recurse when compiling a
+	directory.
+	[7f0f1196edd6] <6.5-maint>
+
+	* NEWS, extras/uic/compile_ui.py, extras/uic/pyuic.py:
+	compileUiDir() can now compile muliple .ui files in parallel. pyuic6
+	can now compile a directory contents.
+	[09ca845e4626] <6.5-maint>
+
+2023-04-05  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* .hgtags:
+	Added tag 6.5.0 for changeset db2b0386d4f1
+	[a2256de71810]
+
+	* NEWS, qpy/QtCore/qpycore_chimera.cpp:
+	Fixed a regression in the handling of QFlags as signal arguments.
+	[db2b0386d4f1] [6.5.0]
+
+2023-04-04  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, PyQt6.msp, project.py, pyproject.toml:
+	Added the QtSpatialAudio module.
+	[077c776029a6]
+
+2023-04-03  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, PyQt6.msp:
+	Updated for Qt v6.5.0.
+	[729660e6fc61]
+
+2023-03-31  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* PyQt6.msp:
+	Updated QtWidgets for Qt v6.5.0rc.
+	[626287dd0ed1]
+
+	* NEWS, PyQt6.msp:
+	Updated QtRemoteObjects, QtSensors, QtSql, QtSvg, QtSvgWidgets,
+	QtTest, QtTextToSpeech, QtWebChannel, QtWebSockets and QtXml for Qt
+	v6.5.0rc.
+	[161ffed7ef69]
+
+2023-03-30  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* PyQt6.msp:
+	Updated QtQml, QtQuick, QtQuick3D and QtQuickWidgets for Qt
+	v6.5.0rc.
+	[8ae811bd2c98]
+
+	* NEWS, PyQt6.msp:
+	Updated QtNetwork, QtNfc, QtOpenGL, QtOpenGLWidgets, QtPdf,
+	QtPdfWidgets, QtPoitioning and QtPrintSupport for Qt v6.5.0rc.
+	[b4b6ff5dc2d6]
+
+	* PyQt6.msp, mksccode/QtMultimedia.versions:
+	Updated the sub-class convertor code for QtMultimedia.
+	[5fbc985e8383]
+
+	* PyQt6.msp, qpy/QtCore/qpycore_qlist.sip:
+	Updated QtDBus, QtDesigner, QtGui, QtHelp, QtMultimedia and
+	QtMultimediaWidgets for Qt v6.5.0rc.
+	[a721ab062d44]
+
+2023-03-29  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, PyQt6.msp:
+	Updated QtBluetooth and QtCore for Qt v6.5.0rc.
+	[8f2a4645ecca]
+
+	* Merged the 6.4-maint branch.
+	[43d0515da1a2]
+
+2023-03-25  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* qpy/QtCore/qpycore_chimera.cpp, qpy/QtCore/qpycore_chimera.h:
+	Ensure Qt property getters and setters handle user-defined enums
+	properly. Note that Designer still requires enums to be registered.
+	[1765171f142d] <6.4-maint>
+
+	* NEWS, PyQt6.msp:
+	Improved the error checking when writing an enum property.
+	[8432953b3600] <6.4-maint>
+
+2023-03-24  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, PyQt6.msp:
+	Fixed QMetaProperty.write() to handle values of unregistered enums.
+	[2064a87dba00] <6.4-maint>
+
+2023-03-19  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* qpy/QtCore/qpycore_chimera.cpp, qpy/QtCore/qpycore_chimera.h:
+	Further improvements to reading user-defined Enum properties.
+	[be6f382a1f57] <6.4-maint>
+
+	* NEWS, qpy/QtCore/qpycore_chimera.cpp, qpy/QtCore/qpycore_chimera.h,
+	qpy/QtCore/qpycore_enums_flags.cpp, qpy/QtCore/qpycore_types.cpp,
+	test/metaobject/test_pyqtproperty.py:
+	Fixed QMetaProperty.read() for user-defined enums.
+	[9ef37f530e08] <6.4-maint>
+
+2023-03-08  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, qpy/QtCore/qpycore_pyqtboundsignal.cpp:
+	When comparing types of a decorated slot, use the name of the C++
+	type rather rather than the meta-type (which may have changed).
+	[9d77aaabfdff] <6.4-maint>
+
+2023-02-02  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* .hgtags:
+	Added tag 6.4.2 for changeset 0cf0f5deb862
+	[6008d812dbde] <6.4-maint>
+
 2023-01-28  Phil Thompson  <phil@riverbankcomputing.com>
 
 	* NEWS, extras/lupdate/lupdate.py:

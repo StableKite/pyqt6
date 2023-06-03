@@ -33,7 +33,7 @@
 
 
 // The registered user-defined Python enum types.
-QSet<PyObject *> Chimera::_py_enum_types;
+QHash<PyObject *, QByteArray> Chimera::_py_enum_types;
 
 // The cache of previously parsed argument type lists.
 QHash<QByteArray, QList<const Chimera *> > Chimera::_previously_parsed;
@@ -158,11 +158,13 @@ Chimera::~Chimera()
 }
 
 
-// Register the type of a user-defined Python enum.
-void Chimera::registerPyEnum(PyObject *enum_type)
+// Register the type and pseudo fully qualified C++ name of a user-defined
+// Python enum.
+void Chimera::registerPyEnum(PyObject *enum_type,
+        const QByteArray &cpp_qualname)
 {
     Py_INCREF(enum_type);
-    _py_enum_types.insert(enum_type);
+    _py_enum_types.insert(enum_type, cpp_qualname);
 }
 
 
@@ -522,7 +524,9 @@ bool Chimera::parse_py_type(PyTypeObject *type_obj)
     else if (_py_enum_types.contains((PyObject *)type_obj))
     {
         metatype = QMetaType(QMetaType::Int);
-        _name = sipPyTypeName(type_obj);
+
+        // Note that we use the fully qualified name.
+        _name = _py_enum_types.value((PyObject *)type_obj);
     }
     else if (type_obj == &PyList_Type)
     {
@@ -826,12 +830,11 @@ bool Chimera::fromPyObject(PyObject *py, void *cpp) const
 
     case QMetaType::Int:
         {
-            int ival = PyLong_AsLong(py);
-
             if (isEnumOrFlag())
-                *reinterpret_cast<QVariant *>(cpp) = QVariant(ival);
+                *reinterpret_cast<QVariant *>(cpp) = QVariant(
+                        get_enum_value(py));
             else
-                *reinterpret_cast<int *>(cpp) = ival;
+                *reinterpret_cast<int *>(cpp) = PyLong_AsLong(py);
 
             break;
         }
@@ -1124,10 +1127,9 @@ bool Chimera::fromPyObject(PyObject *py, QVariant *var, bool strict) const
         break;
 
     case QMetaType::Int:
-        if (_type && sipTypeIsEnum(_type))
+        if (isEnumOrFlag())
         {
-            // Note that this will be an unregistered enum.
-            tmp_storage.tmp_int = sipConvertToEnum(py, _type);
+            tmp_storage.tmp_int = get_enum_value(py);
         }
         else if (_inexact)
         {
@@ -1473,11 +1475,17 @@ PyObject *Chimera::toPyObject(const QVariant &var) const
         // A sanity check.
         if (metatype != var.metaType())
         {
-            PyErr_Format(PyExc_TypeError,
-                    "unable to convert a QVariant of type %d to a QMetaType of type %d",
-                    var.metaType().id(), metatype.id());
+            // However having an Int QVariant value and having an invalid
+            // QMetaType is the case that we are dealing with a user-defined
+            // enum and so is valid.
+            if (!(var.metaType().id() == QMetaType::Int && metatype.id() == QMetaType::UnknownType))
+            {
+                PyErr_Format(PyExc_TypeError,
+                        "unable to convert a QVariant of type %d to a QMetaType of type %d",
+                        var.metaType().id(), metatype.id());
 
-            return 0;
+                return 0;
+            }
         }
 
         // Deal with the simple case of unwrapping a Python object rather than
@@ -1557,6 +1565,11 @@ PyObject *Chimera::toPyObject(void *cpp) const
 
     switch (metatype.id())
     {
+    case QMetaType::UnknownType:
+        // In invalid QMetaType probably means a user-defined enum.
+        py = get_enum_key(*reinterpret_cast<int *>(cpp));
+        break;
+
     case QMetaType::Nullptr:
         py = Py_None;
         Py_INCREF(py);
@@ -1567,14 +1580,13 @@ PyObject *Chimera::toPyObject(void *cpp) const
         break;
 
     case QMetaType::Int:
-        if (_type && sipTypeIsEnum(_type))
-        {
-            // Note that this will be an unregistered enum.
-            py = sipConvertFromEnum(*reinterpret_cast<int *>(cpp), _type);
-        }
-        else if (_is_qflags)
+        if (_is_qflags)
         {
             py = sipConvertFromType(cpp, _type, 0);
+        }
+        else if (isEnumOrFlag())
+        {
+            py = get_enum_key(*reinterpret_cast<int *>(cpp));
         }
         else
         {
@@ -1815,6 +1827,59 @@ bool Chimera::isEnumOrFlag() const
         return true;
 
     return (_py_type ? _py_enum_types.contains((PyObject *)_py_type) : false);
+}
+
+
+// Return the value of an enum, either a wrapped one or a user-defined one.
+int Chimera::get_enum_value(PyObject *py) const
+{
+    int value = 0;
+
+    if (_type)
+    {
+        value = sipConvertToEnum(py, _type);
+    }
+    else
+    {
+        PyObject *value_obj = PyObject_GetAttrString(py, "value");
+
+        if (value_obj)
+        {
+            value = PyLong_AsLong(value_obj);
+            Py_DECREF(value_obj);
+        }
+    }
+
+    return value;
+}
+
+
+// Return the key of an enum, either a wrapped one or a user-defined one.
+PyObject *Chimera::get_enum_key(int cpp) const
+{
+    PyObject *py = NULL;
+
+    if (_type)
+    {
+        py = sipConvertFromEnum(cpp, _type);
+    }
+    else
+    {
+        QHashIterator<PyObject *, QByteArray> it(_py_enum_types);
+
+        while (it.hasNext())
+        {
+            it.next();
+
+            if (it.value() == _name)
+            {
+                py = PyObject_CallFunction(it.key(), "(i)", cpp);
+                break;
+            }
+        }
+    }
+
+    return py;
 }
 
 
