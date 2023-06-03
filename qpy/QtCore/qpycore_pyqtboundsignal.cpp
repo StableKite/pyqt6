@@ -953,8 +953,13 @@ static void slot_signature_from_decorations(QByteArray &slot_signature,
             const Chimera *sig_arg = signal->parsed_arguments.at(a);
             const Chimera *slot_arg = slot->parsed_arguments.at(a);
 
-            // We simply compare meta-types.
-            if (sig_arg->metatype != slot_arg->metatype)
+            // In the first instance we compare meta-types (which deals with
+            // typedefed types).  However this can be unreliable as the
+            // signal's type may have been registered by Qt internally (and so
+            // given a new meta-type) after the slot was defined (and has the
+            // meta-type of PyQt_PyObject) so we also compare the C++ names.
+            if (sig_arg->metatype != slot_arg->metatype &&
+                sig_arg->name() != slot_arg->name())
             {
                 slot = 0;
                 break;

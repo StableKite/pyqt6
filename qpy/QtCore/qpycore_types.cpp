@@ -234,6 +234,12 @@ const qpycore_metaobject *qpycore_get_dynamic_metaobject(sipWrapperType *wt)
             prop_type = pp->pyqtprop_parsed_type->name();
         }
 
+        // Note that there is an addProperty() overload that also takes a
+        // QMetaType argument (rather than call QMetaType::fromType() as this
+        // overload does) so we could pass the QMetaType that the parser
+        // created.  However this breaks properties that are application Python
+        // enums which have a parsed QMetaType that describes an int whereas Qt
+        // seems to need an invalid QMetaType for these to work.
         QMetaPropertyBuilder prop_builder = builder.addProperty(
                 QByteArray(prop_name), prop_type, notifier_id);
 
