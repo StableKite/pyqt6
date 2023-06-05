@@ -1,0 +1,22 @@
+From: Phil Thompson <phil@riverbankcomputing.com>
+Date: Mon, 5 Jun 2023 10:25:54 +0300
+Subject: Fixed building against Qt older than v6.5.
+
+Origin: upstream, changeset 4860e1d699d4
+---
+ config-tests/cfgtest_QtCore.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/config-tests/cfgtest_QtCore.cpp b/config-tests/cfgtest_QtCore.cpp
+index 2588470..3417d9f 100644
+--- a/config-tests/cfgtest_QtCore.cpp
++++ b/config-tests/cfgtest_QtCore.cpp
+@@ -31,7 +31,7 @@ int main(int argc, char **argv)
+     if (sizeof (qreal) != sizeof (double))
+         out << "PyQt_qreal_double\n";
+ 
+-#if !QT_CONFIG(permissions)
++#if QT_VERSION < 0x060500 || !QT_CONFIG(permissions)
+     out << "PyQt_Permissions";
+ #endif
+ 
