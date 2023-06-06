@@ -3,6 +3,7 @@ pyqt6 (6.5.1-1) UNRELEASED; urgency=medium
   * New upstream release.
   * Bump python3-pyqtbuild required version to 1.15.
   * Add upstream patch to fix building against Qt 6.4.
+  * Install PyQt6.QtSpatialAudio module in python3-pyqt6.qtmultimedia.
 
  -- Dmitry Shachnev <mitya57@debian.org>  Sat, 03 Jun 2023 14:25:27 +0300
 

@@ -29,7 +29,7 @@ Test-Command: debian/tests/test_import.sh PyQt6.QtHelp
 Depends: python3-all-dbg, python3-pyqt6.qthelp
 Restrictions: superficial
 
-Test-Command: debian/tests/test_import.sh PyQt6.QtMultimedia PyQt6.QtMultimediaWidgets
+Test-Command: debian/tests/test_import.sh PyQt6.QtMultimedia PyQt6.QtMultimediaWidgets PyQt6.QtSpatialAudio
 Depends: python3-all-dbg, python3-pyqt6.qtmultimedia
 Restrictions: superficial
 

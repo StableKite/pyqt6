@@ -138,8 +138,8 @@ Depends: python3-pyqt6 (= ${binary:Version}),
 Description: Python bindings for Qt 6 Multimedia module
  Qt Multimedia API provides a rich set of classes to handle multimedia content.
  .
- This package contains the QtMultimedia and QtMultimediaWidgets modules of
- PyQt6.
+ This package contains the QtMultimedia, QtMultimediaWidgets and QtSpatialAudio
+ modules of PyQt6.
 
 Package: python3-pyqt6.qtnfc
 Architecture: linux-any
