@@ -1,3 +1,95 @@
+2023-07-22  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, extras/lupdate/python_source.py:
+	Fixed an exception in pylupdate.
+	[38c17a29338d] [6.5.2] <6.5-maint>
+
+2023-07-21  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, qpy/QtCore/qstring.sip:
+	Fixed a regression in using None as a QString.
+	[6089948fc034] <6.5-maint>
+
+2023-07-15  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, PyQt6.msp:
+	Fixed the type hints for all ellipsis arguments.
+	[dc5cc8a6f07d] <6.5-maint>
+
+2023-07-14  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* qpy/QtCore/qstring.sip:
+	Further fix fro QString's type hint.
+	[5c0f11c46cb1] <6.5-maint>
+
+	* NEWS, qpy/QtCore/qstring.sip:
+	Fixed the type hint for QString.
+	[2857fd3946c7] <6.5-maint>
+
+2023-07-12  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* PyQt6.msp:
+	Another type hint fix for QObject.findChild().
+	[dd57f73873eb] <6.5-maint>
+
+	* PyQt6.msp:
+	Fixed the type hints fro QObject.findChild() and
+	QObject.findChildren().
+	[b088d75e77d6] <6.5-maint>
+
+2023-07-09  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, PyQt6.msp:
+	Fixed PYQT_SLOT for the QtCore module.
+	[f5cb0b97d94e] <6.5-maint>
+
+2023-07-05  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* extras/lupdate/python_source.py:
+	pylupdate will now look for tr() and translate() as a function as
+	well as a method.
+	[a0230e25929a] <6.5-maint>
+
+	* PyQt6.msp:
+	Fixed the type hint for pyqtSlot().
+	[b8e51995b3c5] <6.5-maint>
+
+	* PyQt6.msp:
+	Fixed the type hint for PYQT_SLOT.
+	[8c73a0c3dd1f] <6.5-maint>
+
+	* NEWS, PyQt6.msp, qpy/QtCore/qbytearrayview.sip:
+	Fixed the type hints for QByteArray and QByteArrayView.
+	[f631f8e6cc3e] <6.5-maint>
+
+2023-06-08  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, PyQt6.msp, project.py:
+	Added the missing QEvent.Type.EnterEditFocus and
+	QEvent.Type.LeaveEditFocus enum members.
+	[a8d9583f33d9] <6.5-maint>
+
+	* NEWS, PyQt6.msp:
+	Added the missing QEvent.Type.NativeGesture and QEvent.Type.Quit
+	enum members.
+	[ebd0738bb268] <6.5-maint>
+
+2023-06-04  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS:
+	Updated the NEWS file.
+	[6590e301a19c] <6.5-maint>
+
+	* config-tests/cfgtest_QtCore.cpp:
+	Fixed building against Qt older than v6.5.
+	[4860e1d699d4] <6.5-maint>
+
+2023-06-02  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* .hgtags:
+	Added tag 6.5.1 for changeset 443f350df939
+	[9d6e72a95cae] <6.5-maint>
+
 2023-05-26  Phil Thompson  <phil@riverbankcomputing.com>
 
 	* NEWS, qpy/QtCore/qpycore_pyqtboundsignal.cpp:

@@ -31,7 +31,7 @@ int main(int argc, char **argv)
     if (sizeof (qreal) != sizeof (double))
         out << "PyQt_qreal_double\n";
 
-#if !QT_CONFIG(permissions)
+#if QT_VERSION < 0x060500 || !QT_CONFIG(permissions)
     out << "PyQt_Permissions";
 #endif
 

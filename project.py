@@ -505,7 +505,8 @@ class QtCore(PyQtBindings):
     def __init__(self, project):
         """ Initialise the bindings. """
 
-        super().__init__(project, 'QtCore', qmake_QT=['-gui'])
+        super().__init__(project, 'QtCore', qmake_QT=['-gui'],
+                define_macros=['QT_KEYPAD_NAVIGATION'])
 
     def handle_test_output(self, test_output):
         """ Handle the output from the external test program and return True if
