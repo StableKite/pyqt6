@@ -1,3 +1,8 @@
+v6.5.2 22nd July 2023
+  - Added the missing NativeGesture, Quit, EnterEditFocus and LeaveEditFocus
+    members of QEventType.
+  - Bug fixes.
+
 v6.5.1 26th May 2023
   - Added support for QPermission and related classes and methods.
   - Added the max_workers argument to uic.compileUiDir() to specifiy the

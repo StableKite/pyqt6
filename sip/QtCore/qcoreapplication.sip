@@ -353,7 +353,7 @@ import datetime
 
 # Convenient type aliases.
 PYQT_SIGNAL = typing.Union[QtCore.pyqtSignal, QtCore.pyqtBoundSignal]
-PYQT_SLOT = typing.Union[typing.Callable[..., None], QtCore.pyqtBoundSignal]
+PYQT_SLOT = typing.Union[typing.Callable[..., Any], QtCore.pyqtBoundSignal]
 %End
 
 %TypeHintCode
@@ -393,7 +393,15 @@ class pyqtBoundSignal:
     def emit(self, *args: typing.Any) -> None: ...
 
 
+FuncT = typing.TypeVar('FuncT', bound=typing.Callable)
+def pyqtSlot(*types, name: typing.Optional[str] = ..., result: typing.Optional[str] = ...) -> typing.Callable[[FuncT], FuncT]: ...
+
+
+# For QObject.findChild() and QObject.findChildren().
+QObjectT = typing.TypeVar('QObjectT', bound=QObject)
+
+
 # Convenient type aliases.
 PYQT_SIGNAL = typing.Union[pyqtSignal, pyqtBoundSignal]
-PYQT_SLOT = typing.Union[typing.Callable[..., None], pyqtBoundSignal]
+PYQT_SLOT = typing.Union[typing.Callable[..., Any], pyqtBoundSignal]
 %End

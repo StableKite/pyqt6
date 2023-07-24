@@ -24,7 +24,7 @@
 #include <qbytearray.h>
 %End
 
-class QByteArray
+class QByteArray /TypeHintIn="Union[QByteArray, bytes, bytearray, memoryview]"/
 {
 %TypeHeaderCode
 #include <qbytearray.h>
