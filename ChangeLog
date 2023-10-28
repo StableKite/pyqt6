@@ -1,4 +1,61 @@
+2023-10-10  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, qpy/QtCore/qpycore_types.cpp:
+	Removed a compiler warning message.
+	[8b5b0c663207] [6.5.3] <6.5-maint>
+
+2023-10-08  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* project.py:
+	Removed a debugging flag.
+	[686cadf4b1bc] <6.5-maint>
+
+	* PyQt6.msp, project.py:
+	Changed the default values of the findData() and findText() methods
+	of QComboBox so that they make sensible docstrings.
+	[36c3449ca18e] <6.5-maint>
+
+	* NEWS, project.py, qpy/QtCore/qpycore_types.cpp:
+	Properly fix the use of PyType_GetDict(). ABI v13.6 is now needed.
+	[a34537999cce] <6.5-maint>
+
+2023-10-07  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, qpy/QtCore/qpycore_types.cpp:
+	Fixed the memory leak related to sipPyTypeDict() and Python v3.12.
+	[f862a6f9f3bb] <6.5-maint>
+
+2023-09-10  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, PyQt6.msp:
+	Fixed a v6.5 regression where /PyInt/ was missng from qint8 and
+	quint8.
+	[9803964f9421] <6.5-maint>
+
+2023-09-01  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, qpy/QtDBus/qpydbus_post_init.cpp:
+	Fixed the convertion of QDBusVariant (and others) to QVariant.
+	[ae560099c875] <6.5-maint>
+
+2023-08-29  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, PyQt6.msp:
+	Added the /__len__/ annotation to QModelRoleDataSpan.length().
+	[1fc886013a86] <6.5-maint>
+
+2023-08-27  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, PyQt6.msp, qpy/QtCore/qpycore_qlist.sip:
+	Added the missing QAbstractItemModel.multiData() method and
+	QModelRoleDataSpan class.
+	[f0ffbea6c75e] <6.5-maint>
+
 2023-07-22  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* .hgtags:
+	Added tag 6.5.2 for changeset 38c17a29338d
+	[156ab803c346] <6.5-maint>
 
 	* NEWS, extras/lupdate/python_source.py:
 	Fixed an exception in pylupdate.

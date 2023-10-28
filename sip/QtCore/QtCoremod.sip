@@ -75,8 +75,8 @@ int PYQT_VERSION;
 const char *PYQT_VERSION_STR;
 
 %ModuleCode
-static int PYQT_VERSION = 0x060502;
-static const char *PYQT_VERSION_STR = "6.5.2";
+static int PYQT_VERSION = 0x060503;
+static const char *PYQT_VERSION_STR = "6.5.3";
 %End
 
 %Include qglobal.sip
