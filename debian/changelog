@@ -1,6 +1,7 @@
 pyqt6 (6.6.0-1) UNRELEASED; urgency=medium
 
   * New upstream release.
+  * Bump python3-pyqt6.sip required version to 13.6.
 
  -- Dmitry Shachnev <mitya57@debian.org>  Sat, 11 Nov 2023 18:52:21 +0300
 
