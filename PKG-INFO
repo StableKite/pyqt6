@@ -1,13 +1,13 @@
 Metadata-Version: 2.1
 Name: PyQt6
-Version: 6.5.2
+Version: 6.6.0
 Requires-Python: >=3.6.1
 Summary: Python bindings for the Qt cross platform application toolkit
 Home-Page: https://www.riverbankcomputing.com/software/pyqt/
 Author: Riverbank Computing Limited
 Author-Email: info@riverbankcomputing.com
 License: GPL v3
-Requires-Dist: PyQt6-sip (>=13.4, <14)
+Requires-Dist: PyQt6-sip (>=13.6, <14)
 
 PyQt6 - Comprehensive Python Bindings for Qt v6
 ===============================================

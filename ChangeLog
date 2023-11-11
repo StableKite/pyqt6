@@ -1,4 +1,110 @@
+2023-10-24  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* PyQt6.msp:
+	Fix the handling og QSqlResult::boundValues() when protected is not
+	public.
+	[7bd79ffe5e44] [6.6.0]
+
+	* NEWS, PyQt6.msp:
+	The new UNIX process parameters handlign aren't available on
+	Windows.
+	[18d970a9100e]
+
+2023-10-22  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* qpy/QtCore/qpycore_qmap.sip:
+	Fixed the type hints for QMultiMap.
+	[9b2e6df9277f]
+
+	* PyQt6.msp, mksccode/QtMultimedia.versions, mksccode/QtPdf.versions,
+	mksccode/QtPdfWidgets.versions,
+	qpy/QtBluetooth/qpybluetooth_quint128.sip:
+	Completed the updates for Qt v6.6.
+	[b0ef6ec6e196]
+
+	* PyQt6.msp:
+	Updated QtBluetooth and QtSql for Qt v6.6.
+	[cad379a69f92]
+
+	* PyQt6.msp:
+	Updated QtNetwork and QtWidgets for Qt v6.6.
+	[b29ec1fc1b40]
+
+	* PyQt6.msp:
+	Updated QtGui for Qt v6.6.
+	[f3e4b6a773ae]
+
+	* NEWS, PyQt6.msp:
+	Updated QtCore for Qt v6.6.
+	[bbfe66e440ed]
+
+2023-10-14  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* Merged the 6.5-maint branch.
+	[780f6d92465c]
+
+2023-10-10  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* .hgtags:
+	Added tag 6.5.3 for changeset 8b5b0c663207
+	[797b2a52c678] <6.5-maint>
+
+	* NEWS, qpy/QtCore/qpycore_types.cpp:
+	Removed a compiler warning message.
+	[8b5b0c663207] [6.5.3] <6.5-maint>
+
+2023-10-08  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* project.py:
+	Removed a debugging flag.
+	[686cadf4b1bc] <6.5-maint>
+
+	* PyQt6.msp, project.py:
+	Changed the default values of the findData() and findText() methods
+	of QComboBox so that they make sensible docstrings.
+	[36c3449ca18e] <6.5-maint>
+
+	* NEWS, project.py, qpy/QtCore/qpycore_types.cpp:
+	Properly fix the use of PyType_GetDict(). ABI v13.6 is now needed.
+	[a34537999cce] <6.5-maint>
+
+2023-10-07  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, qpy/QtCore/qpycore_types.cpp:
+	Fixed the memory leak related to sipPyTypeDict() and Python v3.12.
+	[f862a6f9f3bb] <6.5-maint>
+
+2023-09-10  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, PyQt6.msp:
+	Fixed a v6.5 regression where /PyInt/ was missng from qint8 and
+	quint8.
+	[9803964f9421] <6.5-maint>
+
+2023-09-01  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, qpy/QtDBus/qpydbus_post_init.cpp:
+	Fixed the convertion of QDBusVariant (and others) to QVariant.
+	[ae560099c875] <6.5-maint>
+
+2023-08-29  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, PyQt6.msp:
+	Added the /__len__/ annotation to QModelRoleDataSpan.length().
+	[1fc886013a86] <6.5-maint>
+
+2023-08-27  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, PyQt6.msp, qpy/QtCore/qpycore_qlist.sip:
+	Added the missing QAbstractItemModel.multiData() method and
+	QModelRoleDataSpan class.
+	[f0ffbea6c75e] <6.5-maint>
+
 2023-07-22  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* .hgtags:
+	Added tag 6.5.2 for changeset 38c17a29338d
+	[156ab803c346] <6.5-maint>
 
 	* NEWS, extras/lupdate/python_source.py:
 	Fixed an exception in pylupdate.
@@ -2466,8 +2572,8 @@
 	[c6125be2d315]
 
 	* PyQt6.msp, projects/PyQt6/config-tests/cfgtest_QtCore.cpp,
-	projects/PyQt6/config-tests/cfgtest_QtNetwork.cpp, projects/PyQt6
-	/config-tests/cfgtest_QtPrintSupport.cpp:
+	projects/PyQt6/config-tests/cfgtest_QtNetwork.cpp,
+	projects/PyQt6/config-tests/cfgtest_QtPrintSupport.cpp:
 	Updated the feature configuration tests.
 	[07499ea2808f]
 
@@ -3045,12 +3151,12 @@
 	extras/pyuic/uic/uiparser.py, extras/pyuic/uic/widget-
 	plugins/qaxcontainer.py, extras/pyuic/uic/widget-
 	plugins/qscintilla.py, extras/pyuic/uic/widget-plugins/qtcharts.py,
-	extras/pyuic/uic/widget-plugins/qtprintsupport.py, extras/pyuic/uic
-	/widget-plugins/qtquickwidgets.py, extras/pyuic/uic/widget-
-	plugins/qtwebenginewidgets.py, extras/uic/Compiler/__init__.py,
-	extras/uic/Compiler/as_string.py, extras/uic/Compiler/compiler.py,
-	extras/uic/Compiler/indenter.py, extras/uic/Compiler/misc.py,
-	extras/uic/Compiler/proxy_metaclass.py,
+	extras/pyuic/uic/widget-plugins/qtprintsupport.py,
+	extras/pyuic/uic/widget-plugins/qtquickwidgets.py,
+	extras/pyuic/uic/widget-plugins/qtwebenginewidgets.py,
+	extras/uic/Compiler/__init__.py, extras/uic/Compiler/as_string.py,
+	extras/uic/Compiler/compiler.py, extras/uic/Compiler/indenter.py,
+	extras/uic/Compiler/misc.py, extras/uic/Compiler/proxy_metaclass.py,
 	extras/uic/Compiler/qobjectcreator.py,
 	extras/uic/Compiler/qtproxies.py, extras/uic/Loader/__init__.py,
 	extras/uic/Loader/loader.py, extras/uic/Loader/qobjectcreator.py,
@@ -3387,13 +3493,13 @@
 	extras/pyuic/uic/Loader/qobjectcreator.py,
 	extras/pyuic/uic/__init__.py, extras/pyuic/uic/driver.py,
 	extras/pyuic/uic/pyuic.py, extras/pyuic/uic/uiparser.py,
-	extras/pyuic/uic/widget-plugins/qaxcontainer.py, extras/pyuic/uic
-	/widget-plugins/qscintilla.py, extras/pyuic/uic/widget-
-	plugins/qtcharts.py, extras/pyuic/uic/widget-
-	plugins/qtprintsupport.py, extras/pyuic/uic/widget-
-	plugins/qtquickwidgets.py, extras/pyuic/uic/widget-
-	plugins/qtwebenginewidgets.py, extras/pyuic/uic/widget-
-	plugins/qtwebkit.py:
+	extras/pyuic/uic/widget-plugins/qaxcontainer.py,
+	extras/pyuic/uic/widget-plugins/qscintilla.py,
+	extras/pyuic/uic/widget-plugins/qtcharts.py,
+	extras/pyuic/uic/widget-plugins/qtprintsupport.py,
+	extras/pyuic/uic/widget-plugins/qtquickwidgets.py,
+	extras/pyuic/uic/widget-plugins/qtwebenginewidgets.py,
+	extras/pyuic/uic/widget-plugins/qtwebkit.py:
 	Updated pyuic for PyQt6.
 	[7ce320fb7235]
 
@@ -3575,8 +3681,8 @@
 
 2020-09-08  Phil Thompson  <phil@riverbankcomputing.com>
 
-	* extras/dbus/dbus.cpp, extras/dbus/helper.h, extras/designer/designer
-	.pro-in, extras/designer/pluginloader.cpp,
+	* extras/dbus/dbus.cpp, extras/dbus/helper.h,
+	extras/designer/designer.pro-in, extras/designer/pluginloader.cpp,
 	extras/designer/pluginloader.h, extras/pylupdate/pylupdate_main.py,
 	extras/pylupdate/pylupdatemod.sip,
 	extras/pyuic/uic/Compiler/__init__.py,
@@ -3606,11 +3712,12 @@
 	extras/pyuic/uic/uiparser.py, extras/pyuic/uic/widget-
 	plugins/qaxcontainer.py, extras/pyuic/uic/widget-
 	plugins/qscintilla.py, extras/pyuic/uic/widget-plugins/qtcharts.py,
-	extras/pyuic/uic/widget-plugins/qtprintsupport.py, extras/pyuic/uic
-	/widget-plugins/qtquickwidgets.py, extras/pyuic/uic/widget-
-	plugins/qtwebenginewidgets.py, extras/pyuic/uic/widget-
-	plugins/qtwebkit.py, extras/qmlscene/pluginloader.cpp,
-	extras/qmlscene/pluginloader.h, extras/qmlscene/qmlscene.pro-in:
+	extras/pyuic/uic/widget-plugins/qtprintsupport.py,
+	extras/pyuic/uic/widget-plugins/qtquickwidgets.py,
+	extras/pyuic/uic/widget-plugins/qtwebenginewidgets.py,
+	extras/pyuic/uic/widget-plugins/qtwebkit.py,
+	extras/qmlscene/pluginloader.cpp, extras/qmlscene/pluginloader.h,
+	extras/qmlscene/qmlscene.pro-in:
 	Added the extra stuff from PyQt5.
 	[46613e339d46]
 
@@ -3656,13 +3763,14 @@
 	Added some tools from PyQt5.
 	[0736add6b699]
 
-	* projects/PyQt6/README, projects/PyQt6/__init__.py, projects/PyQt6
-	/config-tests/cfgtest_QtCore.cpp, projects/PyQt6/config-
-	tests/cfgtest_QtGui.cpp, projects/PyQt6/config-
-	tests/cfgtest_QtNetwork.cpp, projects/PyQt6/config-
-	tests/cfgtest_QtPrintSupport.cpp, projects/PyQt6/project.py,
-	projects/PyQt6/pyproject.toml, projects/PyQt6/pyqt-commercial.sip,
-	projects/PyQt6/pyqt-gpl.sip, projects/PyQt6/pyqt-internal.sip:
+	* projects/PyQt6/README, projects/PyQt6/__init__.py,
+	projects/PyQt6/config-tests/cfgtest_QtCore.cpp,
+	projects/PyQt6/config-tests/cfgtest_QtGui.cpp,
+	projects/PyQt6/config-tests/cfgtest_QtNetwork.cpp,
+	projects/PyQt6/config-tests/cfgtest_QtPrintSupport.cpp,
+	projects/PyQt6/project.py, projects/PyQt6/pyproject.toml,
+	projects/PyQt6/pyqt-commercial.sip, projects/PyQt6/pyqt-gpl.sip,
+	projects/PyQt6/pyqt-internal.sip:
 	Added the initial build system for the PyQt6 project.
 	[ea310826f59a]
 

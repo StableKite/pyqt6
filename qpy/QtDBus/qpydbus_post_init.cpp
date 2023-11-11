@@ -20,6 +20,10 @@
 
 #include <Python.h>
 
+#include <QDBusObjectPath>
+#include <QDBusSignature>
+#include <QDBusVariant>
+
 #include "qpydbus_api.h"
 #include "qpydbus_chimera_helpers.h"
 
@@ -29,6 +33,11 @@
 // Perform any required initialisation.
 void qpydbus_post_init()
 {
+    // Make sure these are registered.
+    qMetaTypeId<QDBusObjectPath>();
+    qMetaTypeId<QDBusSignature>();
+    qMetaTypeId<QDBusVariant>();
+
     // Get the Chimera helper registration function.
     void (*register_from_qvariant_convertor)(FromQVariantConvertorFn);
 
