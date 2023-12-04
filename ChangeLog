@@ -1,3 +1,15 @@
+2023-11-18  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS, PyQt6.msp:
+	Fix QWidgetAction ownership annotations.
+	[68ad2464c85f] [6.6.1] <6.6-maint>
+
+2023-10-25  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* .hgtags:
+	Added tag 6.6.0 for changeset 7bd79ffe5e44
+	[cb763c7290c3]
+
 2023-10-24  Phil Thompson  <phil@riverbankcomputing.com>
 
 	* PyQt6.msp:
