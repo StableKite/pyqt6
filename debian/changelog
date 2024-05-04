@@ -3,6 +3,7 @@ pyqt6 (6.7.0-1) UNRELEASED; urgency=medium
   * New upstream release.
   * Bump required SIP version to 6.8.
   * Update debian/copyright.
+  * Remove libqt6opengl6-dev build-dependency (merged into qt6-base-dev).
 
  -- Dmitry Shachnev <mitya57@debian.org>  Sat, 04 May 2024 18:46:39 +0300
 
