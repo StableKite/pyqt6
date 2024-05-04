@@ -2,7 +2,7 @@
 //
 // This file is part of the QtGui Python extension module.
 //
-// Copyright (c) 2023 Riverbank Computing Limited <info@riverbankcomputing.com>
+// Copyright (c) 2024 Riverbank Computing Limited <info@riverbankcomputing.com>
 // 
 // This file is part of PyQt6.
 // 
@@ -304,7 +304,7 @@ public:
 QDataStream &operator<<(QDataStream &, const QTextFormat &) /ReleaseGIL/;
 QDataStream &operator>>(QDataStream &, QTextFormat & /Constrained/) /ReleaseGIL/;
 
-class QTextCharFormat : QTextFormat
+class QTextCharFormat : public QTextFormat
 {
 %TypeHeaderCode
 #include <qtextformat.h>
@@ -412,7 +412,7 @@ public:
     qreal baselineOffset() const;
 };
 
-class QTextBlockFormat : QTextFormat
+class QTextBlockFormat : public QTextFormat
 {
 %TypeHeaderCode
 #include <qtextformat.h>
@@ -469,7 +469,7 @@ public:
     QTextBlockFormat::MarkerType marker() const;
 };
 
-class QTextListFormat : QTextFormat
+class QTextListFormat : public QTextFormat
 {
 %TypeHeaderCode
 #include <qtextformat.h>
@@ -507,7 +507,7 @@ public:
 %End
 };
 
-class QTextImageFormat : QTextCharFormat
+class QTextImageFormat : public QTextCharFormat
 {
 %TypeHeaderCode
 #include <qtextformat.h>
@@ -526,7 +526,7 @@ public:
     void setQuality(int quality = 100);
 };
 
-class QTextFrameFormat : QTextFormat
+class QTextFrameFormat : public QTextFormat
 {
 %TypeHeaderCode
 #include <qtextformat.h>
@@ -589,7 +589,7 @@ public:
     void setRightMargin(qreal amargin);
 };
 
-class QTextTableFormat : QTextFrameFormat
+class QTextTableFormat : public QTextFrameFormat
 {
 %TypeHeaderCode
 #include <qtextformat.h>
@@ -615,7 +615,7 @@ public:
     bool borderCollapse() const;
 };
 
-class QTextTableCellFormat : QTextCharFormat
+class QTextTableCellFormat : public QTextCharFormat
 {
 %TypeHeaderCode
 #include <qtextformat.h>
