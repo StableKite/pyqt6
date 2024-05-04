@@ -1,5 +1,4 @@
-PyQt6 - Comprehensive Python Bindings for Qt v6
-===============================================
+# PyQt6 - Comprehensive Python Bindings for Qt v6
 
 Qt is set of cross-platform C++ libraries that implement high-level APIs for
 accessing many aspects of modern desktop and mobile systems.  These include
@@ -15,8 +14,7 @@ PyQt6 may also be embedded in C++ based applications to allow users of those
 applications to configure or enhance the functionality of those applications.
 
 
-Author
-------
+## Author
 
 PyQt6 is copyright (c) Riverbank Computing Limited.  Its homepage is
 https://www.riverbankcomputing.com/software/pyqt/.
@@ -25,29 +23,26 @@ Support may be obtained from the PyQt mailing list at
 https://www.riverbankcomputing.com/mailman/listinfo/pyqt/.
 
 
-License
--------
+## License
 
 PyQt6 is released under the GPL v3 license and under a commercial license that
 allows for the development of proprietary applications.
 
 
-Documentation
--------------
+## Documentation
 
 The documentation for the latest release can be found
-`here <https://www.riverbankcomputing.com/static/Docs/PyQt6/>`__.
+[here](https://www.riverbankcomputing.com/static/Docs/PyQt6/).
 
 
-Installation
-------------
+## Installation
 
-The GPL version of PyQt6 can be installed from PyPI::
+The GPL version of PyQt6 can be installed from PyPI:
 
     pip install PyQt6
 
-``pip`` will also build and install the bindings from the sdist package but
-Qt's ``qmake`` tool must be on ``PATH``.
+`pip` will also build and install the bindings from the sdist package but Qt's
+`qmake` tool must be on `PATH`.
 
-The ``sip-install`` tool will also install the bindings from the sdist package
+The `sip-install` tool will also install the bindings from the sdist package
 but will allow you to configure many aspects of the installation.

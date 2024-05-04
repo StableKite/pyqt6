@@ -2,7 +2,7 @@
 //
 // This file is part of the QtCore Python extension module.
 //
-// Copyright (c) 2023 Riverbank Computing Limited <info@riverbankcomputing.com>
+// Copyright (c) 2024 Riverbank Computing Limited <info@riverbankcomputing.com>
 // 
 // This file is part of PyQt6.
 // 
@@ -99,7 +99,7 @@ public:
 
 typedef QList<QModelIndex> QModelIndexList;
 
-class QAbstractItemModel : QObject
+class QAbstractItemModel : public QObject
 {
 %TypeHeaderCode
 #include <qabstractitemmodel.h>
@@ -262,7 +262,7 @@ public:
     virtual void multiData(const QModelIndex &index, QModelRoleDataSpan roleDataSpan) const;
 };
 
-class QAbstractTableModel : QAbstractItemModel
+class QAbstractTableModel : public QAbstractItemModel
 {
 %TypeHeaderCode
 #include <qabstractitemmodel.h>
@@ -282,7 +282,7 @@ private:
     virtual QModelIndex parent(const QModelIndex &child) const;
 };
 
-class QAbstractListModel : QAbstractItemModel
+class QAbstractListModel : public QAbstractItemModel
 {
 %TypeHeaderCode
 #include <qabstractitemmodel.h>

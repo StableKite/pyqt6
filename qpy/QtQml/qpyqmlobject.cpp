@@ -1,6 +1,6 @@
 // This is the implementation of the QPyQmlObject classes.
 //
-// Copyright (c) 2023 Riverbank Computing Limited <info@riverbankcomputing.com>
+// Copyright (c) 2024 Riverbank Computing Limited <info@riverbankcomputing.com>
 // 
 // This file is part of PyQt6.
 // 
@@ -51,7 +51,8 @@ QPyQmlObjectProxy::~QPyQmlObjectProxy()
     SIP_UNBLOCK_THREADS
 
     if (!proxied.isNull())
-        delete proxied.data();
+        // Deleting it now can cause a crash.
+        proxied.data()->deleteLater();
 }
 
 
@@ -146,6 +147,12 @@ void QPyQmlObjectProxy::createPyObject(QObject *parent)
 
     if (py_proxied)
     {
+        // If there is no parent (which seems always to be the case) then
+        // things seem to work better if we handle the destruction of the
+        // Python and C++ objects separately.
+        if (!parent)
+            sipTransferTo(py_proxied, NULL);
+
         proxied = reinterpret_cast<QObject *>(
                 sipGetAddress((sipSimpleWrapper *)py_proxied));
 
