@@ -235,7 +235,7 @@ const qpycore_metaobject *qpycore_get_dynamic_metaobject(sipWrapperType *wt)
         }
 
         // Note that there is an addProperty() overload that also takes a
-        // QMetaType argument (rather than call QMetaType::fromType() as this
+        // QMetaType argument (rather than call QMetaType::fromName() as this
         // overload does) so we could pass the QMetaType that the parser
         // created.  However this breaks properties that are application Python
         // enums which have a parsed QMetaType that describes an int whereas Qt

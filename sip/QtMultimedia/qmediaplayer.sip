@@ -97,8 +97,8 @@ public slots:
     void stop();
     void setPosition(qint64 position);
     void setPlaybackRate(qreal rate);
-    void setSource(const QUrl &source);
-    void setSourceDevice(QIODevice *device, const QUrl &sourceUrl = QUrl());
+    void setSource(const QUrl &source) /ReleaseGIL/;
+    void setSourceDevice(QIODevice *device, const QUrl &sourceUrl = QUrl()) /ReleaseGIL/;
 
 signals:
     void sourceChanged(const QUrl &media);
