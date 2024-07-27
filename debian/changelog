@@ -1,3 +1,9 @@
+pyqt6 (6.7.1-1) UNRELEASED; urgency=medium
+
+  * New upstream release.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Sat, 27 Jul 2024 21:34:46 +0300
+
 pyqt6 (6.7.0-1) unstable; urgency=medium
 
   * New upstream release.
