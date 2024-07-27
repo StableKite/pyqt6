@@ -73,7 +73,7 @@ Description: D-Bus Qt main loop support for Python
 Package: python3-pyqt6
 Architecture: any
 Depends: python3-pyqt6.sip (<< 14),
-         python3-pyqt6.sip (>= 13.6),
+         python3-pyqt6.sip (>= 13.8),
          ${misc:Depends},
          ${python3:Depends},
          ${shlibs:Depends}
