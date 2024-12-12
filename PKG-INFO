@@ -1,7 +1,7 @@
 Metadata-Version: 2.1
 Name: PyQt6
-Version: 6.7.1
-Requires-Python: >=3.8
+Version: 6.8.0
+Requires-Python: >=3.9
 Summary: Python bindings for the Qt cross platform application toolkit
 Description-Content-Type: text/markdown
 Project-Url: homepage, https://www.riverbankcomputing.com/software/pyqt/
