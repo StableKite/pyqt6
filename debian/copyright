@@ -3,7 +3,7 @@ Upstream-Contact: pyqt@riverbankcomputing.com
 Upstream-Name: PyQt6
 
 Files: *
-Copyright: 2024, Riverbank Computing Limited
+Copyright: 2025, Riverbank Computing Limited
 License: GPL-3
 
 Files: dbus/*
@@ -60,7 +60,7 @@ Copyright: 2006,      Thorsten Marek
 License: GPL-3 or BSD-3-clause
 
 Files: debian/*
-Copyright: 2022-2024, Dmitry Shachnev <mitya57@debian.org>
+Copyright: 2022-2025, Dmitry Shachnev <mitya57@debian.org>
 License: GPL-3
 
 License: GPL-2
