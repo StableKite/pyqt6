@@ -3,6 +3,7 @@ pyqt6 (6.8.1-1) UNRELEASED; urgency=medium
   * New upstream release.
   * Update debian/watch to support lowercase (PEP 625) tarball names.
   * Bump copyright years.
+  * Add python3-pyqt6.qtstatemachine package.
 
  -- Dmitry Shachnev <mitya57@debian.org>  Thu, 06 Feb 2025 21:35:07 +0300
 
