@@ -45,7 +45,11 @@ QMetaType qpycore_register_enum_metatype(const QByteArray &fq_cpp_name,
     {
         mti->alignment = alignof(unsigned);
         mti->size = sizeof(unsigned);
+#if QT_VERSION >= 0x060900
+        mti->flags = QtPrivate::QMetaTypeForType<unsigned>::flags() | QMetaType::IsEnumeration | QMetaType::IsUnsignedEnumeration;
+#else
         mti->flags = QtPrivate::QMetaTypeForType<unsigned>::Flags | QMetaType::IsEnumeration | QMetaType::IsUnsignedEnumeration;
+#endif
         mti->defaultCtr = QtPrivate::QMetaTypeForType<unsigned>::getDefaultCtr();
         mti->copyCtr = QtPrivate::QMetaTypeForType<unsigned>::getCopyCtr();
         mti->moveCtr = QtPrivate::QMetaTypeForType<unsigned>::getMoveCtr();
@@ -61,7 +65,11 @@ QMetaType qpycore_register_enum_metatype(const QByteArray &fq_cpp_name,
     {
         mti->alignment = alignof(int);
         mti->size = sizeof(int);
+#if QT_VERSION >= 0x060900
+        mti->flags = QtPrivate::QMetaTypeForType<int>::flags() | QMetaType::IsEnumeration;
+#else
         mti->flags = QtPrivate::QMetaTypeForType<int>::Flags | QMetaType::IsEnumeration;
+#endif
         mti->defaultCtr = QtPrivate::QMetaTypeForType<int>::getDefaultCtr();
         mti->copyCtr = QtPrivate::QMetaTypeForType<int>::getCopyCtr();
         mti->moveCtr = QtPrivate::QMetaTypeForType<int>::getMoveCtr();
