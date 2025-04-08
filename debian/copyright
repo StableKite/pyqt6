@@ -56,7 +56,7 @@ Files: uic/Compiler/compiler.py
        uic/load_ui.py
        uic/uiparser.py
 Copyright: 2006,      Thorsten Marek
-           2020-2023, Riverbank Computing Limited
+           2020-2025, Riverbank Computing Limited
 License: GPL-3 or BSD-3-clause
 
 Files: debian/*
