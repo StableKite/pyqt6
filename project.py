@@ -834,7 +834,8 @@ class QtStateMachine(PyQtBindings):
     def __init__(self, project):
         """ Initialise the bindings. """
 
-        super().__init__(project, 'QtStateMachine', qmake_QT=['statemachine'],
+        super().__init__(project, 'QtStateMachine',
+                qmake_QT=['statemachine'],
                 test_headers=['qstate.h'],
                 test_statement='new QState()')
 
