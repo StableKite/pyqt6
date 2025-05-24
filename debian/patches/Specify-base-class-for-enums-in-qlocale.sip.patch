@@ -1,0 +1,39 @@
+From: Dmitry Shachnev <mitya57@debian.org>
+Date: Sat, 24 May 2025 23:06:53 +0300
+Subject: Specify base class for enums in qlocale.sip
+
+---
+ sip/QtCore/qlocale.sip | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/sip/QtCore/qlocale.sip b/sip/QtCore/qlocale.sip
+index 0fbe765..3abb7fb 100644
+--- a/sip/QtCore/qlocale.sip
++++ b/sip/QtCore/qlocale.sip
+@@ -27,7 +27,7 @@ class QLocale
+ %End
+ 
+ public:
+-    enum Language
++    enum Language : ushort
+     {
+         C,
+         Abkhazian,
+@@ -436,7 +436,7 @@ public:
+ %End
+     };
+ 
+-    enum Country
++    enum Country : ushort
+     {
+         AnyCountry,
+ %If (Qt_6_2_0 -)
+@@ -887,7 +887,7 @@ public:
+     QString pmText() const;
+     Qt::LayoutDirection textDirection() const;
+ 
+-    enum Script
++    enum Script : ushort
+     {
+         AnyScript,
+         ArabicScript,
