@@ -1,9 +1,9 @@
-pyqt6 (6.9.0-2) UNRELEASED; urgency=medium
+pyqt6 (6.9.0-2) unstable; urgency=medium
 
   * Specify base class for enums in qlocale.sip (closes: #1088101).
-    - Bump python3-sip build-dependency to 6.10.0-2~ to make it work.
+    - Bump python3-sipbuild build-dependency to 6.10.0-2~ to make it work.
 
- -- Dmitry Shachnev <mitya57@debian.org>  Sat, 24 May 2025 23:09:32 +0300
+ -- Dmitry Shachnev <mitya57@debian.org>  Sun, 25 May 2025 23:10:50 +0300
 
 pyqt6 (6.9.0-1) unstable; urgency=medium
 
