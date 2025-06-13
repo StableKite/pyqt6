@@ -1,3 +1,9 @@
+pyqt6 (6.9.1-1) UNRELEASED; urgency=medium
+
+  * New upstream release.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Fri, 13 Jun 2025 12:33:35 +0300
+
 pyqt6 (6.9.0-2) unstable; urgency=medium
 
   * Specify base class for enums in qlocale.sip (closes: #1088101).
