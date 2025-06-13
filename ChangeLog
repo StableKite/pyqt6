@@ -1,4 +1,52 @@
+2025-06-03  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* NEWS:
+	Updated the NEWS file.
+	[e63845987630] [6.9.1] <6.9-maint>
+
+2025-05-24  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* pyproject.toml:
+	Uses PEP 639 licensing.
+	[86e15de01545] <6.9-maint>
+
+	* PyQt6.msp, pyproject.toml:
+	Uses the SIP v6.12 suport for C++11 enum base types to fix issues on
+	big-endian systems.
+	[3db546b02d04] <6.9-maint>
+
+2025-04-25  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* PyQt6.msp:
+	Fixed building against versions of Qt older than v6.5
+	(QChar::Script).
+	[2ed70184e602] <6.9-maint>
+
+2025-04-24  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* PyQt6.msp:
+	Clarified the comment about the need for the re-implementation of
+	__hash__() in QBluetoothUuid (ie. it is not a SIP bug).
+	[db1f2a9ae3a0] <6.9-maint>
+
+2025-04-11  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* extras/uic/icon_cache.py:
+	Fixed pyuic6 to handle QIcons created from QIcon.ThemeIcon.
+	[f4416235ca4e] <6.9-maint>
+
+2025-04-08  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* PyQt6.msp:
+	Added the missing (Windows only) setNativeArguments() and
+	nativeArguments() to QProcess.
+	[674acd983d63] <6.9-maint>
+
 2025-04-03  Phil Thompson  <phil@riverbankcomputing.com>
+
+	* .hgtags:
+	Added tag 6.9.0 for changeset 5e6322462b6b
+	[400570e1b248]
 
 	* NEWS:
 	Updated the NEWS file.
