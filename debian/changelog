@@ -5,6 +5,7 @@ pyqt6 (6.9.1-1) UNRELEASED; urgency=medium
     new release.
   * Bump required SIP to 6.12, according to pyproject.toml.
   * Update install files to use lowercase name for the dist-info directory.
+  * Add pyqt6-*.dist-info/licenses to debian/not-installed.
 
  -- Dmitry Shachnev <mitya57@debian.org>  Fri, 13 Jun 2025 12:33:35 +0300
 
