@@ -1,3 +1,9 @@
+pyqt6 (6.9.1-2) unstable; urgency=medium
+
+  * Upload to unstable (closes: #1116687, #1117763).
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Tue, 14 Oct 2025 09:11:05 +0300
+
 pyqt6 (6.9.1-1) experimental; urgency=medium
 
   * New upstream release.
