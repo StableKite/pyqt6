@@ -3,6 +3,7 @@ pyqt6 (6.10.0-1) UNRELEASED; urgency=medium
   * New upstream release.
   * Bump required versions of SIP and python3-pyqtbuild.
   * Drop ‘Rules-Requires-Root: no’, it became default in dpkg 1.22.13.
+  * Update debian/watch to version 5.
 
  -- Dmitry Shachnev <mitya57@debian.org>  Fri, 24 Oct 2025 14:05:46 +0300
 
