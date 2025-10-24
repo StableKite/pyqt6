@@ -154,6 +154,46 @@ signals:
 %If (Qt_6_8_0 -)
     void audioBufferOutputChanged();
 %End
+
+public:
+%If (Qt_6_10_0 -)
+
+    enum class PitchCompensationAvailability
+    {
+        AlwaysOn,
+        Available,
+        Unavailable,
+    };
+
+%End
+%If (Qt_6_10_0 -)
+    QMediaPlayer::PitchCompensationAvailability pitchCompensationAvailability() const;
+%End
+%If (Qt_6_10_0 -)
+    bool pitchCompensation() const;
+%End
+%If (Qt_6_10_0 -)
+    QPlaybackOptions playbackOptions() const;
+%End
+
+public slots:
+%If (Qt_6_10_0 -)
+    void setPitchCompensation(bool) const;
+%End
+%If (Qt_6_10_0 -)
+    void setPlaybackOptions(const QPlaybackOptions &options);
+%End
+%If (Qt_6_10_0 -)
+    void resetPlaybackOptions();
+%End
+
+signals:
+%If (Qt_6_10_0 -)
+    void pitchCompensationChanged(bool);
+%End
+%If (Qt_6_10_0 -)
+    void playbackOptionsChanged();
+%End
 };
 
 %End

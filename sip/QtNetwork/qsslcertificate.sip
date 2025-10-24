@@ -66,6 +66,9 @@ public:
     static QList<QSslCertificate> fromPath(const QString &path, QSsl::EncodingFormat format = QSsl::Pem, QSslCertificate::PatternSyntax syntax = QSslCertificate::PatternSyntax::FixedString);
     static QList<QSslCertificate> fromDevice(QIODevice *device, QSsl::EncodingFormat format = QSsl::Pem);
     static QList<QSslCertificate> fromData(const QByteArray &data, QSsl::EncodingFormat format = QSsl::Pem);
+%If (Qt_6_10_0 -)
+    static QList<QSslCertificate> fromFile(const QString &filePath, QSsl::EncodingFormat format = QSsl::Pem);
+%End
     Qt::HANDLE handle() const;
     void swap(QSslCertificate &other /Constrained/);
     bool isBlacklisted() const;

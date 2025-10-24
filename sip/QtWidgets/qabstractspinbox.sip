@@ -75,6 +75,9 @@ public slots:
 
 signals:
     void editingFinished();
+%If (Qt_6_10_0 -)
+    void returnPressed();
+%End
 
 protected:
     virtual void resizeEvent(QResizeEvent *e);

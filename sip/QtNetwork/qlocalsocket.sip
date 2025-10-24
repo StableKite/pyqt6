@@ -139,7 +139,7 @@ protected:
                     bi.bi_len);
         #endif
             Py_END_ALLOW_THREADS
-            
+        
             sipReleaseBufferInfo(&bi);
         }
         else

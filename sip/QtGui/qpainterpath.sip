@@ -128,6 +128,15 @@ public:
     void clear();
     void reserve(int size);
     int capacity() const;
+%If (Qt_6_10_0 -)
+    bool isCachingEnabled() const;
+%End
+%If (Qt_6_10_0 -)
+    void setCachingEnabled(bool enabled);
+%End
+%If (Qt_6_10_0 -)
+    QPainterPath trimmed(qreal fromFraction, qreal toFraction, qreal offset = 0) const;
+%End
 };
 
 QDataStream &operator<<(QDataStream &, const QPainterPath &) /ReleaseGIL/;

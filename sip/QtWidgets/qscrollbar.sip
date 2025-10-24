@@ -43,4 +43,9 @@ protected:
     virtual void contextMenuEvent(QContextMenuEvent *);
     virtual void wheelEvent(QWheelEvent *);
     virtual void sliderChange(QAbstractSlider::SliderChange change);
+
+public:
+%If (Qt_6_10_0 -)
+    QMenu *createStandardContextMenu(QPoint position) /Factory/;
+%End
 };

@@ -113,7 +113,7 @@ class QDnsTlsAssociationRecord
 %End
 
 public:
-    enum class CertificateUsage
+    enum class CertificateUsage : quint8
     {
         CertificateAuthorityConstrait,
         ServiceCertificateConstraint,
@@ -127,7 +127,7 @@ public:
         PrivCert,
     };
 
-    enum class Selector
+    enum class Selector : quint8
     {
         FullCertificate,
         SubjectPublicKeyInfo,
@@ -137,7 +137,7 @@ public:
         PrivSel,
     };
 
-    enum class MatchingType
+    enum class MatchingType : quint8
     {
         Exact,
         Sha256,
@@ -184,7 +184,7 @@ public:
 
 %If (Qt_6_8_0 -)
 
-    enum Protocol
+    enum Protocol : quint8
     {
         Standard,
         DnsOverTls,

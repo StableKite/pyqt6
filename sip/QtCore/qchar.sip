@@ -262,5 +262,9 @@ bool operator>(const QChar &lhs, const QChar &rhs);
 bool operator<(const QChar &lhs, const QChar &rhs);
 bool operator!=(const QChar &lhs, const QChar &rhs);
 bool operator==(const QChar &lhs, const QChar &rhs);
-QDataStream &operator<<(QDataStream &, QChar) /ReleaseGIL/;
+%If (- Qt_6_10_0)
 QDataStream &operator>>(QDataStream &, QChar & /Constrained/) /ReleaseGIL/;
+%End
+%If (- Qt_6_10_0)
+QDataStream &operator<<(QDataStream &, QChar) /ReleaseGIL/;
+%End

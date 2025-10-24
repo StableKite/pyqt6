@@ -349,6 +349,12 @@ public:
     };
 
     static void updateColoredRectGeometry(QSGGeometry *g, const QRectF &rect);
+%If (Qt_6_10_0 -)
+    void setVertexCount(int count);
+%End
+%If (Qt_6_10_0 -)
+    void setIndexCount(int count);
+%End
 
 private:
     QSGGeometry(const QSGGeometry &);

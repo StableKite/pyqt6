@@ -243,4 +243,12 @@ public:
 
 private:
     virtual void setModel(QAbstractItemModel *model /KeepReference/);
+
+public:
+%If (Qt_6_10_0 -)
+    Qt::DropActions supportedDragActions() const;
+%End
+%If (Qt_6_10_0 -)
+    void setSupportedDragActions(Qt::DropActions actions);
+%End
 };

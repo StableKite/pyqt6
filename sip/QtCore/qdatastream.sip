@@ -89,6 +89,9 @@ public:
 %If (Qt_6_9_0 -)
         Qt_6_9,
 %End
+%If (Qt_6_10_0 -)
+        Qt_6_10,
+%End
     };
 
     enum ByteOrder
@@ -250,7 +253,7 @@ public:
             sipRes = &sipCpp->writeBytes(reinterpret_cast<char *>(bi.bi_buf),
                     bi.bi_len);
             Py_END_ALLOW_THREADS
-            
+        
             sipReleaseBufferInfo(&bi);
         }
         else
@@ -271,7 +274,7 @@ public:
             sipRes = &sipCpp->writeBytes(reinterpret_cast<char *>(bi.bi_buf),
                     bi.bi_len);
             Py_END_ALLOW_THREADS
-            
+        
             sipReleaseBufferInfo(&bi);
         }
         else
@@ -292,7 +295,7 @@ public:
             sipRes = sipCpp->writeRawData(reinterpret_cast<char *>(bi.bi_buf),
                     bi.bi_len);
             Py_END_ALLOW_THREADS
-            
+        
             sipReleaseBufferInfo(&bi);
         }
         else
@@ -313,7 +316,7 @@ public:
             sipRes = sipCpp->writeRawData(reinterpret_cast<char *>(bi.bi_buf),
                     bi.bi_len);
             Py_END_ALLOW_THREADS
-            
+        
             sipReleaseBufferInfo(&bi);
         }
         else
@@ -439,7 +442,7 @@ SIP_PYOBJECT readString() /ReleaseGIL,TypeHint="bytes"/;
         Py_INCREF(Py_None);
     }
 %End
-    
+
 void writeInt(int i) /ReleaseGIL/;
 %MethodCode
     Py_BEGIN_ALLOW_THREADS
@@ -627,10 +630,19 @@ void writeQVariantHash(const QVariantHash &qvarhash) /ReleaseGIL/;
     *sipCpp << *a0;
     Py_END_ALLOW_THREADS
 %End
+%If (Qt_6_10_0 -)
+    operator bool() const;
+%End
 
 private:
     QDataStream(const QDataStream &);
 };
 
+%If (Qt_6_10_0 -)
+QDataStream &operator>>(QDataStream &in, QChar &chr /Constrained/) /ReleaseGIL/;
+%End
+%If (Qt_6_10_0 -)
+QDataStream &operator<<(QDataStream &out, QChar chr) /ReleaseGIL/;
+%End
 QDataStream &operator>>(QDataStream &s, QKeyCombination &combination /Constrained/) /ReleaseGIL/;
 QDataStream &operator<<(QDataStream &s, QKeyCombination combination) /ReleaseGIL/;

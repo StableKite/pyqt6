@@ -505,7 +505,7 @@ protected:
         }
         
         QByteArray signal_signature;
-            
+        
         #if defined(SIP_PROTECTED_IS_PUBLIC)
         if ((sipError = pyqt6_get_signal_signature(a0, sipCpp, signal_signature)) == sipErrorNone)
         {

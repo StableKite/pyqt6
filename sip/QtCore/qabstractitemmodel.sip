@@ -358,7 +358,7 @@ public:
         if (a0cap)
         {
             sipSetUserObject((sipSimpleWrapper *)sipSelf, a0cap);
-            
+        
             sipCpp = new QModelRoleDataSpan(*a0);
         }
 %End

@@ -470,6 +470,12 @@ public:
 %If (Qt_6_8_0 -)
     static qsizetype maxSize();
 %End
+%If (Qt_6_10_0 -)
+    QByteArray nullTerminated() const;
+%End
+%If (Qt_6_10_0 -)
+    QByteArray &nullTerminate();
+%End
 };
 
 bool operator==(const QByteArray &a1, const QByteArray &a2);

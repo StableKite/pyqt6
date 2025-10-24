@@ -70,6 +70,7 @@ WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 %Include qmediaplayer.sip
 %Include qmediarecorder.sip
 %Include qmediatimerange.sip
+%Include qplaybackoptions.sip
 %Include qscreencapture.sip
 %Include qsoundeffect.sip
 %Include qvideoframe.sip

@@ -49,7 +49,7 @@ class QJSPrimitiveValue
 %End
 
 public:
-    enum Type
+    enum Type : quint8
     {
         Undefined,
         Null,

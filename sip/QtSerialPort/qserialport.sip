@@ -290,6 +290,14 @@ signals:
 %If (Qt_6_9_0 -)
     void settingsRestoredOnCloseChanged(bool restore);
 %End
+
+public:
+%If (Qt_6_10_0 -)
+    qint64 writeBufferSize() const;
+%End
+%If (Qt_6_10_0 -)
+    void setWriteBufferSize(qint64 size);
+%End
 };
 
 %End

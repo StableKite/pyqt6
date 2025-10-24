@@ -117,4 +117,24 @@ public:
 
 signals:
     void autoAcceptChildRowsChanged(bool autoAcceptChildRows);
+
+public:
+%If (Qt_6_10_0 -)
+
+    enum class Direction
+    {
+        Rows,
+        Columns,
+        Both,
+    };
+
+%End
+%If (Qt_6_10_0 -)
+    typedef QFlags<QSortFilterProxyModel::Direction> Directions;
+%End
+
+protected:
+%If (Qt_6_10_0 -)
+    void endFilterChange(QSortFilterProxyModel::Directions directions = QSortFilterProxyModel::Direction::Both);
+%End
 };

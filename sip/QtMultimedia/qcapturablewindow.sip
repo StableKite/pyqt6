@@ -30,6 +30,9 @@ class QCapturableWindow
 
 public:
     QCapturableWindow();
+%If (Qt_6_10_0 -)
+    explicit QCapturableWindow(QWindow *window);
+%End
     ~QCapturableWindow();
     QCapturableWindow(const QCapturableWindow &other);
     void swap(QCapturableWindow &other /Constrained/);

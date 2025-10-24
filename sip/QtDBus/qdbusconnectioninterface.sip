@@ -59,6 +59,9 @@ public:
     QDBusReply<unsigned int> servicePid(const QString &serviceName) const /ReleaseGIL/;
     QDBusReply<unsigned int> serviceUid(const QString &serviceName) const /ReleaseGIL/;
     QDBusReply<void> startService(const QString &name) /ReleaseGIL/;
+%If (Qt_6_10_0 -)
+    QDBusReply<QMap<QString, QVariant>> serviceCredentials(const QString &serviceName) const /ReleaseGIL/;
+%End
 
 signals:
     void serviceRegistered(const QString &service);

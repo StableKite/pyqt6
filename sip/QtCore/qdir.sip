@@ -159,6 +159,12 @@ public:
 %End
     bool mkdir(const QString &dirName) const;
     bool rmdir(const QString &dirName) const;
+%If (Qt_6_10_0 -)
+    // We choose to make the permissions argument compulsory (to be consistent with
+    // the existing mkdir() behaviour rather than adopt the new mkdir() and mkpath()
+    // behaviour.
+    bool mkpath(const QString &dirPath, QFileDevice::Permissions permissions) const;
+%End
     bool mkpath(const QString &dirPath) const;
     bool rmpath(const QString &dirPath) const;
     bool isReadable() const;

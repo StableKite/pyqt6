@@ -178,7 +178,7 @@ SIP_PYOBJECT pyqtPickleProtocol() /TypeHint="Optional[int]"/;
     sipRes = qpycore_pickle_protocol;
     if (!sipRes)
         sipRes = Py_None;
-    
+
     Py_INCREF(sipRes);
 %End
 %If (- Qt_6_5_0)

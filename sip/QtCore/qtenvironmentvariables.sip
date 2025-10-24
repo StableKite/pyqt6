@@ -41,3 +41,6 @@ bool qEnvironmentVariableIsSet(const char *varName);
 %If (Qt_6_5_0 -)
 int qEnvironmentVariableIntValue(const char *varName, bool *ok = 0);
 %End
+%If (Qt_6_10_0 -)
+std::optional<qint64> qEnvironmentVariableIntegerValue(const char *varName);
+%End

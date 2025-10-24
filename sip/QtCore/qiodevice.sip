@@ -145,7 +145,7 @@ public:
             Py_BEGIN_ALLOW_THREADS
             sipRes = sipCpp->write(reinterpret_cast<char *>(bi.bi_buf), bi.bi_len);
             Py_END_ALLOW_THREADS
-            
+        
             sipReleaseBufferInfo(&bi);
         }
         else
@@ -371,7 +371,7 @@ protected:
                     bi.bi_len);
         #endif
             Py_END_ALLOW_THREADS
-            
+        
             sipReleaseBufferInfo(&bi);
         }
         else
