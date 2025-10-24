@@ -170,7 +170,7 @@ protected:
                     bi.bi_len);
         #endif
             Py_END_ALLOW_THREADS
-            
+        
             sipReleaseBufferInfo(&bi);
         }
         else
@@ -207,24 +207,16 @@ public:
 %If (Qt_6_6_0 -)
 %If (Linux || macOS)
 
-    enum class UnixProcessFlag
+    enum class UnixProcessFlag : quint32
     {
         ResetSignalHandlers,
         IgnoreSigPipe,
         CloseFileDescriptors,
         UseVFork,
-%If (Qt_6_7_0 -)
         CreateNewSession,
-%End
-%If (Qt_6_7_0 -)
         DisconnectControllingTerminal,
-%End
-%If (Qt_6_7_0 -)
         ResetIds,
-%End
-%If (Qt_6_9_0 -)
         DisableCoreDumps,
-%End
     };
 
 %End

@@ -52,4 +52,9 @@ signals:
     void commitData(QWidget *editor);
     void closeEditor(QWidget *editor, QAbstractItemDelegate::EndEditHint hint = QAbstractItemDelegate::NoHint);
     void sizeHintChanged(const QModelIndex &);
+
+public:
+%If (Qt_6_10_0 -)
+    bool handleEditorEvent(QObject *object, QEvent *event);
+%End
 };

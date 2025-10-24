@@ -388,6 +388,9 @@ public:
         Language,
         Ruby,
         Selection,
+%If (Qt_6_10_0 -)
+        MimeData,
+%End
     };
 
     class Attribute

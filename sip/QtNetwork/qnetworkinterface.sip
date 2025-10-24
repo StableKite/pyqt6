@@ -42,7 +42,7 @@ public:
     void setPrefixLength(int length);
     void swap(QNetworkAddressEntry &other /Constrained/);
 
-    enum DnsEligibilityStatus
+    enum DnsEligibilityStatus : qint8
     {
         DnsEligibilityUnknown,
         DnsIneligible,

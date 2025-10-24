@@ -121,6 +121,9 @@ public:
 %If (Qt_6_6_0 -)
     QString readSymLink() const;
 %End
+%If (Qt_6_10_0 -)
+    bool isOther() const;
+%End
 };
 
 typedef QList<QFileInfo> QFileInfoList;

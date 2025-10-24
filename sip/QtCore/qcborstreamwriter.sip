@@ -32,7 +32,12 @@ public:
     ~QCborStreamWriter();
     void setDevice(QIODevice *device);
     QIODevice *device() const;
+%If (- Qt_6_10_0)
     void append(const QByteArray &ba);
+%End
+%If (Qt_6_10_0 -)
+    void append(QByteArrayView ba);
+%End
     void append(QStringView str);
     void append(QCborKnownTags tag);
     void append(QCborSimpleType st);

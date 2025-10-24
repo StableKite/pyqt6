@@ -27,7 +27,12 @@ class QLockFile
 %End
 
 public:
+%If (Qt_6_10_0 -)
+    explicit QLockFile(const QString &fileName);
+%End
+%If (- Qt_6_10_0)
     QLockFile(const QString &fileName);
+%End
     ~QLockFile();
     bool lock() /ReleaseGIL/;
     bool tryLock(int timeout = 0) /ReleaseGIL/;

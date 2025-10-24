@@ -58,25 +58,25 @@ public:
         BottomFrontRight,
     };
 
-    enum ChannelConfig
+    enum ChannelConfig : quint32
     {
         ChannelConfigUnknown,
         ChannelConfigMono,
         ChannelConfigStereo,
         ChannelConfig2Dot1,
-        ChannelConfigSurround5Dot0,
-        ChannelConfigSurround5Dot1,
-        ChannelConfigSurround7Dot0,
-        ChannelConfigSurround7Dot1,
 %If (Qt_6_4_0 -)
         ChannelConfig3Dot0,
 %End
 %If (Qt_6_4_0 -)
         ChannelConfig3Dot1,
 %End
+        ChannelConfigSurround5Dot0,
+        ChannelConfigSurround5Dot1,
+        ChannelConfigSurround7Dot0,
+        ChannelConfigSurround7Dot1,
     };
 
-    enum SampleFormat
+    enum SampleFormat : quint16
     {
         Unknown,
         UInt8,

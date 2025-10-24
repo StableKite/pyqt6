@@ -114,6 +114,14 @@ signals:
     void contextMenuTriggerChanged(Qt::ContextMenuTrigger contextMenuTrigger);
 %End
 
+public:
+%If (Qt_6_10_0 -)
+    bool menuSelectionWraps() const;
+%End
+%If (Qt_6_10_0 -)
+    const QAccessibilityHints *accessibility() const;
+%End
+
 private:
     QStyleHints();
 };

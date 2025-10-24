@@ -168,4 +168,19 @@ public:
 %If (Qt_6_1_0 -)
     void unsetContentsMargins();
 %End
+%If (Qt_6_10_0 -)
+    void setSizeConstraints(QLayout::SizeConstraint horizontal, QLayout::SizeConstraint vertical);
+%End
+%If (Qt_6_10_0 -)
+    void setHorizontalSizeConstraint(QLayout::SizeConstraint constraint);
+%End
+%If (Qt_6_10_0 -)
+    QLayout::SizeConstraint horizontalSizeConstraint() const;
+%End
+%If (Qt_6_10_0 -)
+    void setVerticalSizeConstraint(QLayout::SizeConstraint constraint);
+%End
+%If (Qt_6_10_0 -)
+    QLayout::SizeConstraint verticalSizeConstraint() const;
+%End
 };

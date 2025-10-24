@@ -76,7 +76,7 @@ public:
             sipRes = sipCpp->writeDatagram(reinterpret_cast<char *>(bi.bi_buf),
                     bi.bi_len, *a1, a2);
             Py_END_ALLOW_THREADS
-            
+        
             sipReleaseBufferInfo(&bi);
         }
         else

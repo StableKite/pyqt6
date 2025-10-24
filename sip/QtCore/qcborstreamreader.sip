@@ -27,7 +27,7 @@ class QCborStreamReader
 %End
 
 public:
-    enum Type
+    enum Type : quint8
     {
         UnsignedInteger,
         NegativeInteger,

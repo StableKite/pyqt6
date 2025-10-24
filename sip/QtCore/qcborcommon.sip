@@ -24,7 +24,7 @@
 #include <qcborcommon.h>
 %End
 
-// // Handwritten implementation of QCborSimpleType.
+// Handwritten implementation of QCborSimpleType.
 // Cast-XML has a bug which means that it places this definition in qmetatype.h
 // (where it is first declared).
 

@@ -134,6 +134,10 @@ public:
         }
 %End
 
+%If (Qt_6_10_0 -)
+    operator bool() const;
+%End
+
 private:
     QTextStream(const QTextStream &);
 };

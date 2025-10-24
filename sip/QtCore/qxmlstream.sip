@@ -245,6 +245,9 @@ public:
 %If (Qt_6_6_0 -)
     bool hasStandaloneDeclaration() const;
 %End
+%If (Qt_6_10_0 -)
+    QString readRawInnerData();
+%End
 
 private:
     QXmlStreamReader(const QXmlStreamReader &);
@@ -382,6 +385,33 @@ public:
 %End
     void writeCurrentToken(const QXmlStreamReader &reader);
     bool hasError() const;
+%If (Qt_6_10_0 -)
+    void setStopWritingOnError(bool stop);
+%End
+%If (Qt_6_10_0 -)
+    bool stopWritingOnError() const;
+%End
+%If (Qt_6_10_0 -)
+
+    enum class Error
+    {
+        None,
+        IO,
+        Encoding,
+        InvalidCharacter,
+        Custom,
+    };
+
+%End
+%If (Qt_6_10_0 -)
+    void raiseError(QAnyStringView message);
+%End
+%If (Qt_6_10_0 -)
+    QString errorString() const;
+%End
+%If (Qt_6_10_0 -)
+    QXmlStreamWriter::Error error() const;
+%End
 
 private:
     QXmlStreamWriter(const QXmlStreamWriter &);

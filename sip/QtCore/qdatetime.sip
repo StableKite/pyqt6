@@ -474,7 +474,7 @@ public:
     static QDateTime fromSecsSinceEpoch(qint64 secs, const QTimeZone &timeZone);
     static qint64 currentSecsSinceEpoch();
 
-    enum class YearRange
+    enum class YearRange : qint32
     {
         First,
         Last,

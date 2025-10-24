@@ -243,7 +243,7 @@ public:
                     sipIsErr = 1;
                 }
             }
-            
+        
             if (!sipIsErr)
                 *const_cast<QVariant *>(a1) = QVariant(key);
         }

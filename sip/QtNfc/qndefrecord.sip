@@ -42,7 +42,7 @@ class QNdefRecord
             sipType = sipType_QNdefNfcUriRecord;
         else
             sipType = 0;
-        
+    
         break;
     
     case QNdefRecord::Mime:
@@ -50,9 +50,9 @@ class QNdefRecord
             sipType = sipType_QNdefNfcIconRecord;
         else
             sipType = 0;
-        
+    
         break;
-        
+    
     default:
         sipType = 0;
     }

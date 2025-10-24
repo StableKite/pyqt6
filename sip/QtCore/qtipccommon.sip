@@ -29,7 +29,7 @@ class QNativeIpcKey
 %End
 
 public:
-    enum class Type
+    enum class Type : quint16
     {
         SystemV,
         PosixRealtime,

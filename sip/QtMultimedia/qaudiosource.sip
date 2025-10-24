@@ -51,6 +51,17 @@ public:
 
 signals:
     void stateChanged(QAudio::State state);
+
+public:
+%If (Qt_6_10_0 -)
+    void setBufferFrameCount(qsizetype frames);
+%End
+%If (Qt_6_10_0 -)
+    qsizetype bufferFrameCount() const;
+%End
+%If (Qt_6_10_0 -)
+    qsizetype framesAvailable() const;
+%End
 };
 
 %End

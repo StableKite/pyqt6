@@ -841,6 +841,9 @@ namespace Qt
 %If (Qt_6_7_0 -)
         Key_micro,
 %End
+%If (Qt_6_10_0 -)
+        Key_Keyboard,
+%End
     };
 
     enum ArrowType
@@ -1608,6 +1611,15 @@ namespace Qt
     {
         Press,
         Release,
+    };
+
+%End
+%If (Qt_6_10_0 -)
+
+    enum class ContrastPreference
+    {
+        NoPreference,
+        HighContrast,
     };
 
 %End

@@ -47,6 +47,7 @@ WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 %Include qabstractfileiconprovider.sip
 %Include qabstracttextdocumentlayout.sip
+%Include qaccessibilityhints.sip
 %Include qaction.sip
 %Include qactiongroup.sip
 %Include qbackingstore.sip
@@ -136,6 +137,7 @@ WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 %Include qvectornd.sip
 %Include qwindow.sip
 %Include qwindowdefs.sip
+%Include qpygui_native_interface.sip
 %Include qpygui_qlist.sip
 %Include qpygui_vulkan.sip
 %Include opengl_types.sip

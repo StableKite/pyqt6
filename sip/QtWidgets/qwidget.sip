@@ -61,7 +61,7 @@ static void qtwidgets_TransferLayoutWidgets(QLayout *lay, PyObject *pw)
                 qtwidgets_TransferLayoutWidgets(l, pw);
         }
     }
-    
+
     QWidget *mb = lay->menuBar();
 
     if (mb)

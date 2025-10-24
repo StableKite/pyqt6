@@ -229,4 +229,7 @@ signals:
 %If (Qt_6_9_0 -)
     void safeAreaMarginsChanged(QMargins arg);
 %End
+%If (Qt_6_10_0 -)
+    void flagsChanged(Qt::WindowFlags flags);
+%End
 };

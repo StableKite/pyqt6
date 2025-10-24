@@ -30,7 +30,7 @@ class QSGNode /Supertype=PyQt6.sip.wrapper/
 static sipErrorState qsgnode_handle_flags(QSGNode *node, PyObject *self, QSGNode::Flags old_flags)
 {
     QSGNode::Flags new_flags = node->flags();
-    
+
     if (node->parent())
     {
         if ((old_flags & QSGNode::OwnedByParent) != (new_flags & QSGNode::OwnedByParent))
@@ -51,7 +51,7 @@ static sipErrorState qsgnode_handle_flags(QSGNode *node, PyObject *self, QSGNode
             }
         }
     }
-    
+
     QSGNode::NodeType ntype = node->type();
         
     if (ntype == QSGNode::BasicNodeType || ntype == QSGNode::GeometryNodeType || ntype == QSGNode::ClipNodeType)
@@ -76,7 +76,7 @@ static sipErrorState qsgnode_handle_flags(QSGNode *node, PyObject *self, QSGNode
             }
         }
     }
-    
+
     if (ntype == QSGNode::GeometryNodeType)
     {
         QSGGeometryNode *g_node = (QSGGeometryNode *)node;

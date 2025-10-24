@@ -246,6 +246,42 @@ public:
 %If (Qt_6_8_0 -)
     bool replaceOrAppend(QAnyStringView name, QAnyStringView newValue);
 %End
+%If (Qt_6_10_0 -)
+    std::optional<qint64> intValue(QHttpHeaders::WellKnownHeader name) const;
+%End
+%If (Qt_6_10_0 -)
+    std::optional<qint64> intValue(QAnyStringView name) const;
+%End
+%If (Qt_6_10_0 -)
+    std::optional<QList<qint64>> intValues(QHttpHeaders::WellKnownHeader name) const;
+%End
+%If (Qt_6_10_0 -)
+    std::optional<QList<qint64>> intValues(QAnyStringView name) const;
+%End
+%If (Qt_6_10_0 -)
+    std::optional<qint64> intValueAt(qsizetype i) const;
+%End
+%If (Qt_6_10_0 -)
+    std::optional<QDateTime> dateTimeValue(QHttpHeaders::WellKnownHeader name) const;
+%End
+%If (Qt_6_10_0 -)
+    std::optional<QDateTime> dateTimeValue(QAnyStringView name) const;
+%End
+%If (Qt_6_10_0 -)
+    std::optional<QList<QDateTime>> dateTimeValues(QHttpHeaders::WellKnownHeader name) const;
+%End
+%If (Qt_6_10_0 -)
+    std::optional<QList<QDateTime>> dateTimeValues(QAnyStringView name) const;
+%End
+%If (Qt_6_10_0 -)
+    std::optional<QDateTime> dateTimeValueAt(qsizetype i) const;
+%End
+%If (Qt_6_10_0 -)
+    void setDateTimeValue(QHttpHeaders::WellKnownHeader name, const QDateTime &dateTime);
+%End
+%If (Qt_6_10_0 -)
+    void setDateTimeValue(QAnyStringView name, const QDateTime &dateTime);
+%End
 };
 
 %End
