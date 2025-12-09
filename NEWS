@@ -1,3 +1,10 @@
+v6.10.1 5th December 2025
+  - Added support for `QRangeModel` (and related `QPyAbstractRange`,
+    `QPySequenceRange` and `QPyTableRange`).
+  - Fixed a regression in `pylupdate6` when using Python v3.14.
+  - Fixed ownership issues with the result of calls to
+    `createStandardContextMenu()` and `createMimeDataFromSelection()`.
+
 v6.10.0 16th October 2025
   - Added support for Qt v6.10 (excluding QRangeModel).
   - Added support for QGuiApplication.nativeInterface().
