@@ -1,3 +1,56 @@
+commit d72db36074a3453ef6a5a5746082230b2afe4913
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Fri Dec 5 14:37:07 2025 +0000
+
+    Release v6.10.1
+
+commit 48796838b960e1c9a7f2c66afa810034f2795a06
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Thu Nov 27 21:58:59 2025 +0000
+
+    Bug fixes
+    
+    - Fixed ownership issues with the result of calls to
+      `createStandardContextMenu()` and `createMimeDataFromSelection()`.
+
+commit 6531d8a843928be180d317708ed759525e665082
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Mon Nov 10 19:12:44 2025 +0000
+
+    Support for `QRangeModel`
+    
+    The support for `QRangeModel` was refactored to replace `QPyRange` with
+    `QPyAbstractRange`, `QPySequenceRange` and `QPyTableRange`.
+
+commit 3a6f12e54c4f85954cc727fee632b770915a5992
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Mon Nov 10 10:50:42 2025 +0000
+
+    Development regressions
+    
+    - Fixed the support for QRangeModel for Python v3.9.
+
+commit 45477b08afa039072abf38b9e6832153bcd7e5d5
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Sun Nov 9 15:39:50 2025 +0000
+
+    Support for `QRangeModel`
+    
+    Support was added for `QRangeModel` (added in Qt v6.10).  This allows a
+    range of Python objects to be edited in-situ using an appropriate Qt view.
+    Currently a range may be a sequence of Python objects or a table (ie. a
+    sequence of sequences).  Support for trees is planned to be added in a
+    later release.  Ranges are wrapped using the `QPyRange` class which is then
+    passed to `QRangeModel`.
+
+commit bcfacbbd491136b2a4a22c52646a36886d89f774
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Sat Nov 1 12:15:08 2025 +0000
+
+    Bug fixes
+    
+    - Fixed a regression in `pylupdate6` when using Python v3.14.
+
 commit ecab96d9ca996c2496594c3a06d4cea1de93f395
 Author: Phil Thompson <phil@riverbankcomputing.com>
 Date:   Thu Oct 16 10:55:25 2025 +0100

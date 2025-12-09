@@ -78,6 +78,7 @@ void qpycore_post_init(PyObject *module_dict)
 
     // Register the C++ type that wraps Python objects.
     qRegisterMetaType<PyQt_PyObject>("PyQt_PyObject");
+    QMetaType::registerConverter<PyQt_PyObject, QString>();
 
     // Register the lazy attribute getter.
     if (sipRegisterAttributeGetter(sipType_QObject, qpycore_get_lazy_attr) < 0)

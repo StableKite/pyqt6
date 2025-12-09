@@ -90,6 +90,31 @@ PyQt_PyObject &PyQt_PyObject::operator=(const PyQt_PyObject &other)
 }
 
 
+// QString operator cast.
+PyQt_PyObject::operator QString() const
+{
+    QString qs;
+
+    SIP_BLOCK_THREADS
+
+    PyObject *py_s = PyObject_Str(pyobject);
+
+    if (py_s)
+    {
+        qs = qpycore_PyObject_AsQString(py_s);
+        Py_DECREF(py_s);
+    }
+    else
+    {
+        qs = QString("PyQt_PyObject string conversion failed");
+    }
+
+    SIP_UNBLOCK_THREADS
+
+    return qs;
+}
+
+
 // Comparison operator.  It must be global to be available to QMetaType.
 bool operator==(const PyQt_PyObject &self, const PyQt_PyObject &other)
 {

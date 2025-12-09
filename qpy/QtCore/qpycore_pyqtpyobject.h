@@ -40,6 +40,7 @@ public:
     ~PyQt_PyObject();
 
     PyQt_PyObject &operator=(const PyQt_PyObject &other);
+    operator QString() const;
 
     // The Python object being wrapped.
     PyObject *pyobject;
