@@ -1,6 +1,7 @@
 pyqt6 (6.10.1-1) UNRELEASED; urgency=medium
 
   * New upstream release.
+  * Bump required python3-sipbuild version to 6.15.0-2.
 
  -- Dmitry Shachnev <mitya57@debian.org>  Tue, 09 Dec 2025 15:47:23 +0300
 
