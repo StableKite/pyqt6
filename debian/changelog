@@ -1,3 +1,10 @@
+pyqt6 (6.10.1-2) UNRELEASED; urgency=medium
+
+  * Revert ownership changes for createMimeDataFromSelection() from 6.10.1
+    (closes: #1123850, #1123860).
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Wed, 24 Dec 2025 13:46:40 +0300
+
 pyqt6 (6.10.1-1) unstable; urgency=medium
 
   * New upstream release.
