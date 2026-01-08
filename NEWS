@@ -1,3 +1,10 @@
+v6.10.2 8th January 2026
+  - Fixed a regression introduced in v6.5.0 in the handling of the return value
+    of `QSqlQueryModel.query()`.
+  - Fixed a regression introduced in v6.10.1 in the handling of the return
+    value of `createMimeDataFromSelection()` in `QTextEdit` and
+    `QPlainTextEdit`.
+
 v6.10.1 5th December 2025
   - Added support for `QRangeModel` (and related `QPyAbstractRange`,
     `QPySequenceRange` and `QPyTableRange`).
