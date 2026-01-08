@@ -1,3 +1,9 @@
+pyqt6 (6.10.2-1) UNRELEASED; urgency=medium
+
+  * New upstream release.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Thu, 08 Jan 2026 20:29:56 +0300
+
 pyqt6 (6.10.1-2) unstable; urgency=medium
 
   * Revert ownership changes for createMimeDataFromSelection() from 6.10.1
