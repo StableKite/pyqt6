@@ -5,6 +5,7 @@ pyqt6 (6.10.2-1) UNRELEASED; urgency=medium
     the new release.
   * Bump copyright years.
   * Drop ‘Priority: optional’, it became default in dpkg 1.22.12.
+  * Bump Standards-Version to 4.7.3, no changes needed.
 
  -- Dmitry Shachnev <mitya57@debian.org>  Thu, 08 Jan 2026 20:29:56 +0300
 
