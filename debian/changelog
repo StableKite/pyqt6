@@ -1,6 +1,8 @@
 pyqt6 (6.10.2-1) UNRELEASED; urgency=medium
 
   * New upstream release.
+  * Drop Revert-changes-for-createMimeDataFromSelection.patch, included in
+    the new release.
 
  -- Dmitry Shachnev <mitya57@debian.org>  Thu, 08 Jan 2026 20:29:56 +0300
 
