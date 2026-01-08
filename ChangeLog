@@ -1,3 +1,27 @@
+commit b12c6f363ca4e6140b4c5ebbe6b1c820b123c3a9
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Thu Jan 8 12:33:27 2026 +0000
+
+    Release v6.10.2
+
+commit fedb45d8d94ab21b79e7f550dff89f8ae3a457f8
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Wed Jan 7 16:39:37 2026 +0000
+
+    Bug fixes
+    
+    - Fixed a regression in v6.5.0 in the handling of the return value of
+      QSqlQueryModel.query().
+
+commit ccfb7987f236904f0feee6614a09e2fa45a7d48f
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Sat Dec 27 11:06:57 2025 +0000
+
+    Bug fixes
+    
+    - Fixed a regression in v6.10.1 in the handling of the return value of
+      createMimeDataFromSelection() in QTextEdit and QPlainTextEdit.
+
 commit d72db36074a3453ef6a5a5746082230b2afe4913
 Author: Phil Thompson <phil@riverbankcomputing.com>
 Date:   Fri Dec 5 14:37:07 2025 +0000
