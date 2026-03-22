@@ -1,3 +1,10 @@
+pyqt6 (6.10.2-3) UNRELEASED; urgency=medium
+
+  * Replace qt6-base-private-dev build-dependency with qt6-base-dev again.
+    The Qt change was reverted, see #1131560.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Mon, 23 Mar 2026 00:16:48 +0300
+
 pyqt6 (6.10.2-2) unstable; urgency=medium
 
   * Build-depend on qt6-base-private-dev (closes: #1127923).
