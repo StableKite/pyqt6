@@ -3,6 +3,7 @@ pyqt6 (6.11.0-1) UNRELEASED; urgency=medium
   * New upstream release.
   * Replace qt6-base-private-dev build-dependency with qt6-base-dev again.
     The Qt change was reverted, see #1131560.
+  * Bump sip-tools build-dependency to 6.15, per pyproject.toml.
 
  -- Dmitry Shachnev <mitya57@debian.org>  Mon, 23 Mar 2026 00:16:48 +0300
 
