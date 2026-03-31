@@ -138,6 +138,7 @@ WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 %Include qwindow.sip
 %Include qwindowdefs.sip
 %Include qpygui_native_interface.sip
+%Include qpygui_qmap.sip
 %Include qpygui_qlist.sip
 %Include qpygui_vulkan.sip
 %Include opengl_types.sip
