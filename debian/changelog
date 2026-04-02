@@ -1,4 +1,4 @@
-pyqt6 (6.11.0-1) UNRELEASED; urgency=medium
+pyqt6 (6.11.0-1) unstable; urgency=medium
 
   * New upstream release.
   * Replace qt6-base-private-dev build-dependency with qt6-base-dev again.
@@ -6,7 +6,7 @@ pyqt6 (6.11.0-1) UNRELEASED; urgency=medium
   * Bump sip-tools build-dependency to 6.15, per pyproject.toml.
   * Bump python3-pyqt6.sip dependency to 13.11, per PKG-INFO.
 
- -- Dmitry Shachnev <mitya57@debian.org>  Mon, 23 Mar 2026 00:16:48 +0300
+ -- Dmitry Shachnev <mitya57@debian.org>  Thu, 02 Apr 2026 23:12:08 +0300
 
 pyqt6 (6.10.2-2) unstable; urgency=medium
 
