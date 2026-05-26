@@ -1,4 +1,4 @@
-pyqt6 (6.11.0-2) UNRELEASED; urgency=medium
+pyqt6 (6.11.0-2) unstable; urgency=medium
 
   * Move uic module from pyqt6-dev-tools to python3-pyqt6 (LP: #2154237).
   * Bump Standards-Version to 4.7.4, no changes needed.
