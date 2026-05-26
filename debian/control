@@ -76,6 +76,8 @@ Depends: python3-pyqt6.sip (<< 14),
          ${misc:Depends},
          ${python3:Depends},
          ${shlibs:Depends}
+Breaks: pyqt6-dev-tools (<< 6.11.0-2~)
+Replaces: pyqt6-dev-tools (<< 6.11.0-2~)
 Description: Python bindings for Qt 6
  PyQt6 exposes the Qt 6 API to Python.
  This package contains the following modules:
