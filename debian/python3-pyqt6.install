@@ -23,5 +23,6 @@ usr/lib/python3/dist-packages/PyQt6/QtXml.pyi
 usr/lib/python3/dist-packages/PyQt6/__init__.py
 usr/lib/python3/dist-packages/PyQt6/py.typed
 usr/lib/python3/dist-packages/PyQt6/sip.pyi
+usr/lib/python3/dist-packages/PyQt6/uic
 usr/lib/python3/dist-packages/pyqt6-*.dist-info/INSTALLER
 usr/lib/python3/dist-packages/pyqt6-*.dist-info/METADATA

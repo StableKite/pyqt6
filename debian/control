@@ -90,6 +90,7 @@ Description: Python bindings for Qt 6
   * QtTest
   * QtWidgets
   * QtXml
+  * uic
 
 Package: python3-pyqt6.qtbluetooth
 Architecture: linux-any
