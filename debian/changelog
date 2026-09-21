@@ -1,3 +1,11 @@
+pyqt6 (6.11.0-4) UNRELEASED; urgency=medium
+
+  * More Python 3.15 changes (thanks Maximiliano Curia, closes: #1144993):
+    - Cast Py_TYPE argument to PyObject *.
+    - Target limited ABI version 3.13 when building for >= 3.15.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Mon, 21 Sep 2026 10:40:53 +0300
+
 pyqt6 (6.11.0-3) unstable; urgency=medium
 
   * Backport upstream patch to support Python 3.15 (closes: #1144993).
