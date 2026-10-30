@@ -157,6 +157,9 @@ public:
 %If (Qt_6_6_0 -)
     void markCurrentFunctionAsTranslationBinding();
 %End
+%If (Qt_6_12_0 -)
+    bool setExternalSingletonInstance(QAnyStringView moduleName, QAnyStringView typeName, QObject *instance);
+%End
 };
 
 class QQmlImageProviderBase : public QObject

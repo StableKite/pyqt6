@@ -29,8 +29,9 @@ class QAudioOutput : public QObject
 %End
 
 public:
-    QAudioOutput(const QAudioDevice &device, QObject *parent /TransferThis/ = 0);
-    explicit QAudioOutput(QObject *parent /TransferThis/ = 0);
+    // Linux (with certain configurations) needs the GIL to be released in order to avoid a deadlock.
+    QAudioOutput(const QAudioDevice &device, QObject *parent /TransferThis/ = 0) /ReleaseGIL/;
+    explicit QAudioOutput(QObject *parent /TransferThis/ = 0) /ReleaseGIL/;
     virtual ~QAudioOutput();
     float volume() const;
     QAudioDevice device() const;

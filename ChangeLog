@@ -1,3 +1,176 @@
+commit c9cc935766b5576606d40d8a52c56363957208bc
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Mon Oct 26 17:29:18 2026 +0000
+
+    Release v6.12.0
+
+commit b51bf55dc81d027a64e14572d9bb8583505c5332
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Mon Oct 26 14:56:31 2026 +0000
+
+    Bug fixes
+    
+    - Fixed a bug in the deserialisation (ie. unpickling) of PyQt_PyObjects
+      where any exception was not handled and left for the next (random) bit of
+      Python code to trip over.
+
+commit eb57d9c379a4ab454ded441ca68b1fcdcef489c6
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Mon Oct 26 13:20:17 2026 +0000
+
+    Support for `QRhi` and related classes
+    
+    Support for `QRhi` and related classes has been added.  This is largely
+    untested.
+
+commit 82974ac27fb4ab77c7788aacc28d9c4e8ac45d99
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Thu Oct 15 20:53:27 2026 +0100
+
+    Bug fixes
+    
+    - Fixes for the `pyqtSlot` and `pyqtProperty` docstrings.
+
+commit 9e9a5a0469f4d2b2e1d1acec546de94e92ea4620
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Mon Oct 12 10:43:41 2026 +0100
+
+    Release v6.12.0
+
+commit 1fb5af6781e7b3fbc651853be259452d15265780
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Sun Oct 11 17:10:02 2026 +0100
+
+    Support for Qt v6.12
+    
+    Improved the workaround for the embedded qt.conf problem on macOS so that
+    QScintilla and PyInstaller should still work.
+
+commit 2ffabe4ba653ded097d8de0110d1ef80a573c5b1
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Sat Oct 10 17:23:19 2026 +0100
+
+    Bug fixes
+    
+    All uses of `Any` in generated `.pyi` files are now qualified by the
+    `typing` module name.
+
+commit 9ee3818a81eed41f260bc05007d786b8d335384a
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Sun Oct 4 14:55:58 2026 +0100
+
+    Release v6.12.0
+
+commit ec5a8391bbfaf7496159185af7260609c3d2118d
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Sun Oct 4 10:30:25 2026 +0100
+
+    Support for Qt v6.12
+    
+    Reimplemented the workaround for the embedded qt.conf problem on macOS.
+
+commit 732b9af66240e0d93618e63374600a0c9b0f5e21
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Sat Oct 3 22:06:56 2026 +0100
+
+    Support for Qt v6.12
+    
+    Worked around an apparent problem with Qt v6.12.0 on macOS where the
+    platform plugin couldn't be found because `PrefixPath` from `QLibraryInfo`
+    is wrong.
+
+commit c2b82cc830917942c8b4bac2aa1265d15b4b9622
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Fri Oct 2 11:13:10 2026 +0100
+
+    Support for Qt v6.12
+    
+    The QtPdf and QtPdf modules are part of PyQt6-WebEngine when building
+    against Qt v6.12 and later.
+
+commit c662c53ce22bda18efe2ad57294b0f07b430c20a
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Wed Sep 30 19:12:45 2026 +0100
+
+    Support for Qt v6.12
+    
+    Updated all existing modules for Qt v6.12.0.
+
+commit 761b99c4c13e5c5b34bd891fd24bb70848641e06
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Wed Sep 30 10:37:00 2026 +0100
+
+    Support for Qt v6.12rc
+    
+    Updated all existing modules for Qt v6.12rc.
+
+commit d46f1796f2408f5ab0a692df2492ba037b661e8b
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Fri Sep 11 11:10:24 2026 +0100
+
+    Bug fixes
+    
+    - Fixed a problem detecting when QObject instances created by Qt were
+      destroyed after a QCoreApplication was destroyed and then recreated.
+
+commit afbda5102dadd925baccfd5f81adf3137550dd98
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Tue Aug 11 15:35:45 2026 +0100
+
+    Bug fixes
+    
+    Changes to allow building with GCC v16.
+
+commit 38009b2ed7651765b05c3f85412e665fbd733b88
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Tue Aug 11 14:19:14 2026 +0100
+
+    SIP version dependency
+    
+    SIP v6.16.0 or later is now required.
+
+commit 6546c4102a182b63f10c084a5c7f31a07121dd73
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Thu Jul 16 11:40:20 2026 +0100
+
+    Typing fixes
+    
+    - Fixed the return type of the `QObject.findChild()` overloads.
+
+commit 4c2b8633b0f5a7459926cd79fbb0ce646cb4d861
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Mon Jul 13 17:32:07 2026 +0100
+
+    Typing fixes
+    
+    `pyqtProperty` is now definined in QtCore.pyi (thanks to Kovid Goyal).
+
+commit 04c516de9e360ccea2407d5d3a72de3df161ceab
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Mon Jul 13 16:01:40 2026 +0100
+
+    Support for Python v3.15
+    
+    The project can now be built with Python v3.15 (where the limited ABI
+    version targeted will be v3.13).
+
+commit 6135e82d33237d1b7bd9726d857624f32423339b
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Sun Apr 12 10:10:00 2026 +0100
+
+    Bug fixes
+    
+    - The QAudioOutput ctors now release the GIL to avoid a deadlock on certain
+      Linux configurations.
+
+commit 525f341932bd44ecc64e1cd1f7977bfdac4eccd5
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Mon Mar 30 10:52:04 2026 +0100
+
+    Bug fixes
+    
+    - The base type for the `QSql.TableType` enum is now `enum.Flag`.
+
 commit 96280ff4fcc57819d220e9d8d323a49b48c866d3
 Author: Phil Thompson <phil@riverbankcomputing.com>
 Date:   Tue Mar 24 15:35:53 2026 +0000

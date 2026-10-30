@@ -55,6 +55,9 @@ public:
         Pen,
         Eraser,
         Cursor,
+%If (Qt_6_12_0 -)
+        Palm,
+%End
         AllPointerTypes,
     };
 

@@ -110,8 +110,11 @@ WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 %Include qregion.sip
 %Include qrgba64.sip
 %Include qrgb.sip
+%Include qrhi.sip
 %Include qscreen.sip
 %Include qsessionmanager.sip
+%Include qshader.sip
+%Include qshaderdescription.sip
 %Include qshortcut.sip
 %Include qstandarditemmodel.sip
 %Include qstatictext.sip
@@ -139,6 +142,7 @@ WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 %Include qwindowdefs.sip
 %Include qpygui_native_interface.sip
 %Include qpygui_qmap.sip
+%Include qpygui_qrhi_platform.sip
 %Include qpygui_qlist.sip
 %Include qpygui_vulkan.sip
 %Include opengl_types.sip

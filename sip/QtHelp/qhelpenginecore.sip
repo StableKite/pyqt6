@@ -84,7 +84,7 @@ public:
     QUrl findFile(const QUrl &url) const;
     QByteArray fileData(const QUrl &url) const;
     bool removeCustomValue(const QString &key);
-    QVariant customValue(const QString &key, const QVariant &defaultValue = QVariant()) const;
+    QVariant customValue(const QString &key, const QVariant &defaultValue = {}) const;
     bool setCustomValue(const QString &key, const QVariant &value);
     static QVariant metaData(const QString &documentationFileName, const QString &name);
     QString error() const;
@@ -98,7 +98,7 @@ signals:
 
 public:
     QHelpFilterEngine *filterEngine() const;
-    QList<QUrl> files(const QString namespaceName, const QString &filterName, const QString &extensionFilter = QString());
+    QList<QUrl> files(const QString namespaceName, const QString &filterName, const QString &extensionFilter = {});
     void setUsesFilterEngine(bool uses);
     bool usesFilterEngine() const;
     QList<QHelpLink> documentsForIdentifier(const QString &id) const;

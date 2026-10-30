@@ -39,12 +39,17 @@ class QQuickWindow : public QWindow /ExportDerived/
         {sipName_QQuickRenderControl, &sipType_QQuickRenderControl, -1, 5},
         {sipName_QQuickTextDocument, &sipType_QQuickTextDocument, -1, 6},
         {sipName_QQuickTextureFactory, &sipType_QQuickTextureFactory, -1, 7},
-        {sipName_QQuickWindow, &sipType_QQuickWindow, 13, 8},
-        {sipName_QSGTexture, &sipType_QSGTexture, 14, 9},
+        {sipName_QQuickWindow, &sipType_QQuickWindow, 14, 8},
+        {sipName_QSGTexture, &sipType_QSGTexture, 15, 9},
         {sipName_QSGTextureProvider, &sipType_QSGTextureProvider, -1, -1},
         {sipName_QQuickAsyncImageProvider, &sipType_QQuickAsyncImageProvider, -1, -1},
         {sipName_QQuickFramebufferObject, &sipType_QQuickFramebufferObject, -1, 12},
-        {sipName_QQuickPaintedItem, &sipType_QQuickPaintedItem, -1, -1},
+        {sipName_QQuickPaintedItem, &sipType_QQuickPaintedItem, -1, 13},
+    #if QT_VERSION >= 0x060c00
+        {sipName_QQuickRhiItem, &sipType_QQuickRhiItem, -1, -1},
+    #else
+        {0, 0, -1, -1},
+    #endif
         {sipName_QQuickView, &sipType_QQuickView, -1, -1},
         {sipName_QSGDynamicTexture, &sipType_QSGDynamicTexture, -1, -1},
     };

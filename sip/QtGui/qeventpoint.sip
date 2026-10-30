@@ -27,7 +27,7 @@ class QEventPoint
 %End
 
 public:
-    enum State /BaseType=Flag/
+    enum State : quint8 /BaseType=Flag/
     {
         Unknown,
         Stationary,

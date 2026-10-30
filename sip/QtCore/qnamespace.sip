@@ -1361,6 +1361,12 @@ namespace Qt
         ImhMultiLine,
         ImhNoEditMenu,
         ImhNoTextHandles,
+%If (Qt_6_12_0 -)
+        ImhNoFullscreen,
+%End
+%If (Qt_6_12_0 -)
+        ImhDecimalNumbersOnly,
+%End
     };
 
     typedef QFlags<Qt::InputMethodHint> InputMethodHints;
@@ -1623,6 +1629,15 @@ namespace Qt
     {
         NoPreference,
         HighContrast,
+    };
+
+%End
+%If (Qt_6_12_0 -)
+
+    enum class MotionPreference
+    {
+        NoPreference,
+        ReducedMotion,
     };
 
 %End

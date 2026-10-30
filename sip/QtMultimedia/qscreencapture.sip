@@ -57,6 +57,19 @@ signals:
     void errorChanged();
     void screenChanged(QScreen *);
     void errorOccurred(QScreenCapture::Error error, const QString &errorString);
+
+public:
+%If (Qt_6_12_0 -)
+    void setMaximumFrameRate(std::optional<qreal> frameRate);
+%End
+%If (Qt_6_12_0 -)
+    std::optional<qreal> maximumFrameRate() const;
+%End
+
+signals:
+%If (Qt_6_12_0 -)
+    void maximumFrameRateChanged();
+%End
 };
 
 %End

@@ -101,6 +101,19 @@ signals:
 %If (Qt_6_8_0 -)
     void videoFrameInputChanged();
 %End
+
+public:
+%If (Qt_6_12_0 -)
+    QObject *nativeVideoSource() const;
+%End
+%If (Qt_6_12_0 -)
+    void setNativeVideoSource(QObject *videoSource);
+%End
+
+signals:
+%If (Qt_6_12_0 -)
+    void nativeVideoSourceChanged();
+%End
 };
 
 %End

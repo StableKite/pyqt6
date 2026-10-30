@@ -32,7 +32,15 @@ public:
     explicit QAccessibilityHints(QObject *parent /TransferThis/ = 0);
     virtual ~QAccessibilityHints();
     Qt::ContrastPreference contrastPreference() const;
+%If (Qt_6_12_0 -)
+    Qt::MotionPreference motionPreference() const;
+%End
+
+signals:
     void contrastPreferenceChanged(Qt::ContrastPreference contrastPreference);
+%If (Qt_6_12_0 -)
+    void motionPreferenceChanged(Qt::MotionPreference motionPreference);
+%End
 
 protected:
     virtual bool event(QEvent *event);

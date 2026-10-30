@@ -232,6 +232,100 @@ template<_TYPE_>
 };
 
 
+%If (Qt_6_12_0 -)
+
+template<_TYPE_>
+%MappedType std::pair<_TYPE_ *, unsigned> /TypeHint="Tuple[_TYPE_, int]"/
+{
+%TypeHeaderCode
+#include <utility>
+%End
+
+%ConvertFromTypeCode
+    return sipBuildResult(NULL, "(Du)", sipCpp->first, sipType__TYPE_,
+            sipTransferObj, sipCpp->second);
+%End
+
+%ConvertToTypeCode
+    if (!sipIsErr)
+        return (PySequence_Check(sipPy) && !PyUnicode_Check(sipPy));
+
+    Py_ssize_t len = PySequence_Size(sipPy);
+
+    if (len != 2)
+    {
+        // A negative length should only be an internal error so let the
+        // original exception stand.
+        if (len >= 0)
+            PyErr_Format(PyExc_TypeError,
+                    "sequence has %zd elements but 2 elements are expected",
+                    len);
+
+        *sipIsErr = 1;
+
+        return 0;
+    }
+
+    PyObject *firstobj = PySequence_GetItem(sipPy, 0);
+
+    if (!firstobj)
+    {
+        *sipIsErr = 1;
+
+        return 0;
+    }
+
+    _TYPE_ *first = reinterpret_cast<_TYPE_ *>(
+            sipForceConvertToType(firstobj, sipType__TYPE_, sipTransferObj, 0,
+                    0, sipIsErr));
+ 
+    if (*sipIsErr)
+    {
+        PyErr_Format(PyExc_TypeError,
+                "the first element has type '%s' but '_TYPE_' is expected",
+                sipPyTypeName(Py_TYPE(firstobj)));
+
+        return 0;
+    }
+
+    PyObject *secondobj = PySequence_GetItem(sipPy, 1);
+
+    if (!secondobj)
+    {
+        Py_DECREF(firstobj);
+        *sipIsErr = 1;
+
+        return 0;
+    }
+
+    unsigned second = sipLong_AsUnsignedInt(secondobj);
+
+    if (PyErr_Occurred())
+    {
+        if (PyErr_ExceptionMatches(PyExc_TypeError))
+            PyErr_Format(PyExc_TypeError,
+                    "the second element has type '%s' but 'int' is expected",
+                    sipPyTypeName(Py_TYPE(secondobj)));
+
+        Py_DECREF(secondobj);
+        Py_DECREF(firstobj);
+        *sipIsErr = 1;
+
+        return 0;
+    }
+
+    *sipCppPtr = new std::pair<_TYPE_ *, unsigned>(first, second);
+
+    Py_DECREF(secondobj);
+    Py_DECREF(firstobj);
+ 
+    return sipGetState(sipTransferObj);
+%End
+};
+
+%End
+
+
 %MappedType std::pair<int, int> /TypeHint="Tuple[int, int]"/
 {
 %TypeHeaderCode
@@ -280,6 +374,7 @@ template<_TYPE_>
                     "the first element has type '%s' but 'int' is expected",
                     sipPyTypeName(Py_TYPE(firstobj)));
 
+        Py_DECREF(firstobj);
         *sipIsErr = 1;
 
         return 0;
@@ -319,6 +414,100 @@ template<_TYPE_>
     return sipGetState(sipTransferObj);
 %End
 };
+
+
+%If (Qt_6_12_0 -)
+
+%MappedType std::pair<int, unsigned> /TypeHint="Tuple[int, int]"/
+{
+%TypeHeaderCode
+#include <utility>
+%End
+
+%ConvertFromTypeCode
+    return Py_BuildValue("(iI)", sipCpp->first, sipCpp->second);
+%End
+
+%ConvertToTypeCode
+    if (!sipIsErr)
+        return (PySequence_Check(sipPy) && !PyUnicode_Check(sipPy));
+
+    Py_ssize_t len = PySequence_Size(sipPy);
+
+    if (len != 2)
+    {
+        // A negative length should only be an internal error so let the
+        // original exception stand.
+        if (len >= 0)
+            PyErr_Format(PyExc_TypeError,
+                    "sequence has %zd elements but 2 elements are expected",
+                    len);
+
+        *sipIsErr = 1;
+
+        return 0;
+    }
+
+    PyObject *firstobj = PySequence_GetItem(sipPy, 0);
+
+    if (!firstobj)
+    {
+        *sipIsErr = 1;
+
+        return 0;
+    }
+
+    int first = sipLong_AsInt(firstobj);
+
+    if (PyErr_Occurred())
+    {
+        if (PyErr_ExceptionMatches(PyExc_TypeError))
+            PyErr_Format(PyExc_TypeError,
+                    "the first element has type '%s' but 'int' is expected",
+                    sipPyTypeName(Py_TYPE(firstobj)));
+
+        Py_DECREF(firstobj);
+        *sipIsErr = 1;
+
+        return 0;
+    }
+
+    PyObject *secondobj = PySequence_GetItem(sipPy, 1);
+
+    if (!secondobj)
+    {
+        Py_DECREF(firstobj);
+        *sipIsErr = 1;
+
+        return 0;
+    }
+
+    unsigned second = sipLong_AsUnsignedInt(secondobj);
+
+    if (PyErr_Occurred())
+    {
+        if (PyErr_ExceptionMatches(PyExc_TypeError))
+            PyErr_Format(PyExc_TypeError,
+                    "the second element has type '%s' but 'int' is expected",
+                    sipPyTypeName(Py_TYPE(secondobj)));
+
+        Py_DECREF(secondobj);
+        Py_DECREF(firstobj);
+        *sipIsErr = 1;
+
+        return 0;
+    }
+
+    *sipCppPtr = new std::pair<int, unsigned>(first, second);
+
+    Py_DECREF(secondobj);
+    Py_DECREF(firstobj);
+ 
+    return sipGetState(sipTransferObj);
+%End
+};
+
+%End
 
 
 %MappedType std::pair<float, float> /TypeHint="Tuple[float, float]"/

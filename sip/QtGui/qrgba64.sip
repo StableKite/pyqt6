@@ -55,6 +55,13 @@ public:
     QRgba64 premultiplied() const;
     QRgba64 unpremultiplied() const;
     operator quint64() const;
+%If (Qt_6_12_0 -)
+    Py_hash_t __hash__() const;
+%MethodCode
+        sipRes = qHash(*sipCpp);
+%End
+
+%End
 };
 
 QRgba64 qRgba64(quint16 r, quint16 g, quint16 b, quint16 a);

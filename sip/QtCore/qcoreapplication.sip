@@ -355,8 +355,8 @@ PyOS_InputHook = qtcore_input_hook;
 import datetime
 
 # Convenient type aliases.
-PYQT_SIGNAL = typing.Union[QtCore.pyqtSignal, QtCore.pyqtBoundSignal]
-PYQT_SLOT = typing.Union[collections.abc.Callable[..., Any], QtCore.pyqtBoundSignal]
+PYQT_SIGNAL = QtCore.pyqtSignal | QtCore.pyqtBoundSignal
+PYQT_SLOT = collections.abc.Callable[..., typing.Any] | QtCore.pyqtBoundSignal
 %End
 
 %TypeHintCode
@@ -378,26 +378,81 @@ class pyqtSignal:
     def __get__(self, instance: 'QObject', owner: type['QObject']) -> 'pyqtBoundSignal': ...
 
 
-
 class pyqtBoundSignal:
 
     signal = ...        # type: str
 
     def __getitem__(self, key: object) -> 'pyqtBoundSignal': ...
 
-    def connect(self, slot: 'PYQT_SLOT') -> 'QMetaObject.Connection': ...
+    def connect(self, slot: 'PYQT_SLOT', type: 'Qt.ConnectionType' = ..., no_receiver_check: bool = ...) -> 'QMetaObject.Connection': ...
 
     @typing.overload
     def disconnect(self) -> None: ...
 
     @typing.overload
-    def disconnect(self, slot: typing.Union['PYQT_SLOT', 'QMetaObject.Connection']) -> None: ...
+    def disconnect(self, slot: 'PYQT_SLOT' | 'QMetaObject.Connection') -> None: ...
 
     def emit(self, *args: typing.Any) -> None: ...
 
 
 FuncT = typing.TypeVar('FuncT', bound=collections.abc.Callable)
-def pyqtSlot(*types, name: typing.Optional[str] = ..., result: typing.Optional[str] = ...) -> collections.abc.Callable[[FuncT], FuncT]: ...
+def pyqtSlot(*types: type | str, name: str | None = ..., result: str | None = ...) -> collections.abc.Callable[[FuncT], FuncT]: ...
+
+
+_R = typing.TypeVar('_R')
+
+class pyqtProperty(typing.Generic[_R]):
+    # When used as a decorator factory (e.g. @pyqtProperty(int)).
+    @typing.overload
+    def __init__(
+        self,
+        type: type[_R] | str,
+        fget: None = None,
+        fset: None = None,
+        freset: None = None,
+        fdel: None = None,
+        doc: str | None = None,
+        designable: bool = True,
+        scriptable: bool = True,
+        stored: bool = True,
+        user: bool = False,
+        constant: bool = False,
+        final: bool = False,
+        notify: pyqtSignal | None = None,
+        revision: int = 0,
+    ) -> None: ...
+
+    # When used as a functional constructor (e.g. x = pyqtProperty(int, get_x, set_x)).
+    @typing.overload
+    def __init__(
+        self,
+        type: type[_R] | str,
+        fget: collections.abc.Callable[[typing.Any], _R],
+        fset: collections.abc.Callable[[typing.Any, _R], None] | None = None,
+        freset: collections.abc.Callable[[typing.Any], None] | None = None,
+        fdel: collections.abc.Callable[[typing.Any], None] | None = None,
+        doc: str | None = None,
+        designable: bool = True,
+        scriptable: bool = True,
+        stored: bool = True,
+        user: bool = False,
+        constant: bool = False,
+        final: bool = False,
+        notify: pyqtSignal | None = None,
+        revision: int = 0,
+    ) -> None: ...
+
+    # Behaviors required to act like a standard Python property descriptor.
+    def __call__(self, fget: collections.abc.Callable[[typing.Any], _R]) -> 'pyqtProperty[_R]': ...
+    @typing.overload
+    def __get__(self, instance: None, owner: type | None = None) -> 'pyqtProperty[_R]': ...
+    @typing.overload
+    def __get__(self, instance: object, owner: type | None = None) -> _R: ...
+    def __set__(self, instance: object, value: _R) -> None: ...
+    def __delete__(self, instance: object) -> None: ...
+
+    def setter(self, fset: collections.abc.Callable[[typing.Any, _R], None]) -> 'pyqtProperty[_R]': ...
+    def deleter(self, fdel: collections.abc.Callable[[typing.Any], None]) -> 'pyqtProperty[_R]': ...
 
 
 # For QObject.findChild() and QObject.findChildren().
@@ -405,6 +460,6 @@ QObjectT = typing.TypeVar('QObjectT', bound=QObject)
 
 
 # Convenient type aliases.
-PYQT_SIGNAL = typing.Union[pyqtSignal, pyqtBoundSignal]
-PYQT_SLOT = typing.Union[collections.abc.Callable[..., Any], pyqtBoundSignal]
+PYQT_SIGNAL = pyqtSignal | pyqtBoundSignal
+PYQT_SLOT = collections.abc.Callable[..., typing.Any] | pyqtBoundSignal
 %End

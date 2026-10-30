@@ -166,7 +166,7 @@ public:
     QLocationPermission(const QLocationPermission &other);
     ~QLocationPermission();
 
-    enum Accuracy
+    enum Accuracy : quint8
     {
         Approximate,
         Precise,
@@ -175,7 +175,7 @@ public:
     void setAccuracy(QLocationPermission::Accuracy accuracy);
     QLocationPermission::Accuracy accuracy() const;
 
-    enum Availability
+    enum Availability : quint8
     {
         WhenInUse,
         Always,
@@ -201,10 +201,13 @@ public:
     QCalendarPermission(const QCalendarPermission &other);
     ~QCalendarPermission();
 
-    enum AccessMode
+    enum AccessMode : quint8
     {
         ReadOnly,
         ReadWrite,
+%If (Qt_6_12_0 -)
+        WriteOnly,
+%End
     };
 
     void setAccessMode(QCalendarPermission::AccessMode mode);
@@ -227,7 +230,7 @@ public:
     QContactsPermission(const QContactsPermission &other);
     ~QContactsPermission();
 
-    enum AccessMode
+    enum AccessMode : quint8
     {
         ReadOnly,
         ReadWrite,
@@ -288,7 +291,7 @@ public:
     ~QBluetoothPermission();
 %If (Qt_6_6_0 -)
 
-    enum CommunicationMode
+    enum CommunicationMode : quint8
     {
         Access,
         Advertise,

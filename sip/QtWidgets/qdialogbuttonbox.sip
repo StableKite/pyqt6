@@ -104,4 +104,12 @@ signals:
 protected:
     virtual void changeEvent(QEvent *event);
     virtual bool event(QEvent *event);
+
+public:
+%If (Qt_6_12_0 -)
+    static QString standardButtonText(QDialogButtonBox::StandardButton button);
+%End
+%If (Qt_6_12_0 -)
+    static QKeySequence standardButtonShortcut(QDialogButtonBox::StandardButton button);
+%End
 };

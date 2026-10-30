@@ -285,3 +285,9 @@ public:
 };
 
 %End
+%If (Qt_6_12_0 -)
+QDataStream &operator<<(QDataStream &stream, const QHttpHeaders &headers) /ReleaseGIL/;
+%End
+%If (Qt_6_12_0 -)
+QDataStream &operator>>(QDataStream &stream, QHttpHeaders &headers /Constrained/) /ReleaseGIL/;
+%End

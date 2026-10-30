@@ -67,3 +67,25 @@ public:
     static QCollatorSortKey defaultSortKey(QStringView key);
 %End
 };
+
+%If (Qt_6_12_0 -)
+bool operator>=(const QCollatorSortKey &lhs, const QCollatorSortKey &rhs);
+%End
+%If (Qt_6_12_0 -)
+bool operator<=(const QCollatorSortKey &lhs, const QCollatorSortKey &rhs);
+%End
+%If (Qt_6_12_0 -)
+bool operator>(const QCollatorSortKey &lhs, const QCollatorSortKey &rhs);
+%End
+%If (Qt_6_12_0 -)
+bool operator!=(const QCollator &lhs, const QCollator &rhs);
+%End
+%If (Qt_6_12_0 -)
+bool operator!=(const QCollatorSortKey &lhs, const QCollatorSortKey &rhs);
+%End
+%If (Qt_6_12_0 -)
+bool operator==(const QCollator &lhs, const QCollator &rhs);
+%End
+%If (Qt_6_12_0 -)
+bool operator==(const QCollatorSortKey &lhs, const QCollatorSortKey &rhs);
+%End

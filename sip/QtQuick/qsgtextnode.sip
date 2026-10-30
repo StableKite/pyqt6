@@ -29,14 +29,14 @@ class QSGTextNode : public QSGTransformNode /NoDefaultCtors/
 %End
 
 public:
-    enum RenderType
+    enum RenderType : quint8
     {
         QtRendering,
         NativeRendering,
         CurveRendering,
     };
 
-    enum TextStyle
+    enum TextStyle : quint8
     {
         Normal,
         Outline,

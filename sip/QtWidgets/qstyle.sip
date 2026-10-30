@@ -674,6 +674,18 @@ public:
 %If (Qt_6_3_0 -)
         SP_TabCloseButton,
 %End
+%If (Qt_6_12_0 -)
+        SP_TabScrollLeftButton,
+%End
+%If (Qt_6_12_0 -)
+        SP_TabScrollRightButton,
+%End
+%If (Qt_6_12_0 -)
+        SP_TabScrollUpButton,
+%End
+%If (Qt_6_12_0 -)
+        SP_TabScrollDownButton,
+%End
         SP_CustomBase,
     };
 

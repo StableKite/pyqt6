@@ -42,7 +42,7 @@ namespace QSql
 
     typedef QFlags<QSql::ParamTypeFlag> ParamType;
 
-    enum TableType
+    enum TableType /BaseType=Flag/
     {
         Tables,
         SystemTables,

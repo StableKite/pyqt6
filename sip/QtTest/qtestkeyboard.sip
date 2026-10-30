@@ -44,9 +44,19 @@ namespace QTest
     void keyRelease(QWidget *widget, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay = -1);
     void keyRelease(QWidget *widget, char key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay = -1);
     void keySequence(QWidget *widget, const QKeySequence &keySequence);
+%If (Qt_6_12_0 -)
+    void simulateEvent(QWidget *widget, bool press, int code, Qt::KeyboardModifiers modifier, const QString &text, bool repeat, int delay = -1);
+%End
+%If (- Qt_6_12_0)
     void simulateEvent(QWidget *widget, bool press, int code, Qt::KeyboardModifiers modifier, QString text, bool repeat, int delay = -1);
+%End
     void sendKeyEvent(QTest::KeyAction action, QWidget *widget, Qt::Key code, char ascii /Encoding="ASCII"/, Qt::KeyboardModifiers modifier, int delay = -1);
+%If (Qt_6_12_0 -)
+    void sendKeyEvent(QTest::KeyAction action, QWidget *widget, Qt::Key code, const QString &text, Qt::KeyboardModifiers modifier, int delay = -1);
+%End
+%If (- Qt_6_12_0)
     void sendKeyEvent(QTest::KeyAction action, QWidget *widget, Qt::Key code, QString text, Qt::KeyboardModifiers modifier, int delay = -1);
+%End
     void keyEvent(QTest::KeyAction action, QWindow *window, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay = -1);
     void keyEvent(QTest::KeyAction action, QWindow *window, char ascii, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay = -1);
     void keyClick(QWindow *window, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay = -1);
@@ -56,4 +66,10 @@ namespace QTest
     void keyRelease(QWindow *window, Qt::Key key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay = -1);
     void keyRelease(QWindow *window, char key, Qt::KeyboardModifiers modifier = Qt::NoModifier, int delay = -1);
     void keySequence(QWindow *window, const QKeySequence &keySequence);
+%If (Qt_6_12_0 -)
+    void simulateEvent(QWindow *window, bool press, int code, Qt::KeyboardModifiers modifier, const QString &text, bool repeat, int delay = -1);
+%End
+%If (Qt_6_12_0 -)
+    void sendKeyEvent(QTest::KeyAction action, QWindow *window, Qt::Key code, const QString &text, Qt::KeyboardModifiers modifier, int delay = -1);
+%End
 };

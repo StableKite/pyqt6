@@ -137,4 +137,25 @@ protected:
 %If (Qt_6_10_0 -)
     void endFilterChange(QSortFilterProxyModel::Directions directions = QSortFilterProxyModel::Direction::Both);
 %End
+
+public:
+%If (Qt_6_12_0 -)
+
+    enum class DataChangeRelevanceFlag
+    {
+        NotRelevant,
+        RelevantForFiltering,
+        RelevantForSorting,
+        RelevantForFilteringAndSorting,
+    };
+
+%End
+%If (Qt_6_12_0 -)
+    typedef QFlags<QSortFilterProxyModel::DataChangeRelevanceFlag> DataChangeRelevanceFlags;
+%End
+
+protected:
+%If (Qt_6_12_0 -)
+    QSortFilterProxyModel::DataChangeRelevanceFlags dataChangeRelevanceFlags(const QModelIndex &sourceTopLeft, const QModelIndex &sourceBottomRight, const QList<int> &roles) const;
+%End
 };
