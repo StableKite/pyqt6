@@ -127,6 +127,14 @@ signals:
 
 protected:
     virtual void timerEvent(QTimerEvent *);
+
+signals:
+%If (Qt_6_12_0 -)
+    void registryUrlChanged(const QUrl &registryUrl);
+%End
+%If (Qt_6_12_0 -)
+    void persistedStoreChanged(QRemoteObjectAbstractPersistedStore *persistedStore);
+%End
 };
 
 %End

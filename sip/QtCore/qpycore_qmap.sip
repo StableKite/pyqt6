@@ -251,6 +251,115 @@ template<int, _TYPE_>
 };
 
 
+%If (Qt_6_12_0 -)
+
+%MappedType QMap<int, int> /TypeHint="Dict[int, int]", TypeHintValue="{}"/
+{
+%TypeHeaderCode
+#include <qmap.h>
+%End
+
+%ConvertFromTypeCode
+    PyObject *d = PyDict_New();
+
+    if (!d)
+        return 0;
+
+    QMap<int, int>::const_iterator it = sipCpp->constBegin();
+    QMap<int, int>::const_iterator end = sipCpp->constEnd();
+
+    while (it != end)
+    {
+        PyObject *kobj = PyLong_FromLong(it.key());
+
+        if (!kobj)
+        {
+            Py_DECREF(d);
+
+            return 0;
+        }
+
+        PyObject *vobj = PyLong_FromLong(it.value());
+
+        if (!vobj)
+        {
+            Py_DECREF(kobj);
+            Py_DECREF(d);
+
+            return 0;
+        }
+
+        int rc = PyDict_SetItem(d, kobj, vobj);
+
+        Py_DECREF(vobj);
+        Py_DECREF(kobj);
+
+        if (rc < 0)
+        {
+            Py_DECREF(d);
+
+            return 0;
+        }
+
+        ++it;
+    }
+
+    return d;
+%End
+
+%ConvertToTypeCode
+    if (!sipIsErr)
+        return PyDict_Check(sipPy);
+
+    QMap<int, int> *qm = new QMap<int, int>;
+
+    Py_ssize_t pos = 0;
+    PyObject *kobj, *vobj;
+ 
+    while (PyDict_Next(sipPy, &pos, &kobj, &vobj))
+    {
+        int k = sipLong_AsInt(kobj);
+
+        if (PyErr_Occurred())
+        {
+            if (PyErr_ExceptionMatches(PyExc_TypeError))
+                PyErr_Format(PyExc_TypeError,
+                        "a dict key has type '%s' but 'int' is expected",
+                        sipPyTypeName(Py_TYPE(kobj)));
+
+            delete qm;
+            *sipIsErr = 1;
+
+            return 0;
+        }
+
+        int v = sipLong_AsInt(vobj);
+
+        if (PyErr_Occurred())
+        {
+            if (PyErr_ExceptionMatches(PyExc_TypeError))
+                PyErr_Format(PyExc_TypeError,
+                        "a dict value has type '%s' but 'int' is expected",
+                        sipPyTypeName(Py_TYPE(vobj)));
+
+            delete qm;
+            *sipIsErr = 1;
+
+            return 0;
+        }
+
+        qm->insert(k, v);
+    }
+ 
+    *sipCppPtr = qm;
+ 
+    return sipGetState(sipTransferObj);
+%End
+};
+
+%End
+
+
 template<_TYPE1_, _TYPE2_>
 %MappedType QMultiMap<_TYPE1_, _TYPE2_>
         /TypeHintIn="Dict[_TYPE1_, Sequence[_TYPE2_]]", TypeHintOut="Dict[_TYPE1_, List[_TYPE2_]]", TypeHintValue="{}"/

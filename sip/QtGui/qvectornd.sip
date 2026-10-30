@@ -73,6 +73,13 @@ public:
     QVector4D toVector4D() const;
     QPoint toPoint() const;
     QPointF toPointF() const;
+%If (Qt_6_12_0 -)
+    Py_hash_t __hash__() const;
+%MethodCode
+        sipRes = qHash(*sipCpp);
+%End
+
+%End
 };
 
 class QVector3D
@@ -141,6 +148,13 @@ public:
     QVector4D toVector4D() const;
     QPoint toPoint() const;
     QPointF toPointF() const;
+%If (Qt_6_12_0 -)
+    Py_hash_t __hash__() const;
+%MethodCode
+        sipRes = qHash(*sipCpp);
+%End
+
+%End
 };
 
 class QVector4D
@@ -212,6 +226,13 @@ public:
     QVector3D toVector3DAffine() const;
     QPoint toPoint() const;
     QPointF toPointF() const;
+%If (Qt_6_12_0 -)
+    Py_hash_t __hash__() const;
+%MethodCode
+        sipRes = qHash(*sipCpp);
+%End
+
+%End
 };
 
 bool operator==(QVector4D v1, QVector4D v2);

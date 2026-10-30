@@ -115,6 +115,65 @@ signals:
 %If (Qt_6_11_0 -)
     void autoConnectPolicyChanged(QRangeModel::AutoConnectPolicy policy);
 %End
+
+public:
+%If (Qt_6_12_0 -)
+
+    enum class DropOperation
+    {
+        DontDrop,
+        Automatic,
+        OverwriteAndIgnore,
+        OverwriteAndExtend,
+        InsertAsSiblings,
+        InsertAsChildren,
+    };
+
+%End
+%If (Qt_6_12_0 -)
+    QCollator sortCollator() const;
+%End
+%If (Qt_6_12_0 -)
+    void setSortCollator(const QCollator &collator);
+%End
+%If (Qt_6_12_0 -)
+    void resetSortCollator();
+%End
+%If (Qt_6_12_0 -)
+    int sortRole() const;
+%End
+%If (Qt_6_12_0 -)
+    void setSortRole(int role);
+%End
+%If (Qt_6_12_0 -)
+    void resetSortRole();
+%End
+%If (Qt_6_12_0 -)
+    void setSupportedDragActions(Qt::DropActions actions);
+%End
+%If (Qt_6_12_0 -)
+    void resetSupportedDragActions();
+%End
+%If (Qt_6_12_0 -)
+    void setSupportedDropActions(Qt::DropActions actions);
+%End
+%If (Qt_6_12_0 -)
+    void resetSupportedDropActions();
+%End
+
+signals:
+%If (Qt_6_12_0 -)
+    void sortRoleChanged(int role);
+%End
+%If (Qt_6_12_0 -)
+    void sortCollatorChanged(const QCollator &collator);
+%End
+%If (Qt_6_12_0 -)
+    void supportedDragActionsChanged(Qt::DropActions actions);
+%End
+%If (Qt_6_12_0 -)
+    void supportedDropActionsChanged(Qt::DropActions actions);
+%End
 };
 
 %End

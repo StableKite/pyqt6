@@ -42,6 +42,9 @@ class QGraphicsSvgItem : public QGraphicsObject
 public:
     QGraphicsSvgItem(QGraphicsItem *parent /TransferThis/ = 0);
     QGraphicsSvgItem(const QString &fileName, QGraphicsItem *parent /TransferThis/ = 0);
+%If (Qt_6_12_0 -)
+    virtual ~QGraphicsSvgItem();
+%End
     void setSharedRenderer(QSvgRenderer *renderer /KeepReference/);
     QSvgRenderer *renderer() const;
     void setElementId(const QString &id);

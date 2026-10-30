@@ -156,3 +156,47 @@ template<_TYPE_>
 };
 
 %End
+
+
+%If (Qt_6_12_0 -)
+
+%MappedType std::optional<qreal> /TypeHint="Optional[float]"/
+{
+%TypeHeaderCode
+#include <optional>
+%End
+
+%ConvertFromTypeCode
+    if (!sipCpp->has_value())
+    {
+        Py_INCREF(Py_None);
+        return Py_None;
+    }
+
+    return PyFloat_FromDouble(sipCpp->value());
+%End
+
+%ConvertToTypeCode
+    if (sipPy == Py_None)
+    {
+        if (sipIsErr == NULL)
+            return 1;
+
+        *sipCppPtr = new std::optional<qreal>;
+
+        return SIP_TEMPORARY;
+    }
+
+    PyErr_Clear();
+    double value = PyFloat_AsDouble(sipPy);
+
+    if (sipIsErr == NULL)
+        return !PyErr_Occurred();
+
+    *sipCppPtr = new std::optional<qreal>(value);
+
+    return SIP_TEMPORARY;
+%End
+};
+
+%End

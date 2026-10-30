@@ -43,6 +43,12 @@ public:
         GALILEO,
         BEIDOU,
         QZSS,
+%If (Qt_6_12_0 -)
+        IRNSS,
+%End
+%If (Qt_6_12_0 -)
+        SBAS,
+%End
         Multiple,
         CustomType,
     };

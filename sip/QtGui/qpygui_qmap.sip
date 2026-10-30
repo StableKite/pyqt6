@@ -19,6 +19,167 @@
 // WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+%If (Qt_6_12_0 -)
+
+%MappedType QMap<int, std::pair<int, int>> /TypeHint="Dict[int, Tuple[int, int]]", TypeHintValue="{}"/
+{
+%TypeHeaderCode
+#include <qmap.h>
+%End
+
+%ConvertFromTypeCode
+    PyObject *d = PyDict_New();
+
+    if (!d)
+        return 0;
+
+    QMap<int, std::pair<int, int>>::const_iterator it = sipCpp->constBegin();
+    QMap<int, std::pair<int, int>>::const_iterator end = sipCpp->constEnd();
+
+    while (it != end)
+    {
+        PyObject *kobj = PyLong_FromLong(it.key());
+
+        if (!kobj)
+        {
+            Py_DECREF(d);
+
+            return 0;
+        }
+
+        std::pair v = it.value();
+        PyObject *vobj = Py_BuildValue("(ii)", v.first, v.second);
+
+        if (!vobj)
+        {
+            Py_DECREF(kobj);
+            Py_DECREF(d);
+
+            return 0;
+        }
+
+        int rc = PyDict_SetItem(d, kobj, vobj);
+
+        Py_DECREF(vobj);
+        Py_DECREF(kobj);
+
+        if (rc < 0)
+        {
+            Py_DECREF(d);
+
+            return 0;
+        }
+
+        ++it;
+    }
+
+    return d;
+%End
+
+%ConvertToTypeCode
+    if (!sipIsErr)
+        return PyDict_Check(sipPy);
+
+    QMap<int, std::pair<int, int>> *qm = new QMap<int, std::pair<int, int>>;
+
+    Py_ssize_t pos = 0;
+    PyObject *kobj, *vobj;
+ 
+    while (PyDict_Next(sipPy, &pos, &kobj, &vobj))
+    {
+        int k = sipLong_AsInt(kobj);
+
+        if (PyErr_Occurred())
+        {
+            if (PyErr_ExceptionMatches(PyExc_TypeError))
+                PyErr_Format(PyExc_TypeError,
+                        "a dict key has type '%s' but 'int' is expected",
+                        sipPyTypeName(Py_TYPE(kobj)));
+
+            delete qm;
+            *sipIsErr = 1;
+
+            return 0;
+        }
+
+        Py_ssize_t len = PySequence_Size(vobj);
+
+        if (len != 2 || PyUnicode_Check(vobj))
+        {
+            PyErr_Format(PyExc_TypeError,
+                    "a dict value has type '%s' but a 2 element sequence is expected",
+                    sipPyTypeName(Py_TYPE(vobj)));
+
+            delete qm;
+            *sipIsErr = 1;
+
+            return 0;
+        }
+
+        std::pair<int, int> v;
+
+        PyObject *firstobj = PySequence_GetItem(vobj, 0);
+        if (!firstobj)
+        {
+            delete qm;
+            *sipIsErr = 1;
+
+            return 0;
+        }
+
+        v.first = sipLong_AsInt(firstobj);
+        if (PyErr_Occurred())
+        {
+            if (PyErr_ExceptionMatches(PyExc_TypeError))
+                PyErr_Format(PyExc_TypeError,
+                        "the first element has type '%s' but 'int' is expected",
+                        sipPyTypeName(Py_TYPE(firstobj)));
+
+            Py_DECREF(firstobj);
+            delete qm;
+            *sipIsErr = 1;
+
+            return 0;
+        }
+
+        PyObject *secondobj = PySequence_GetItem(vobj, 1);
+        if (!secondobj)
+        {
+            delete qm;
+            *sipIsErr = 1;
+
+            return 0;
+        }
+
+        v.second = sipLong_AsInt(secondobj);
+        if (PyErr_Occurred())
+        {
+            if (PyErr_ExceptionMatches(PyExc_TypeError))
+                PyErr_Format(PyExc_TypeError,
+                        "the second element has type '%s' but 'int' is expected",
+                        sipPyTypeName(Py_TYPE(secondobj)));
+
+            Py_DECREF(secondobj);
+            delete qm;
+            *sipIsErr = 1;
+
+            return 0;
+        }
+
+        Py_DECREF(secondobj);
+
+        qm->insert(k, v);
+    }
+ 
+    *sipCppPtr = qm;
+ 
+    return sipGetState(sipTransferObj);
+%End
+};
+
+%End
+
+
 %If (Qt_6_11_0 -)
 
 template<_TYPE_, quint32>

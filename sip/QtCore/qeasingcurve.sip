@@ -286,6 +286,9 @@ public:
     void addCubicBezierSegment(const QPointF &c1, const QPointF &c2, const QPointF &endPoint);
     void addTCBSegment(const QPointF &nextPoint, qreal t, qreal c, qreal b);
     QList<QPointF> toCubicSpline() const;
+%If (Qt_6_12_0 -)
+    static QEasingCurve fromCubicBezier(QPointF c1, QPointF c2);
+%End
 };
 
 QDataStream &operator<<(QDataStream &, const QEasingCurve & /Constrained/) /ReleaseGIL/;

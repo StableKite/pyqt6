@@ -119,6 +119,7 @@ WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 %Include qproxystyle.sip
 %Include qpushbutton.sip
 %Include qradiobutton.sip
+%Include qrhiwidget.sip
 %Include qrubberband.sip
 %Include qscrollarea.sip
 %Include qscrollbar.sip

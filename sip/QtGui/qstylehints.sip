@@ -121,6 +121,17 @@ public:
 %If (Qt_6_10_0 -)
     const QAccessibilityHints *accessibility() const;
 %End
+%If (Qt_6_12_0 -)
+    std::chrono::milliseconds toolTipWakeUpDelay() const;
+%End
+%If (Qt_6_12_0 -)
+    void setToolTipWakeUpDelay(std::chrono::milliseconds toolTipWakeUpDelay);
+%End
+
+signals:
+%If (Qt_6_12_0 -)
+    void toolTipWakeUpDelayChanged(std::chrono::milliseconds toolTipWakeUpDelay);
+%End
 
 private:
     QStyleHints();

@@ -67,6 +67,9 @@ public:
     static QString localHostName();
     static QString localDomainName();
     void swap(QHostInfo &other /Constrained/);
+%If (Qt_6_12_0 -)
+    static void clearCache();
+%End
 };
 
 %ModuleHeaderCode

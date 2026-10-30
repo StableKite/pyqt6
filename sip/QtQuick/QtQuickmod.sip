@@ -56,6 +56,7 @@ WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 %Include qquickpainteditem.sip
 %Include qquickrendercontrol.sip
 %Include qquickrendertarget.sip
+%Include qquickrhiitem.sip
 %Include qquicktextdocument.sip
 %Include qquickview.sip
 %Include qquickwindow.sip

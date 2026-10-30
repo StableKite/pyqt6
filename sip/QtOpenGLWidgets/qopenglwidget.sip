@@ -104,7 +104,7 @@ public:
     void setTextureFormat(GLenum texFormat);
 %If (Qt_6_5_0 -)
 
-    enum TargetBuffer
+    enum TargetBuffer : uint8_t
     {
         LeftBuffer,
         RightBuffer,

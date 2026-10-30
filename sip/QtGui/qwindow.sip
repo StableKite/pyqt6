@@ -90,6 +90,9 @@ public:
     QRect frameGeometry() const;
     QPoint framePosition() const;
     void setFramePosition(const QPoint &point);
+%If (Qt_6_12_0 -)
+    void setFramePosition(int x, int y);
+%End
     int width() const;
     int height() const;
     int x() const;

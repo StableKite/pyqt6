@@ -152,4 +152,9 @@ public:
 
 public slots:
     void expandRecursively(const QModelIndex &index, int depth = -1);
+
+public:
+%If (Qt_6_12_0 -)
+    QRect itemDecorationRect(const QModelIndex &index) const;
+%End
 };

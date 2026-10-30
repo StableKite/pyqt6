@@ -52,8 +52,14 @@ public:
     static bool rename(const QString &oldName, const QString &newName) /ReleaseGIL/;
     bool link(const QString &newName) /ReleaseGIL/;
     static bool link(const QString &oldname, const QString &newName) /ReleaseGIL/;
-    bool copy(const QString &newName) /ReleaseGIL/;
     static bool copy(const QString &fileName, const QString &newName) /ReleaseGIL/;
+%If (Qt_6_12_0 -)
+    static bool copy(const QString &fileName, const QString &newName, QFileDevice::Permissions perm) /ReleaseGIL/;
+%End
+    bool copy(const QString &newName) /ReleaseGIL/;
+%If (Qt_6_12_0 -)
+    bool copy(const QString &newName, QFileDevice::Permissions perm) /ReleaseGIL/;
+%End
 %If (Qt_6_3_0 -)
     bool open(QIODeviceBase::OpenMode flags, QFileDevice::Permissions permissions) /ReleaseGIL/;
 %End

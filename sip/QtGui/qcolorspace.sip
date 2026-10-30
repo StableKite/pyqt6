@@ -29,7 +29,7 @@ class QColorSpace
 public:
 %If (Qt_6_8_0 -)
 
-    enum class ColorModel
+    enum class ColorModel : uint8_t
     {
         Undefined,
         Rgb,
@@ -89,7 +89,7 @@ public:
 
 %If (Qt_6_8_0 -)
 
-    enum class TransformModel
+    enum class TransformModel : uint8_t
     {
         ThreeComponentMatrix,
         ElementListProcessing,

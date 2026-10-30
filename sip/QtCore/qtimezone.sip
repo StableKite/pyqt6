@@ -98,7 +98,12 @@ public:
     QTimeZone::OffsetData previousTransition(const QDateTime &beforeDateTime) const;
     QTimeZone::OffsetDataList transitions(const QDateTime &fromDateTime, const QDateTime &toDateTime) const;
     static QByteArray systemTimeZoneId();
+%If (Qt_6_12_0 -)
+    static bool isTimeZoneIdAvailable(QByteArrayView ianaId);
+%End
+%If (- Qt_6_12_0)
     static bool isTimeZoneIdAvailable(const QByteArray &ianaId);
+%End
 %If (Qt_6_2_0 -)
     static QList<QByteArray> availableTimeZoneIds(QLocale::Territory territory /Constrained/);
 %End

@@ -467,6 +467,9 @@ class QDragMoveEvent : public QDropEvent /NoDefaultCtors/
 %End
 
 public:
+%If (Qt_6_12_0 -)
+    QDragMoveEvent(QPointF pos, Qt::DropActions actions, const QMimeData *data, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, QEvent::Type type = QEvent::DragMove);
+%End
     QDragMoveEvent(const QPoint &pos, Qt::DropActions actions, const QMimeData *data, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, QEvent::Type type = QEvent::DragMove);
     virtual ~QDragMoveEvent();
     QRect answerRect() const;
@@ -484,6 +487,9 @@ class QDragEnterEvent : public QDragMoveEvent /NoDefaultCtors/
 %End
 
 public:
+%If (Qt_6_12_0 -)
+    QDragEnterEvent(QPointF pos, Qt::DropActions actions, const QMimeData *data, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers);
+%End
     QDragEnterEvent(const QPoint &pos, Qt::DropActions actions, const QMimeData *data, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers);
     virtual ~QDragEnterEvent();
 %If (Qt_6_4_0 -)

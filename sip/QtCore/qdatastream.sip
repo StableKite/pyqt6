@@ -95,6 +95,9 @@ public:
 %If (Qt_6_11_0 -)
         Qt_6_11,
 %End
+%If (Qt_6_12_0 -)
+        Qt_6_12,
+%End
     };
 
     enum ByteOrder

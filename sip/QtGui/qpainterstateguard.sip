@@ -29,7 +29,7 @@ class QPainterStateGuard
 %End
 
 public:
-    enum class InitialState
+    enum class InitialState : quint8
     {
         Save,
         NoSave,

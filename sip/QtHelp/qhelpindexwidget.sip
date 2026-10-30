@@ -32,7 +32,7 @@ public:
 %If (Qt_6_8_0 -)
     void createIndexForCurrentFilter();
 %End
-    QModelIndex filter(const QString &filter, const QString &wildcard = QString());
+    QModelIndex filter(const QString &filter, const QString &wildcard = {});
     bool isCreatingIndex() const;
 
 signals:
@@ -49,8 +49,10 @@ class QHelpIndexWidget : public QListView
 #include <qhelpindexwidget.h>
 %End
 
+public:
+    void filterIndices(const QString &filter, const QString &wildcard = {});
+
 public slots:
-    void filterIndices(const QString &filter, const QString &wildcard = QString());
     void activateCurrentItem();
 
 signals:

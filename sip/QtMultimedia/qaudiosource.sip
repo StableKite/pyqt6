@@ -62,6 +62,12 @@ public:
 %If (Qt_6_10_0 -)
     qsizetype framesAvailable() const;
 %End
+%If (Qt_6_12_0 -)
+    void setNativePeriodFrameCount(qsizetype frameCount);
+%End
+%If (Qt_6_12_0 -)
+    qsizetype nativePeriodFrameCount() const;
+%End
 };
 
 %End

@@ -90,6 +90,9 @@ public:
     static QList<QByteArray> imageFormatsForMimeType(const QByteArray &mimeType);
     static int allocationLimit();
     static void setAllocationLimit(int mbLimit);
+%If (Qt_6_12_0 -)
+    QSize effectiveSize() const;
+%End
 
 private:
     QImageReader(const QImageReader &);

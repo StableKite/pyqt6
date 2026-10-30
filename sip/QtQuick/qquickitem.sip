@@ -334,4 +334,28 @@ signals:
 %If (Qt_6_7_0 -)
     void focusPolicyChanged(Qt::FocusPolicy);
 %End
+
+public:
+%If (Qt_6_12_0 -)
+
+    enum MutabilityGroup
+    {
+        AutoMutabilityGroup,
+        StaticMutabilityGroup,
+        ModerateMutabilityGroup,
+        DynamicMutabilityGroup,
+    };
+
+%End
+%If (Qt_6_12_0 -)
+    void setMutabilityGroup(int mutabilityGroup);
+%End
+%If (Qt_6_12_0 -)
+    int mutabilityGroup() const;
+%End
+
+signals:
+%If (Qt_6_12_0 -)
+    void mutabilityGroupChanged(int group);
+%End
 };
