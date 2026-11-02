@@ -4,6 +4,7 @@ pyqt6 (6.12.0-1) UNRELEASED; urgency=medium
   * Drop Support-for-Python-v3.15.patch, included in the new release.
   * Bump required versions of SIP and python3-pyqtbuild.
   * Bump python3-pyqt6.sip dependency to 13.13, per PKG-INFO.
+  * Revert changes to qlocale.sip from v6.12.0 to fix build.
 
  -- Dmitry Shachnev <mitya57@debian.org>  Mon, 02 Nov 2026 21:57:57 +0300
 
