@@ -1,6 +1,7 @@
 pyqt6 (6.12.0-1) UNRELEASED; urgency=medium
 
   * New upstream release.
+  * Drop Support-for-Python-v3.15.patch, included in the new release.
 
  -- Dmitry Shachnev <mitya57@debian.org>  Mon, 02 Nov 2026 21:57:57 +0300
 
