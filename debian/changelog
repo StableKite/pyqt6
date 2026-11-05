@@ -1,4 +1,4 @@
-pyqt6 (6.12.0-1) UNRELEASED; urgency=medium
+pyqt6 (6.12.0-1) unstable; urgency=medium
 
   * New upstream release.
   * Drop Support-for-Python-v3.15.patch, included in the new release.
@@ -6,7 +6,7 @@ pyqt6 (6.12.0-1) UNRELEASED; urgency=medium
   * Bump python3-pyqt6.sip dependency to 13.13, per PKG-INFO.
   * Revert changes to qlocale.sip from v6.12.0 to fix build.
 
- -- Dmitry Shachnev <mitya57@debian.org>  Mon, 02 Nov 2026 21:57:57 +0300
+ -- Dmitry Shachnev <mitya57@debian.org>  Thu, 05 Nov 2026 15:22:30 +0300
 
 pyqt6 (6.11.0-4) unstable; urgency=medium
 
