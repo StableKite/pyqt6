@@ -53,7 +53,7 @@ protected:
 
 public:
 %If (Qt_6_11_0 -)
-    static SIP_PYOBJECT create(QObject *parent /GetWrapper/ = 0) /TypeHint="QQmlPropertyMap|None"/;
+    static SIP_PYOBJECT create(QObject *parent /GetWrapper/ = 0) /TypeHint="QQmlPropertyMap | None"/;
 %MethodCode
         sipRes = sipConvertFromType(QQmlPropertyMap::create(a0),
                 sipType_QQmlPropertyMap, a0Wrapper);

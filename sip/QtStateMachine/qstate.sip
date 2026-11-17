@@ -45,7 +45,7 @@ public:
     QAbstractState *errorState() const;
     void setErrorState(QAbstractState *state /KeepReference/);
     void addTransition(QAbstractTransition *transition /Transfer/);
-    QSignalTransition *addTransition(SIP_PYOBJECT signal /TypeHint="pyqtBoundSignal"/, QAbstractState *target);
+    QSignalTransition *addTransition(SIP_PYOBJECT signal /TypeHint="QtCore.pyqtBoundSignal"/, QAbstractState *target);
 %MethodCode
         QObject *sender;
         QByteArray signal_signature;

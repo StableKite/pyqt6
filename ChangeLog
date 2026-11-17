@@ -1,3 +1,41 @@
+commit 682ee952be246f174d27d949aebaba3a3af36af3
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Wed Nov 11 13:52:46 2026 +0000
+
+    Release v6.12.1
+
+commit 4a9b469aef1c272b3c8a8c3da11af134d4d116ef
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Mon Nov 9 14:37:03 2026 +0000
+
+    `.pyi` stub files
+    
+    The generated stub files no longer quote forward references.
+
+commit d7d0dac16a308aed6fd05266e0435b4d521a7759
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Sat Nov 7 11:11:25 2026 +0000
+
+    `QtQuickControls2` module
+    
+    The `QtQuickControls2` module has been added.
+
+commit a77af6bac8ebf755fcc0bafa002986d1c9014466
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Thu Nov 5 17:06:07 2026 +0000
+
+    `.pyi` stub files
+    
+    The generated stub files now pass `flake8`.
+
+commit b88d0c2cf5b5640fee3c9fde650069c232f9f082
+Author: Phil Thompson <phil@riverbankcomputing.com>
+Date:   Wed Nov 4 12:31:11 2026 +0000
+
+    Bug fixes
+    
+    - Fix a regression in v6.12.0 that broke building using GCC v16.
+
 commit c9cc935766b5576606d40d8a52c56363957208bc
 Author: Phil Thompson <phil@riverbankcomputing.com>
 Date:   Mon Oct 26 17:29:18 2026 +0000

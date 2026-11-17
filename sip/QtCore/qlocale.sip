@@ -1273,31 +1273,15 @@ QDataStream &operator<<(QDataStream &, const QLocale &) /ReleaseGIL/;
 QDataStream &operator>>(QDataStream &, QLocale & /Constrained/) /ReleaseGIL/;
 %If (Qt_6_8_0 -)
 bool operator==(const QLocale &lhs, const QLocale::Language &rhs);
-%MethodCode
-    sipRes = operator==(*sipCpp, QLocale((QLocale::Language)a0));
-%End
-
 %End
 %If (Qt_6_8_0 -)
 bool operator==(const QLocale::Language &lhs, const QLocale &rhs);
-%MethodCode
-    sipRes = operator==(QLocale(sipCpp), *a0);
-%End
-
 %End
 bool operator==(const QLocale &lhs, const QLocale &rhs);
 %If (Qt_6_8_0 -)
 bool operator!=(const QLocale &lhs, const QLocale::Language &rhs);
-%MethodCode
-    sipRes = operator!=(*sipCpp, QLocale((QLocale::Language)a0));
-%End
-
 %End
 %If (Qt_6_8_0 -)
 bool operator!=(const QLocale::Language &lhs, const QLocale &rhs);
-%MethodCode
-    sipRes = operator!=(QLocale(sipCpp), *a0);
-%End
-
 %End
 bool operator!=(const QLocale &lhs, const QLocale &rhs);

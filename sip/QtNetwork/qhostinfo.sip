@@ -88,3 +88,8 @@ pyqt6_qtnetwork_get_connection_parts_t pyqt6_qtnetwork_get_connection_parts;
 pyqt6_qtnetwork_get_connection_parts = (pyqt6_qtnetwork_get_connection_parts_t)sipImportSymbol("pyqt6_get_connection_parts");
 Q_ASSERT(pyqt6_qtnetwork_get_connection_parts);
 %End
+
+%TypeHintCode
+# Support for QDate, QDateTime and QTime.
+import datetime
+%End

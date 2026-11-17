@@ -24,7 +24,6 @@
 
 %Import QtCore/QtCoremod.sip
 %Import QtGui/QtGuimod.sip
-%Import QtNetwork/QtNetworkmod.sip
 
 %Copying
 Copyright (c) 2026 Riverbank Computing Limited <info@riverbankcomputing.com>

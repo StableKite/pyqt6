@@ -64,3 +64,8 @@ bool operator==(const QGeoAreaMonitorInfo &lhs, const QGeoAreaMonitorInfo &rhs);
 %If (Qt_6_2_0 -)
 bool operator!=(const QGeoAreaMonitorInfo &lhs, const QGeoAreaMonitorInfo &rhs);
 %End
+
+%TypeHintCode
+# Support for QDate, QDateTime and QTime.
+import datetime
+%End

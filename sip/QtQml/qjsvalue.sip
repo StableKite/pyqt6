@@ -22,7 +22,7 @@
 
 typedef QList<QJSValue> QJSValueList;
 
-class QJSValue /TypeHintIn="Union[QJSValue, QJSValue.SpecialValue, bool, int, float, QString]"/
+class QJSValue /TypeHintIn="Union[QJSValue, QJSValue.SpecialValue, bool, float, QString]"/
 {
 %TypeHeaderCode
 #include <qjsvalue.h>

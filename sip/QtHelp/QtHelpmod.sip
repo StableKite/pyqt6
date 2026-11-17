@@ -23,7 +23,6 @@
 %Module(name=PyQt6.QtHelp, keyword_arguments="Optional", use_limited_api=True)
 
 %Import QtCore/QtCoremod.sip
-%Import QtGui/QtGuimod.sip
 %Import QtWidgets/QtWidgetsmod.sip
 
 %Copying

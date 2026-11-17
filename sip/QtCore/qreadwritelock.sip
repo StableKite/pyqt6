@@ -76,7 +76,7 @@ public:
         Py_INCREF(sipRes);
 %End
 
-    void __exit__(SIP_PYOBJECT type, SIP_PYOBJECT value, SIP_PYOBJECT traceback);
+    void __exit__(SIP_PYOBJECT type /TypeHint="object"/, SIP_PYOBJECT value /TypeHint="object"/, SIP_PYOBJECT traceback /TypeHint="object"/);
 %MethodCode
         sipCpp->unlock();
 %End
@@ -104,7 +104,7 @@ public:
         Py_INCREF(sipRes);
 %End
 
-    void __exit__(SIP_PYOBJECT type, SIP_PYOBJECT value, SIP_PYOBJECT traceback);
+    void __exit__(SIP_PYOBJECT type /TypeHint="object"/, SIP_PYOBJECT value /TypeHint="object"/, SIP_PYOBJECT traceback /TypeHint="object"/);
 %MethodCode
         sipCpp->unlock();
 %End

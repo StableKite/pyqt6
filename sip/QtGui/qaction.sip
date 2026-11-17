@@ -24,6 +24,13 @@ class QMenu /External/;
 
 class QAction : public QObject
 {
+%TypeHintCode
+try:
+    from PyQt6.QtWidgets import QMenu
+except ImportError:
+    pass
+%End
+
 %TypeHeaderCode
 #include <qaction.h>
 %End

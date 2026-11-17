@@ -24,7 +24,6 @@
 
 %Import QtCore/QtCoremod.sip
 %Import QtGui/QtGuimod.sip
-%Import QtOpenGL/QtOpenGLmod.sip
 %Import QtWidgets/QtWidgetsmod.sip
 
 %Copying

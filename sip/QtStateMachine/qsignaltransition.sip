@@ -28,7 +28,7 @@ class QSignalTransition : public QAbstractTransition
 
 public:
     QSignalTransition(QState *sourceState /TransferThis/ = 0);
-    QSignalTransition(SIP_PYOBJECT signal /TypeHint="pyqtBoundSignal"/, QState *sourceState /TransferThis/ = 0) /NoDerived/;
+    QSignalTransition(SIP_PYOBJECT signal /TypeHint="QtCore.pyqtBoundSignal"/, QState *sourceState /TransferThis/ = 0) /NoDerived/;
 %MethodCode
         QObject *sender;
         QByteArray signal_signature;

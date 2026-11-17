@@ -394,7 +394,7 @@ callable.
         sipRes = new QString(QCoreApplication::translate(sipPyTypeName((PyTypeObject *)sipSelf), a0, a1, a2));
 %End
 
-    SIP_PYOBJECT findChild(SIP_PYTYPE type /TypeHint="Type[QObjectT]"/, const QString &name = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const /TypeHint="QObjectT|None"/;
+    SIP_PYOBJECT findChild(SIP_PYTYPE type /TypeHint="Type[_QObjectT]"/, const QString &name = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const /TypeHint="_QObjectT | None"/;
 %MethodCode
         sipRes = qtcore_FindChild(sipCpp, qtcore_type_to_tuple(a0), *a1, *a2);
         
@@ -402,7 +402,7 @@ callable.
             sipIsErr = 1;
 %End
 
-    SIP_PYOBJECT findChild(SIP_PYTUPLE types /TypeHint="Tuple[Type[QObjectT], ...]", TypeHintValue="()"/, const QString &name = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const /TypeHint="QObjectT|None"/;
+    SIP_PYOBJECT findChild(SIP_PYTUPLE types /TypeHint="Tuple[Type[_QObjectT], ...]", TypeHintValue="()"/, const QString &name = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const /TypeHint="_QObjectT | None"/;
 %MethodCode
         sipRes = qtcore_FindChild(sipCpp, qtcore_check_tuple_types(a0), *a1, *a2);
         
@@ -410,7 +410,7 @@ callable.
             sipIsErr = 1;
 %End
 
-    SIP_PYLIST findChildren(SIP_PYTYPE type /TypeHint="Type[QObjectT]"/, const QString &name = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const /TypeHint="List[QObjectT]"/;
+    SIP_PYLIST findChildren(SIP_PYTYPE type /TypeHint="Type[_QObjectT]"/, const QString &name = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const /TypeHint="List[_QObjectT]"/;
 %MethodCode
         sipRes = qtcore_FindChildren(sipCpp, qtcore_type_to_tuple(a0), *a1, *a2);
         
@@ -418,7 +418,7 @@ callable.
             sipIsErr = 1;
 %End
 
-    SIP_PYLIST findChildren(SIP_PYTUPLE types /TypeHint="Tuple[Type[QObjectT], ...]", TypeHintValue="()"/, const QString &name = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const /TypeHint="List[QObjectT]"/;
+    SIP_PYLIST findChildren(SIP_PYTUPLE types /TypeHint="Tuple[Type[_QObjectT], ...]", TypeHintValue="()"/, const QString &name = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const /TypeHint="List[_QObjectT]"/;
 %MethodCode
         sipRes = qtcore_FindChildren(sipCpp, qtcore_check_tuple_types(a0), *a1, *a2);
         
@@ -426,7 +426,7 @@ callable.
             sipIsErr = 1;
 %End
 
-    SIP_PYLIST findChildren(SIP_PYTYPE type /TypeHint="Type[QObjectT]"/, const QRegularExpression &re, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const /TypeHint="List[QObjectT]"/;
+    SIP_PYLIST findChildren(SIP_PYTYPE type /TypeHint="Type[_QObjectT]"/, const QRegularExpression &re, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const /TypeHint="List[_QObjectT]"/;
 %MethodCode
         sipRes = qtcore_FindChildren(sipCpp, qtcore_type_to_tuple(a0), *a1, *a2);
         
@@ -434,7 +434,7 @@ callable.
             sipIsErr = 1;
 %End
 
-    SIP_PYLIST findChildren(SIP_PYTUPLE types /TypeHint="Tuple[Type[QObjectT], ...]", TypeHintValue="()"/, const QRegularExpression &re, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const /TypeHint="List[QObjectT]"/;
+    SIP_PYLIST findChildren(SIP_PYTUPLE types /TypeHint="Tuple[Type[_QObjectT], ...]", TypeHintValue="()"/, const QRegularExpression &re, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const /TypeHint="List[_QObjectT]"/;
 %MethodCode
         sipRes = qtcore_FindChildren(sipCpp, qtcore_check_tuple_types(a0), *a1, *a2);
         
@@ -628,7 +628,7 @@ public:
         Py_INCREF(sipRes);
 %End
 
-    void __exit__(SIP_PYOBJECT type, SIP_PYOBJECT value, SIP_PYOBJECT traceback);
+    void __exit__(SIP_PYOBJECT type /TypeHint="object"/, SIP_PYOBJECT value /TypeHint="object"/, SIP_PYOBJECT traceback /TypeHint="object"/);
 %MethodCode
         sipCpp->unblock();
 %End
