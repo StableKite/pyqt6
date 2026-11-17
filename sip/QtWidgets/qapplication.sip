@@ -313,3 +313,8 @@ Q_ASSERT(pyqt6_qtwidgets_update_argv_list);
 
 qpywidgets_post_init();
 %End
+
+%TypeHintCode
+# Support for QDate, QDateTime and QTime.
+import datetime
+%End

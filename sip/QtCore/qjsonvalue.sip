@@ -20,7 +20,7 @@
 // WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-class QJsonValue /AllowNone,TypeHintIn="Union[QJsonValue, QJsonValue.Type, QJsonArray, QJsonObject, bool, int, float, None, QString]"/
+class QJsonValue /AllowNone,TypeHintIn="Union[QJsonValue, QJsonValue.Type, QJsonArray, QJsonObject, bool, float, QString]"/
 {
 %TypeHeaderCode
 #include <qjsonvalue.h>

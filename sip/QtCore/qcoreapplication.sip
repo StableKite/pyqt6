@@ -130,7 +130,7 @@ public:
         Py_INCREF(sipRes);
 %End
 
-    void __exit__(SIP_PYOBJECT type, SIP_PYOBJECT value, SIP_PYOBJECT traceback);
+    void __exit__(SIP_PYOBJECT type /TypeHint="object"/, SIP_PYOBJECT value /TypeHint="object"/, SIP_PYOBJECT traceback /TypeHint="object"/);
 %MethodCode
         // Make sure the QCoreApplication is destroyed.
         delete sipCpp;
@@ -351,12 +351,9 @@ PyOS_InputHook = qtcore_input_hook;
 %End
 
 %ExportedTypeHintCode
-# Support for QDate, QDateTime and QTime.
-import datetime
-
 # Convenient type aliases.
-PYQT_SIGNAL = QtCore.pyqtSignal | QtCore.pyqtBoundSignal
-PYQT_SLOT = collections.abc.Callable[..., typing.Any] | QtCore.pyqtBoundSignal
+PYQT_SIGNAL: typing.TypeAlias = QtCore.pyqtSignal | QtCore.pyqtBoundSignal
+PYQT_SLOT: typing.TypeAlias = collections.abc.Callable[..., typing.Any] | QtCore.pyqtBoundSignal
 %End
 
 %TypeHintCode
@@ -367,39 +364,40 @@ import datetime
 # Support for new-style signals and slots.
 class pyqtSignal:
 
-    signatures = ...    # type: tuple[str, ...]
+    signatures: tuple[str, ...]
 
-    def __init__(self, *types: typing.Any, name: str = ...) -> None: ...
-
-    @typing.overload
-    def __get__(self, instance: None, owner: type['QObject']) -> 'pyqtSignal': ...
+    def __init__(self, *types: typing.Any, name: str = ..., revision: int = ..., arguments: collections.abc.Sequence[str]) -> None: ...
 
     @typing.overload
-    def __get__(self, instance: 'QObject', owner: type['QObject']) -> 'pyqtBoundSignal': ...
+    def __get__(self, instance: None, owner: type[QObject]) -> typing.Self: ...
+
+    @typing.overload
+    def __get__(self, instance: QObject, owner: type[QObject]) -> pyqtBoundSignal: ...
 
 
 class pyqtBoundSignal:
 
-    signal = ...        # type: str
+    signal: str
 
-    def __getitem__(self, key: object) -> 'pyqtBoundSignal': ...
+    def __getitem__(self, key: object) -> typing.Self: ...
 
-    def connect(self, slot: 'PYQT_SLOT', type: 'Qt.ConnectionType' = ..., no_receiver_check: bool = ...) -> 'QMetaObject.Connection': ...
+    def connect(self, slot: PYQT_SLOT, type: Qt.ConnectionType = ..., no_receiver_check: bool = ...) -> QMetaObject.Connection: ...
 
     @typing.overload
     def disconnect(self) -> None: ...
 
     @typing.overload
-    def disconnect(self, slot: 'PYQT_SLOT' | 'QMetaObject.Connection') -> None: ...
+    def disconnect(self, slot: PYQT_SLOT | QMetaObject.Connection) -> None: ...
 
     def emit(self, *args: typing.Any) -> None: ...
 
 
-FuncT = typing.TypeVar('FuncT', bound=collections.abc.Callable)
-def pyqtSlot(*types: type | str, name: str | None = ..., result: str | None = ...) -> collections.abc.Callable[[FuncT], FuncT]: ...
+_FuncT = typing.TypeVar('_FuncT', bound=collections.abc.Callable)
+def pyqtSlot(*types: type | str, name: str | None = ..., result: str | None = ...) -> collections.abc.Callable[[_FuncT], _FuncT]: ...
 
 
 _R = typing.TypeVar('_R')
+
 
 class pyqtProperty(typing.Generic[_R]):
     # When used as a decorator factory (e.g. @pyqtProperty(int)).
@@ -443,23 +441,23 @@ class pyqtProperty(typing.Generic[_R]):
     ) -> None: ...
 
     # Behaviors required to act like a standard Python property descriptor.
-    def __call__(self, fget: collections.abc.Callable[[typing.Any], _R]) -> 'pyqtProperty[_R]': ...
+    def __call__(self, fget: collections.abc.Callable[[typing.Any], _R]) -> pyqtProperty[_R]: ...
     @typing.overload
-    def __get__(self, instance: None, owner: type | None = None) -> 'pyqtProperty[_R]': ...
+    def __get__(self, instance: None, owner: type | None = None) -> pyqtProperty[_R]: ...
     @typing.overload
     def __get__(self, instance: object, owner: type | None = None) -> _R: ...
     def __set__(self, instance: object, value: _R) -> None: ...
     def __delete__(self, instance: object) -> None: ...
 
-    def setter(self, fset: collections.abc.Callable[[typing.Any, _R], None]) -> 'pyqtProperty[_R]': ...
-    def deleter(self, fdel: collections.abc.Callable[[typing.Any], None]) -> 'pyqtProperty[_R]': ...
+    def setter(self, fset: collections.abc.Callable[[typing.Any, _R], None]) -> pyqtProperty[_R]: ...
+    def deleter(self, fdel: collections.abc.Callable[[typing.Any], None]) -> pyqtProperty[_R]: ...
 
 
 # For QObject.findChild() and QObject.findChildren().
-QObjectT = typing.TypeVar('QObjectT', bound=QObject)
+_QObjectT = typing.TypeVar('_QObjectT', bound=QObject)
 
 
 # Convenient type aliases.
-PYQT_SIGNAL = pyqtSignal | pyqtBoundSignal
-PYQT_SLOT = collections.abc.Callable[..., typing.Any] | pyqtBoundSignal
+PYQT_SIGNAL: typing.TypeAlias = pyqtSignal | pyqtBoundSignal
+PYQT_SLOT: typing.TypeAlias = collections.abc.Callable[..., typing.Any] | pyqtBoundSignal
 %End

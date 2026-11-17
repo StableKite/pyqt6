@@ -23,6 +23,7 @@
 %Module(name=PyQt6.QtMultimediaWidgets, keyword_arguments="Optional", use_limited_api=True)
 
 %Import QtCore/QtCoremod.sip
+%Import QtGui/QtGuimod.sip
 %Import QtMultimedia/QtMultimediamod.sip
 %Import QtWidgets/QtWidgetsmod.sip
 

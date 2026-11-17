@@ -301,19 +301,21 @@ qpyopengl_init();
 
 %TypeHintCode
 # Convenient aliases for complicated OpenGL types.
-PYQT_OPENGL_ARRAY = typing.Union[typing.Sequence[int], typing.Sequence[float],
-        PyQt6.sip.Buffer, None]
-PYQT_OPENGL_BOUND_ARRAY = typing.Union[typing.Sequence[int],
-        typing.Sequence[float], PyQt6.sip.Buffer, int, None]
-PYQT_SHADER_ATTRIBUTE_ARRAY = typing.Union[typing.Sequence[QtGui.QVector2D],
-        typing.Sequence[QtGui.QVector3D], typing.Sequence[QtGui.QVector4D],
-        typing.Sequence[typing.Sequence[float]]]
-PYQT_SHADER_UNIFORM_VALUE_ARRAY = typing.Union[
-        typing.Sequence[QtGui.QVector2D], typing.Sequence[QtGui.QVector3D],
-        typing.Sequence[QtGui.QVector4D], typing.Sequence[QtGui.QMatrix2x2],
-        typing.Sequence[QtGui.QMatrix2x3], typing.Sequence[QtGui.QMatrix2x4],
-        typing.Sequence[QtGui.QMatrix3x2], typing.Sequence[QtGui.QMatrix3x3],
-        typing.Sequence[QtGui.QMatrix3x4], typing.Sequence[QtGui.QMatrix4x2],
-        typing.Sequence[QtGui.QMatrix4x3], typing.Sequence[QtGui.QMatrix4x4],
-        typing.Sequence[typing.Sequence[float]]]
+from collections.abc import Buffer, Sequence
+
+PYQT_OPENGL_ARRAY: typing.TypeAlias = Sequence[int] | Sequence[float] | \
+    Buffer | None
+PYQT_OPENGL_BOUND_ARRAY: typing.TypeAlias = Sequence[int] | Sequence[float] | \
+    Buffer | int | None
+PYQT_SHADER_ATTRIBUTE_ARRAY: typing.TypeAlias = Sequence[QtGui.QVector2D] | \
+    Sequence[QtGui.QVector3D] | Sequence[QtGui.QVector4D] | \
+    Sequence[Sequence[float]]
+PYQT_SHADER_UNIFORM_VALUE_ARRAY: typing.TypeAlias = \
+    Sequence[QtGui.QVector2D] | Sequence[QtGui.QVector3D] | \
+    Sequence[QtGui.QVector4D] | Sequence[QtGui.QMatrix2x2] | \
+    Sequence[QtGui.QMatrix2x3] | Sequence[QtGui.QMatrix2x4] | \
+    Sequence[QtGui.QMatrix3x2] | Sequence[QtGui.QMatrix3x3] | \
+    Sequence[QtGui.QMatrix3x4] | Sequence[QtGui.QMatrix4x2] | \
+    Sequence[QtGui.QMatrix4x3] | Sequence[QtGui.QMatrix4x4] | \
+    Sequence[Sequence[float]]
 %End
