@@ -58,6 +58,10 @@ Test-Command: debian/tests/test_import.sh PyQt6.QtQuick3D
 Depends: python3-all-dbg, python3-pyqt6.qtquick3d
 Restrictions: superficial
 
+Test-Command: debian/tests/test_import.sh PyQt6.QtQuickControls2
+Depends: python3-all-dbg, python3-pyqt6.qtquickcontrols2
+Restrictions: superficial
+
 Test-Command: debian/tests/test_import.sh PyQt6.QtRemoteObjects
 Depends: python3-all-dbg, python3-pyqt6.qtremoteobjects
 Restrictions: superficial

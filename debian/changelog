@@ -3,6 +3,7 @@ pyqt6 (6.12.1-1) UNRELEASED; urgency=medium
   * New upstream release.
   * Drop Revert-changes-to-qlocale.sip-from-v6.12.0.patch, included in the
     new release.
+  * Add python3-pyqt6.qtquickcontrols2 package.
 
  -- Dmitry Shachnev <mitya57@debian.org>  Tue, 17 Nov 2026 17:41:23 +0300
 

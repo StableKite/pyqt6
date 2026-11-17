@@ -174,6 +174,15 @@ Description: Python bindings for Qt 6 Quick 3D module
  .
  This package contains the QtQuick3D module of PyQt6.
 
+Package: python3-pyqt6.qtquickcontrols2
+Architecture: any
+Depends: python3-pyqt6 (= ${binary:Version})
+Description: Python bindings for Qt 6 Quick Controls 2 module
+ Qt Quick Controls provides a set of controls that can be used to build
+ complete interfaces in Qt Quick.
+ .
+ This package contains the QtQuickControls2 module of PyQt6.
+
 Package: python3-pyqt6.qtremoteobjects
 Architecture: any
 Depends: python3-pyqt6 (= ${binary:Version})
