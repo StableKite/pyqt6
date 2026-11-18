@@ -1,1 +1,1 @@
-usr/lib/python3/dist-packages/dbus/mainloop/pyqt6.abi3-${DEB_HOST_MULTIARCH}.so
+usr/lib/python3/dist-packages/dbus/mainloop/pyqt6.*-${DEB_HOST_MULTIARCH}.so
