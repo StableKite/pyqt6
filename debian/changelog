@@ -1,3 +1,9 @@
+pyqt6 (6.11.0-3build1) stonking; urgency=high
+
+  * No-change rebuild for Qt 6.11.2 private ABI.
+
+ -- Rik Mills <rikmills@kde.org>  Fri, 04 Sep 2026 20:51:37 +0100
+
 pyqt6 (6.11.0-3) unstable; urgency=medium
 
   * Backport upstream patch to support Python 3.15 (closes: #1144993).
