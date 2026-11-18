@@ -189,46 +189,59 @@ void qWarning(const char *msg) /ReleaseGIL/;
 
 SIP_PYCALLABLE qInstallMessageHandler(SIP_PYCALLABLE /AllowNone,TypeHint="Optional[Callable[[QtMsgType, QMessageLogContext, QString], None]]"/) /TypeHint="Optional[Callable[[QtMsgType, QMessageLogContext, QString], None]]"/;
 %MethodCode
-    // Treat None as the default handler.
-    QtMessageHandler old = qInstallMessageHandler((a0 != Py_None) ? qtcore_MessageHandler : 0);
-    
-    // If we recognise the old handler, then return it.  Otherwise return
-    // the default handler.  This doesn't exactly mimic the Qt behaviour
-    // but it is probably close enough for the way it will be used.
-    sipRes = (old == qtcore_MessageHandler) ? qtcore_PyMessageHandler : Py_None;
-    Py_INCREF(sipRes);
-    
-    // Save the new Python handler.
-    Py_XDECREF(qtcore_PyMessageHandler);
-    qtcore_PyMessageHandler = a0;
-    Py_INCREF(qtcore_PyMessageHandler);
+    PyObject *previous;
+    {
+        QMutexLocker lock(&qtcore_MessageHandlerMutex);
+        QtMessageHandler old = qInstallMessageHandler(
+                a0 != Py_None ? qtcore_MessageHandler : nullptr);
+
+        previous = qtcore_PyMessageHandler;
+        sipRes = old == qtcore_MessageHandler ? previous : Py_None;
+        Py_INCREF(sipRes);
+        Py_INCREF(a0);
+        qtcore_PyMessageHandler = a0;
+    }
+    // A callable's destructor can re-enter qInstallMessageHandler().
+    Py_XDECREF(previous);
 %End
 
 // Module code needed by qInstallMessageHandler().
 %ModuleCode
+#include <QMutex>
+
 // The user supplied Python handler.
-static PyObject *qtcore_PyMessageHandler = 0;
+static QMutex qtcore_MessageHandlerMutex;
+static PyObject *qtcore_PyMessageHandler = nullptr;
 
 // The C++ wrapper around the Python handler.
 static void qtcore_MessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
-    PyObject *res;
-
     SIP_BLOCK_THREADS
 
-    res = sipCallMethod(0, qtcore_PyMessageHandler, "FDD", type, sipType_QtMsgType, &context, sipType_QMessageLogContext, NULL, &msg, sipType_QString, NULL);
-
-    Py_XDECREF(res);
-
-    if (res != NULL && res != Py_None)
+    PyObject *handler;
     {
-        PyErr_SetString(PyExc_TypeError, "invalid result type from PyQt message handler");
-        res = NULL;
+        QMutexLocker lock(&qtcore_MessageHandlerMutex);
+        handler = qtcore_PyMessageHandler;
+        Py_XINCREF(handler);
     }
 
-    if (res == NULL)
-        pyqt6_err_print();
+    if (handler != nullptr && handler != Py_None)
+    {
+        PyObject *res = sipCallMethod(0, handler, "FDD", type, sipType_QtMsgType, &context, sipType_QMessageLogContext, NULL, &msg, sipType_QString, NULL);
 
+        if (res != nullptr && res != Py_None)
+        {
+            PyErr_SetString(PyExc_TypeError, "invalid result type from PyQt message handler");
+            Py_CLEAR(res);
+        }
+
+        if (res == nullptr)
+            pyqt6_err_print();
+        else
+            Py_DECREF(res);
+    }
+
+    Py_XDECREF(handler);
     SIP_UNBLOCK_THREADS
 }
 %End
