@@ -63,7 +63,7 @@ public:
         if (a0 < 0)
         {
             PyErr_SetString(PyExc_ValueError, "maximum length of data to be read cannot be negative");
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         }
         else
         {
@@ -84,7 +84,7 @@ public:
                 sipRes = PyBytes_FromStringAndSize(s, len);
         
                 if (!sipRes)
-                    sipIsErr = 1;
+                    sipError = sipErrorFail;
             }
         
             delete[] s;
@@ -97,7 +97,7 @@ public:
         if (a0 < 0)
         {
             PyErr_SetString(PyExc_ValueError, "maximum length of data to be read cannot be negative");
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         }
         else
         {
@@ -118,7 +118,7 @@ public:
                 sipRes = PyBytes_FromStringAndSize(s, len);
         
                 if (!sipRes)
-                    sipIsErr = 1;
+                    sipError = sipErrorFail;
             }
         
             delete[] s;
@@ -153,7 +153,7 @@ public:
         }
         else
         {
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         }
 %End
 
@@ -163,7 +163,7 @@ public:
         if (a0 < 0)
         {
             PyErr_SetString(PyExc_ValueError, "maximum length of data to be read cannot be negative");
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         }
         else
         {
@@ -184,7 +184,7 @@ public:
                 sipRes = PyBytes_FromStringAndSize(s, len);
         
                 if (!sipRes)
-                    sipIsErr = 1;
+                    sipError = sipErrorFail;
             }
         
             delete[] s;
@@ -214,7 +214,7 @@ protected:
         if (a0 < 0)
         {
             PyErr_SetString(PyExc_ValueError, "maximum length of data to be read cannot be negative");
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         }
         else
         {
@@ -239,7 +239,7 @@ protected:
                 sipRes = PyBytes_FromStringAndSize(s, len);
         
                 if (!sipRes)
-                    sipIsErr = 1;
+                    sipError = sipErrorFail;
             }
         
             delete[] s;
@@ -281,7 +281,7 @@ protected:
         if (a0 < 0)
         {
             PyErr_SetString(PyExc_ValueError, "maximum length of data to be read cannot be negative");
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         }
         else
         {
@@ -306,7 +306,7 @@ protected:
                 sipRes = PyBytes_FromStringAndSize(s, len);
         
                 if (!sipRes)
-                    sipIsErr = 1;
+                    sipError = sipErrorFail;
             }
         
             delete[] s;
@@ -359,7 +359,7 @@ protected:
         }
         else
         {
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         }
 %End
 
