@@ -40,7 +40,7 @@ public:
         
         // Convert the list.
         if ((argv = pyqt6_from_argv_list(a0, argc)) == NULL)
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         else
         {
             // Create it now the arguments are right.
@@ -194,7 +194,7 @@ void qAddPostRoutine(SIP_PYCALLABLE);
             }
     
         if (app && PyList_Append(qtcore_PostRoutines, a0) < 0)
-            sipIsErr = 1;
+            sipError = sipErrorFail;
     }
     else if ((qtcore_PostRoutines = PyList_New(1)) != NULL)
     {
@@ -205,7 +205,7 @@ void qAddPostRoutine(SIP_PYCALLABLE);
     }
     else
     {
-        sipIsErr = 1;
+        sipError = sipErrorFail;
     }
 %End
 
@@ -229,7 +229,7 @@ void qAddPreRoutine(SIP_PYCALLABLE routine /TypeHint="Callable[[], None]"/);
     if (qtcore_PreRoutines != NULL)
     {
         if (PyList_Append(qtcore_PreRoutines, a0) < 0)
-            sipIsErr = 1;
+            sipError = sipErrorFail;
     }
     else if ((qtcore_PreRoutines = PyList_New(1)) != NULL)
     {
@@ -240,7 +240,7 @@ void qAddPreRoutine(SIP_PYCALLABLE routine /TypeHint="Callable[[], None]"/);
     }
     else
     {
-        sipIsErr = 1;
+        sipError = sipErrorFail;
     }
 %End
 
@@ -252,6 +252,9 @@ static PyObject *qtcore_PreRoutines = NULL;
 // Call all of the registered Python pre routines.
 static void qtcore_CallPreRoutines()
 {
+    // Qt can invoke startup routines while the calling thread is detached.
+    PyGILState_STATE state = PyGILState_Ensure();
+
     for (Py_ssize_t i = 0; i < PyList_Size(qtcore_PreRoutines); ++i)
     {
         PyObject *pr = PyList_GetItem(qtcore_PreRoutines, i);
@@ -263,6 +266,8 @@ static void qtcore_CallPreRoutines()
             Py_XDECREF(res);
         }
     }
+
+    PyGILState_Release(state);
 }
 
 
@@ -272,6 +277,9 @@ static PyObject *qtcore_PostRoutines = NULL;
 // Call all of the registered Python post routines.
 static void qtcore_CallPostRoutines()
 {
+    // Qt can invoke cleanup routines while the calling thread is detached.
+    PyGILState_STATE state = PyGILState_Ensure();
+
     for (Py_ssize_t i = 0; i < PyList_Size(qtcore_PostRoutines); ++i)
     {
         PyObject *pr = PyList_GetItem(qtcore_PostRoutines, i);
@@ -283,6 +291,8 @@ static void qtcore_CallPostRoutines()
             Py_XDECREF(res);
         }
     }
+
+    PyGILState_Release(state);
 }
 %End
 void pyqtRemoveInputHook();
