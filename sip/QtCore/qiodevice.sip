@@ -20,10 +20,15 @@
 // WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
+%ModuleCode
+#include "qpycore_qiodevicebuffer.h"
+%End
+
 class QIODevice : public QObject, public QIODeviceBase
 {
 %TypeHeaderCode
 #include <qiodevice.h>
+#include "qpycore_qiodevicebuffer.h"
 %End
 
 public:
@@ -138,15 +143,13 @@ public:
     bool isTransactionStarted() const;
     qint64 write(SIP_PYBUFFER) /ReleaseGIL/;
 %MethodCode
-        sipBufferInfoDef bi;
-        
-        if (sipGetBufferInfo(a0, &bi) > 0)
+        QPyIODeviceBuffer buffer(a0);
+
+        if (buffer)
         {
             Py_BEGIN_ALLOW_THREADS
-            sipRes = sipCpp->write(reinterpret_cast<char *>(bi.bi_buf), bi.bi_len);
+            sipRes = sipCpp->write(static_cast<const char *>(buffer.data), buffer.size);
             Py_END_ALLOW_THREADS
-        
-            sipReleaseBufferInfo(&bi);
         }
         else
         {
@@ -245,38 +248,29 @@ protected:
 
 %VirtualCatcherCode
         PyObject *result = sipCallMethod(&sipIsErr, sipMethod, "n", a1);
-        
+
         if (result)
         {
-            PyObject *buf;
-        
-            if (sipParseResult(&sipIsErr, sipMethod, result, "$", &buf) == 0)
+            if (result == Py_None)
+                sipRes = -1L;
+            else
             {
-                if (buf == Py_None)
+                QPyIODeviceBuffer buffer(result);
+
+                if (!buffer)
                 {
-                    sipRes = -1L;
+                    sipBadCatcherResult(sipMethod);
+                    sipIsErr = 1;
                 }
-                else 
+                else
                 {
-                    sipBufferInfoDef bi;
-                
-                    if (sipGetBufferInfo(buf, &bi) < 0)
-                    {
-                        sipBadCatcherResult(sipMethod);
-                        sipIsErr = 1;
-                    }
-                    else
-                    {
-                        sipRes = (a1 < bi.bi_len) ? a1 : bi.bi_len;
-                        memcpy(a0, bi.bi_buf, sipRes);
-                    
-                        sipReleaseBufferInfo(&bi);
-                    }
+                    sipRes = (a1 < buffer.size) ? a1 : buffer.size;
+
+                    if (sipRes > 0)
+                        memcpy(a0, buffer.data, static_cast<size_t>(sipRes));
                 }
-                
-                Py_DECREF(buf);
             }
-        
+
             Py_DECREF(result);
         }
 %End
@@ -321,58 +315,47 @@ protected:
 
 %VirtualCatcherCode
         PyObject *result = sipCallMethod(&sipIsErr, sipMethod, "n", a1);
-        
+
         if (result)
         {
-            PyObject *buf;
-        
-            if (sipParseResult(&sipIsErr, sipMethod, result, "$", &buf) == 0)
+            if (result == Py_None)
+                sipRes = -1L;
+            else
             {
-                if (buf == Py_None)
+                QPyIODeviceBuffer buffer(result);
+
+                if (!buffer)
                 {
-                    sipRes = -1L;
+                    sipBadCatcherResult(sipMethod);
+                    sipIsErr = 1;
                 }
-                else 
+                else
                 {
-                    sipBufferInfoDef bi;
-                
-                    if (sipGetBufferInfo(buf, &bi) < 0)
-                    {
-                        sipBadCatcherResult(sipMethod);
-                        sipIsErr = 1;
-                    }
-                    else
-                    {
-                        sipRes = (a1 < bi.bi_len) ? a1 : bi.bi_len;
-                        memcpy(a0, bi.bi_buf, sipRes);
-                    
-                        sipReleaseBufferInfo(&bi);
-                    }
+                    sipRes = (a1 < buffer.size) ? a1 : buffer.size;
+
+                    if (sipRes > 0)
+                        memcpy(a0, buffer.data, static_cast<size_t>(sipRes));
                 }
-                
-                Py_DECREF(buf);
             }
-        
+
             Py_DECREF(result);
         }
 %End
 
     virtual qint64 writeData(SIP_PYBUFFER) = 0 /ReleaseGIL/ [qint64 (const char *data, qint64 len)];
 %MethodCode
-        sipBufferInfoDef bi;
-        
-        if (sipGetBufferInfo(a0, &bi) > 0)
+        QPyIODeviceBuffer buffer(a0);
+
+        if (buffer)
         {
             Py_BEGIN_ALLOW_THREADS
         #if defined(SIP_PROTECTED_IS_PUBLIC)
-            sipRes = sipCpp->writeData(reinterpret_cast<char *>(bi.bi_buf), bi.bi_len);
+            sipRes = sipCpp->writeData(static_cast<const char *>(buffer.data), buffer.size);
         #else
-            sipRes = sipCpp->sipProtect_writeData(reinterpret_cast<char *>(bi.bi_buf),
-                    bi.bi_len);
+            sipRes = sipCpp->sipProtect_writeData(static_cast<const char *>(buffer.data),
+                    buffer.size);
         #endif
             Py_END_ALLOW_THREADS
-        
-            sipReleaseBufferInfo(&bi);
         }
         else
         {
@@ -382,46 +365,29 @@ protected:
 
 %VirtualCatcherCode
         PyObject *result = sipCallMethod(&sipIsErr, sipMethod, "n", a1);
-        
+
         if (result)
         {
-            PyObject *buf;
-        
-            if (sipParseResult(&sipIsErr, sipMethod, result, "$", &buf) == 0)
+            if (result == Py_None)
+                sipRes = -1L;
+            else
             {
-                if (buf == Py_None)
+                QPyIODeviceBuffer buffer(result, true);
+
+                if (!buffer)
                 {
-                    sipRes = -1L;
+                    sipBadCatcherResult(sipMethod);
+                    sipIsErr = 1;
                 }
-                else 
+                else
                 {
-                    sipBufferInfoDef bi;
-                
-                    if (sipGetBufferInfo(buf, &bi) < 0)
-                    {
-                        sipBadCatcherResult(sipMethod);
-                        sipIsErr = 1;
-                    }
-                    else
-                    {
-                        if (bi.bi_readonly)
-                        {
-                            sipBadCatcherResult(sipMethod);
-                            sipIsErr = 1;
-                        }
-                        else
-                        {
-                            sipRes = (a1 < bi.bi_len) ? a1 : bi.bi_len;
-                            memcpy(bi.bi_buf, a0, sipRes);
-                        }
-                    
-                        sipReleaseBufferInfo(&bi);
-                    }
+                    sipRes = (a1 < buffer.size) ? a1 : buffer.size;
+
+                    if (sipRes > 0)
+                        memcpy(buffer.data, a0, static_cast<size_t>(sipRes));
                 }
-                
-                Py_DECREF(buf);
             }
-        
+
             Py_DECREF(result);
         }
 %End
