@@ -41,10 +41,15 @@ PyQtSlot::PyQtSlot(PyObject *callable, bool callable_is_method,
         {
             // Save the component parts.
             mfunc = callable_m.pm_function;
-            mself = callable_m.pm_self;
 
-            // Try and create a weak reference to the instance object.
-            mself_wr = PyWeakref_NewRef(mself, 0);
+            mself_wr = PyWeakref_NewRef(callable_m.pm_self, 0);
+            if (!mself_wr && PyErr_ExceptionMatches(PyExc_TypeError))
+            {
+                // Some receivers do not support weak references.
+                PyErr_Clear();
+                mself = callable_m.pm_self;
+                Py_INCREF(mself);
+            }
         }
         else
         {
@@ -64,6 +69,7 @@ PyQtSlot::~PyQtSlot()
 {
     Py_XDECREF(mfunc);
     Py_XDECREF(mself_wr);
+    Py_XDECREF(mself);
     Py_XDECREF(other);
 }
 
@@ -97,23 +103,25 @@ PyQtSlot::Result PyQtSlot::invoke(void **qargs, PyObject *self, void *result,
     else
     {
         // Use the value we have if one wasn't supplied.
-        if (!self)
+        if (self)
+            Py_INCREF(self);
+        else
             self = instance();
 
         // If self is NULL then we didn't have a method in the first place.
         // Instead we had a callable that has been cleared during garbage
         // collection - so we can simply ignore the invocation.
         if (!self)
-            return PyQtSlot::Ignored;
+            return (PyErr_Occurred() ? PyQtSlot::Failed : PyQtSlot::Ignored);
 
         // See if the instance has gone (which isn't an error).
-        if (self == Py_None)
+        if (self == Py_None ||
+                (!no_receiver_check && PyObject_TypeCheck(self, sipSimpleWrapper_Type)
+                 && !sipGetAddress((sipSimpleWrapper *)self)))
+        {
+            Py_DECREF(self);
             return PyQtSlot::Ignored;
-
-        // If the receiver wraps a C++ object then ignore the call if it no
-        // longer exists.
-        if (!no_receiver_check && PyObject_TypeCheck(self, sipSimpleWrapper_Type) && !sipGetAddress((sipSimpleWrapper *)self))
-            return PyQtSlot::Ignored;
+        }
 
         sipMethodDef callable_m;
 
@@ -121,6 +129,9 @@ PyQtSlot::Result PyQtSlot::invoke(void **qargs, PyObject *self, void *result,
         callable_m.pm_self = self;
 
         callable = sipFromMethod(&callable_m);
+        Py_DECREF(self);
+        if (!callable)
+            return PyQtSlot::Failed;
     }
 
     // Convert the C++ arguments to Python objects.
@@ -129,7 +140,10 @@ PyQtSlot::Result PyQtSlot::invoke(void **qargs, PyObject *self, void *result,
     PyObject *argtup = PyTuple_New(args.size());
 
     if (!argtup)
+    {
+        Py_DECREF(callable);
         return PyQtSlot::Failed;
+    }
 
     QList<const Chimera *>::const_iterator it = args.constBegin();
 
@@ -140,6 +154,7 @@ PyQtSlot::Result PyQtSlot::invoke(void **qargs, PyObject *self, void *result,
         if (!arg)
         {
             Py_DECREF(argtup);
+            Py_DECREF(callable);
             return PyQtSlot::Failed;
         }
 
@@ -181,7 +196,11 @@ bool PyQtSlot::operator==(PyObject *callable) const
         if (other)
             return false;
 
-        return (mfunc == callable_m.pm_function && instance() == callable_m.pm_self);
+        PyObject *receiver = instance();
+        const bool same = (mfunc == callable_m.pm_function
+                && receiver == callable_m.pm_self);
+        Py_XDECREF(receiver);
+        return same;
     }
 
     if (!other)
@@ -202,13 +221,13 @@ bool PyQtSlot::operator==(PyObject *callable) const
 }
 
 
-// Get the instance object.
+// Get a new reference to the receiver (or None if the weak reference is dead).
 PyObject *PyQtSlot::instance() const
 {
-    // Use the weak reference if possible.
     if (mself_wr)
-        return PyWeakref_GetObject(mself_wr);
+        return PyObject_CallObject(mself_wr, 0);
 
+    Py_XINCREF(mself);
     return mself;
 }
 
@@ -327,6 +346,7 @@ PyObject *PyQtSlot::call(PyObject *callable, PyObject *args) const
 void PyQtSlot::clearOther()
 {
     Py_CLEAR(other);
+    Py_CLEAR(mself);
 }
 
 
@@ -334,6 +354,7 @@ void PyQtSlot::clearOther()
 int PyQtSlot::visitOther(visitproc visit, void *arg)
 {
     Py_VISIT(other);
+    Py_VISIT(mself);
 
     return 0;
 }
