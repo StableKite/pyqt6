@@ -22,6 +22,7 @@
 
 %ModuleCode
 #include <qbytearray.h>
+#include "qpycore_qiodevicebuffer.h"
 %End
 
 class QByteArray /TypeHintIn="Union[QByteArray, bytes, bytearray, memoryview]"/
@@ -492,9 +493,35 @@ const QByteArray operator+(const QByteArray &a1, const QByteArray &a2);
 %End
 QDataStream &operator<<(QDataStream &, const QByteArray & /Constrained/) /ReleaseGIL/;
 QDataStream &operator>>(QDataStream &, QByteArray & /Constrained/) /ReleaseGIL/;
-QByteArray qCompress(const uchar *data /Array/, qsizetype nbytes /ArraySize/, int compressionLevel = -1);
+QByteArray qCompress(SIP_PYBUFFER data /AllowNone/, int compressionLevel = -1);
+%MethodCode
+    if (a0 == Py_None)
+        sipRes = new QByteArray(qCompress(nullptr, 0, a1));
+    else
+    {
+        QPyIODeviceBuffer buffer(a0);
+
+        if (buffer)
+            sipRes = new QByteArray(qCompress(static_cast<const uchar *>(buffer.data), buffer.size, a1));
+        else
+            sipError = sipErrorFail;
+    }
+%End
 QByteArray qCompress(const QByteArray &data, int compressionLevel = -1);
-QByteArray qUncompress(const uchar *data /Array/, qsizetype nbytes /ArraySize/);
+QByteArray qUncompress(SIP_PYBUFFER data /AllowNone/);
+%MethodCode
+    if (a0 == Py_None)
+        sipRes = new QByteArray(qUncompress(nullptr, 0));
+    else
+    {
+        QPyIODeviceBuffer buffer(a0);
+
+        if (buffer)
+            sipRes = new QByteArray(qUncompress(static_cast<const uchar *>(buffer.data), buffer.size));
+        else
+            sipError = sipErrorFail;
+    }
+%End
 QByteArray qUncompress(const QByteArray &data);
 %If (- Qt_6_2_0)
 quint16 qChecksum(QByteArrayView data, Qt::ChecksumType standard = Qt::ChecksumIso3309);
