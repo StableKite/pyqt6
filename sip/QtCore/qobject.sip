@@ -250,95 +250,100 @@ static PyObject *qtcore_FindChildren(const QObject *parent, PyObject *types, con
 %End
 
 %ConvertToSubClassCode
-    static struct class_graph {
+    // Old SIP versions use a type pointer, and ABI v14 uses a type ID.
+    using SubclassType = decltype(sipType);
+    static const struct class_graph {
         const char *name;
-        sipTypeDef **type;
+        SubclassType (*type)();
         int yes, no;
     } graph[] = {
-        {sipName_QAbstractAnimation, &sipType_QAbstractAnimation, 24, 1},
-        {sipName_QAbstractEventDispatcher, &sipType_QAbstractEventDispatcher, -1, 2},
-        {sipName_QAbstractItemModel, &sipType_QAbstractItemModel, 30, 3},
-        {sipName_QIODevice, &sipType_QIODevice, 39, 4},
-        {sipName_QCoreApplication, &sipType_QCoreApplication, -1, 5},
-        {sipName_QEventLoop, &sipType_QEventLoop, -1, 6},
-        {sipName_QFileSelector, &sipType_QFileSelector, -1, 7},
-        {sipName_QFileSystemWatcher, &sipType_QFileSystemWatcher, -1, 8},
-        {sipName_QItemSelectionModel, &sipType_QItemSelectionModel, -1, 9},
-        {sipName_QLibrary, &sipType_QLibrary, -1, 10},
-        {sipName_QMimeData, &sipType_QMimeData, -1, 11},
-        {sipName_QObjectCleanupHandler, &sipType_QObjectCleanupHandler, -1, 12},
-        {sipName_QPluginLoader, &sipType_QPluginLoader, -1, 13},
+#define QT_CLASS_ENTRY(name, yes, no) \
+        {#name, []() -> SubclassType { return sipType_##name; }, yes, no}
+        QT_CLASS_ENTRY(QAbstractAnimation, 24, 1),
+        QT_CLASS_ENTRY(QAbstractEventDispatcher, -1, 2),
+        QT_CLASS_ENTRY(QAbstractItemModel, 30, 3),
+        QT_CLASS_ENTRY(QIODevice, 39, 4),
+        QT_CLASS_ENTRY(QCoreApplication, -1, 5),
+        QT_CLASS_ENTRY(QEventLoop, -1, 6),
+        QT_CLASS_ENTRY(QFileSelector, -1, 7),
+        QT_CLASS_ENTRY(QFileSystemWatcher, -1, 8),
+        QT_CLASS_ENTRY(QItemSelectionModel, -1, 9),
+        QT_CLASS_ENTRY(QLibrary, -1, 10),
+        QT_CLASS_ENTRY(QMimeData, -1, 11),
+        QT_CLASS_ENTRY(QObjectCleanupHandler, -1, 12),
+        QT_CLASS_ENTRY(QPluginLoader, -1, 13),
     #if QT_VERSION >= 0x060a00
-        {sipName_QPyAbstractRange, &sipType_QPyAbstractRange, 45, 14},
+        QT_CLASS_ENTRY(QPyAbstractRange, 45, 14),
     #else
         {0, 0, 45, 14},
     #endif
-        {sipName_QSettings, &sipType_QSettings, -1, 15},
-        {sipName_QSharedMemory, &sipType_QSharedMemory, -1, 16},
-        {sipName_QSignalMapper, &sipType_QSignalMapper, -1, 17},
-        {sipName_QSocketNotifier, &sipType_QSocketNotifier, -1, 18},
-        {sipName_QThread, &sipType_QThread, -1, 19},
-        {sipName_QThreadPool, &sipType_QThreadPool, -1, 20},
-        {sipName_QTimeLine, &sipType_QTimeLine, -1, 21},
-        {sipName_QTimer, &sipType_QTimer, -1, 22},
-        {sipName_QTranslator, &sipType_QTranslator, -1, 23},
+        QT_CLASS_ENTRY(QSettings, -1, 15),
+        QT_CLASS_ENTRY(QSharedMemory, -1, 16),
+        QT_CLASS_ENTRY(QSignalMapper, -1, 17),
+        QT_CLASS_ENTRY(QSocketNotifier, -1, 18),
+        QT_CLASS_ENTRY(QThread, -1, 19),
+        QT_CLASS_ENTRY(QThreadPool, -1, 20),
+        QT_CLASS_ENTRY(QTimeLine, -1, 21),
+        QT_CLASS_ENTRY(QTimer, -1, 22),
+        QT_CLASS_ENTRY(QTranslator, -1, 23),
     #if defined(Q_OS_WIN)
-        {sipName_QWinEventNotifier, &sipType_QWinEventNotifier, -1, -1},
+        QT_CLASS_ENTRY(QWinEventNotifier, -1, -1),
     #else
         {0, 0, -1, -1},
     #endif
-        {sipName_QAnimationGroup, &sipType_QAnimationGroup, 27, 25},
-        {sipName_QPauseAnimation, &sipType_QPauseAnimation, -1, 26},
-        {sipName_QVariantAnimation, &sipType_QVariantAnimation, 29, -1},
-        {sipName_QParallelAnimationGroup, &sipType_QParallelAnimationGroup, -1, 28},
-        {sipName_QSequentialAnimationGroup, &sipType_QSequentialAnimationGroup, -1, -1},
-        {sipName_QPropertyAnimation, &sipType_QPropertyAnimation, -1, -1},
-        {sipName_QAbstractListModel, &sipType_QAbstractListModel, 35, 31},
-        {sipName_QAbstractProxyModel, &sipType_QAbstractProxyModel, 36, 32},
-        {sipName_QAbstractTableModel, &sipType_QAbstractTableModel, -1, 33},
-        {sipName_QConcatenateTablesProxyModel, &sipType_QConcatenateTablesProxyModel, -1, 34},
+        QT_CLASS_ENTRY(QAnimationGroup, 27, 25),
+        QT_CLASS_ENTRY(QPauseAnimation, -1, 26),
+        QT_CLASS_ENTRY(QVariantAnimation, 29, -1),
+        QT_CLASS_ENTRY(QParallelAnimationGroup, -1, 28),
+        QT_CLASS_ENTRY(QSequentialAnimationGroup, -1, -1),
+        QT_CLASS_ENTRY(QPropertyAnimation, -1, -1),
+        QT_CLASS_ENTRY(QAbstractListModel, 35, 31),
+        QT_CLASS_ENTRY(QAbstractProxyModel, 36, 32),
+        QT_CLASS_ENTRY(QAbstractTableModel, -1, 33),
+        QT_CLASS_ENTRY(QConcatenateTablesProxyModel, -1, 34),
     #if QT_VERSION >= 0x060a00
-        {sipName_QRangeModel, &sipType_QRangeModel, -1, -1},
+        QT_CLASS_ENTRY(QRangeModel, -1, -1),
     #else
         {0, 0, -1, -1},
     #endif
-        {sipName_QStringListModel, &sipType_QStringListModel, -1, -1},
-        {sipName_QIdentityProxyModel, &sipType_QIdentityProxyModel, -1, 37},
-        {sipName_QSortFilterProxyModel, &sipType_QSortFilterProxyModel, -1, 38},
-        {sipName_QTransposeProxyModel, &sipType_QTransposeProxyModel, -1, -1},
-        {sipName_QBuffer, &sipType_QBuffer, -1, 40},
-        {sipName_QFileDevice, &sipType_QFileDevice, 42, 41},
+        QT_CLASS_ENTRY(QStringListModel, -1, -1),
+        QT_CLASS_ENTRY(QIdentityProxyModel, -1, 37),
+        QT_CLASS_ENTRY(QSortFilterProxyModel, -1, 38),
+        QT_CLASS_ENTRY(QTransposeProxyModel, -1, -1),
+        QT_CLASS_ENTRY(QBuffer, -1, 40),
+        QT_CLASS_ENTRY(QFileDevice, 42, 41),
     #if !defined(QT_NO_PROCESS)
-        {sipName_QProcess, &sipType_QProcess, -1, -1},
+        QT_CLASS_ENTRY(QProcess, -1, -1),
     #else
         {0, 0, -1, -1},
     #endif
-        {sipName_QFile, &sipType_QFile, 44, 43},
-        {sipName_QSaveFile, &sipType_QSaveFile, -1, -1},
-        {sipName_QTemporaryFile, &sipType_QTemporaryFile, -1, -1},
+        QT_CLASS_ENTRY(QFile, 44, 43),
+        QT_CLASS_ENTRY(QSaveFile, -1, -1),
+        QT_CLASS_ENTRY(QTemporaryFile, -1, -1),
     #if QT_VERSION >= 0x060a00
-        {sipName_QPySequenceRange, &sipType_QPySequenceRange, -1, 46},
+        QT_CLASS_ENTRY(QPySequenceRange, -1, 46),
     #else
         {0, 0, -1, 46},
     #endif
     #if QT_VERSION >= 0x060a00
-        {sipName_QPyTableRange, &sipType_QPyTableRange, -1, -1},
+        QT_CLASS_ENTRY(QPyTableRange, -1, -1),
     #else
         {0, 0, -1, -1},
     #endif
+#undef QT_CLASS_ENTRY
     };
-    
+
     int i = 0;
-    
-    sipType = NULL;
-    
+
+    sipType = SubclassType{};
+
     do
     {
-        struct class_graph *cg = &graph[i];
-    
+        const struct class_graph *cg = &graph[i];
+
         if (cg->name != NULL && sipCpp->inherits(cg->name))
         {
-            sipType = *cg->type;
+            sipType = cg->type();
             i = cg->yes;
         }
         else
