@@ -24,8 +24,12 @@
 #include <qglobal.h>
 %End
 
-const int QT_VERSION;
-const char *QT_VERSION_STR;
+const int qpycore_QtVersion /PyName=QT_VERSION/;
+const char *qpycore_QtVersionString /PyName=QT_VERSION_STR/;
+%ModuleCode
+static const int qpycore_QtVersion = QT_VERSION;
+static const char *qpycore_QtVersionString = QT_VERSION_STR;
+%End
 %If (- Qt_6_5_0)
 const char *qVersion();
 %End
