@@ -26,6 +26,8 @@
 #include <QMetaObject>
 #include <QMetaType>
 #include <QPair>
+#include <QRecursiveMutex>
+#include <mutex>
 
 #include "qpycore_chimera.h"
 #include "qpycore_classinfo.h"
@@ -50,20 +52,44 @@ typedef QPair<PyObject *, PyObject *> PropertyData;
 static int trawl_hierarchy(PyTypeObject *pytype, qpycore_metaobject *qo,
         QMetaObjectBuilder &builder, QList<EnumFlag> &penums,
         QList<const qpycore_pyqtSignal *> &psigs,
-        QMap<uint, PropertyData> &pprops);
+        QMap<uint, PropertyData> &pprops, Chimera::ModuleState *sipMS);
 static int trawl_type(PyTypeObject *pytype, qpycore_metaobject *qo,
         QMetaObjectBuilder &builder, QList<EnumFlag> &penums,
         QList<const qpycore_pyqtSignal *> &psigs,
-        QMap<uint, PropertyData> &pprops);
+        QMap<uint, PropertyData> &pprops, Chimera::ModuleState *sipMS);
 static const QMetaObject *get_scope_qmetaobject(const Chimera *ct);
 
 
 // Create a dynamic meta-object for a Python type by introspecting its
 // attributes.  Note that it leaks if the type is deleted.
+#if SIP_ABI_MAJOR_VERSION >= 14
+const qpycore_metaobject *qpycore_get_dynamic_metaobject(sipWrapperType *wt,
+        sipModuleState *sipMS)
+#else
 const qpycore_metaobject *qpycore_get_dynamic_metaobject(sipWrapperType *wt)
+#endif
 {
+#if SIP_ABI_MAJOR_VERSION >= 14
+    // Only one thread may consume class annotations and publish a meta-object.
+    // Recursion builds the metadata of Python base classes in the same thread.
+    static QRecursiveMutex mutex;
+    Py_BEGIN_ALLOW_THREADS
+    mutex.lock();
+    Py_END_ALLOW_THREADS
+    std::lock_guard<QRecursiveMutex> lock(mutex, std::adopt_lock);
+
+    static const char *const capsule_name = "PyQt6.QtCore.MetaObject";
+    PyObject *cache = sipGetTypeUserObjectRef(wt);
+    auto *qo = cache ? static_cast<qpycore_metaobject *>(
+            PyCapsule_GetPointer(cache, capsule_name)) : nullptr;
+    Py_XDECREF(cache);
+    if (PyErr_Occurred())
+        return nullptr;
+#else
+    Chimera::ModuleState *sipMS = nullptr;
     qpycore_metaobject *qo = reinterpret_cast<qpycore_metaobject *>(
             sipGetTypeUserData(wt));
+#endif
 
     // Return any QMetaObject from a previous call.
     if (qo)
@@ -84,7 +110,11 @@ const qpycore_metaobject *qpycore_get_dynamic_metaobject(sipWrapperType *wt)
     PyTypeObject *tp_base = reinterpret_cast<PyTypeObject *>(
             PyType_GetSlot(pytype, Py_tp_base));
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+    builder.setSuperClass(qpycore_get_qmetaobject((sipWrapperType *)tp_base, 0, sipMS));
+#else
     builder.setSuperClass(qpycore_get_qmetaobject((sipWrapperType *)tp_base));
+#endif
 
     // Get the name of the type.  Dynamic types have simple names.
     builder.setClassName(sipPyTypeName(pytype));
@@ -98,7 +128,7 @@ const qpycore_metaobject *qpycore_get_dynamic_metaobject(sipWrapperType *wt)
 
     qo = new qpycore_metaobject;
 
-    if (trawl_hierarchy(pytype, qo, builder, penums, psigs, pprops) < 0)
+    if (trawl_hierarchy(pytype, qo, builder, penums, psigs, pprops, sipMS) < 0)
         return 0;
 
     qo->nr_signals = psigs.count();
@@ -321,7 +351,16 @@ const qpycore_metaobject *qpycore_get_dynamic_metaobject(sipWrapperType *wt)
     }
 
     // Save for next time.
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyObject *saved = PyCapsule_New(qo, capsule_name, nullptr);
+    if (!saved)
+        return nullptr;
+
+    sipSetTypeUserObject(wt, saved);
+    Py_DECREF(saved);
+#else
     sipSetTypeUserData(wt, qo);
+#endif
 
     return qo;
 }
@@ -332,9 +371,9 @@ const qpycore_metaobject *qpycore_get_dynamic_metaobject(sipWrapperType *wt)
 static int trawl_hierarchy(PyTypeObject *pytype, qpycore_metaobject *qo,
         QMetaObjectBuilder &builder, QList<EnumFlag> &penums,
         QList<const qpycore_pyqtSignal *> &psigs,
-        QMap<uint, PropertyData> &pprops)
+        QMap<uint, PropertyData> &pprops, Chimera::ModuleState *sipMS)
 {
-    if (trawl_type(pytype, qo, builder, penums, psigs, pprops) < 0)
+    if (trawl_type(pytype, qo, builder, penums, psigs, pprops, sipMS) < 0)
         return -1;
 
     PyObject *tp_bases;
@@ -354,10 +393,20 @@ static int trawl_hierarchy(PyTypeObject *pytype, qpycore_metaobject *qo,
     {
         PyTypeObject *sup = (PyTypeObject *)PyTuple_GetItem(tp_bases, i);
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+        PyTypeObject *qobject = sipGetPyTypeRef(sipType_QObject);
+        if (!qobject)
+            return -1;
+        bool is_qobject = PyType_IsSubtype(sup, qobject);
+        Py_DECREF(qobject);
+        if (is_qobject)
+            continue;
+#else
         if (PyType_IsSubtype(sup, sipTypeAsPyTypeObject(sipType_QObject)))
             continue;
+#endif
 
-        if (trawl_hierarchy(sup, qo, builder, penums, psigs, pprops) < 0)
+        if (trawl_hierarchy(sup, qo, builder, penums, psigs, pprops, sipMS) < 0)
             return -1;
     }
 
@@ -369,7 +418,7 @@ static int trawl_hierarchy(PyTypeObject *pytype, qpycore_metaobject *qo,
 static int trawl_type(PyTypeObject *pytype, qpycore_metaobject *qo,
         QMetaObjectBuilder &builder, QList<EnumFlag> &penums,
         QList<const qpycore_pyqtSignal *> &psigs,
-        QMap<uint, PropertyData> &pprops)
+        QMap<uint, PropertyData> &pprops, Chimera::ModuleState *sipMS)
 {
     int rc = 0;
     Py_ssize_t pos = 0;
@@ -377,6 +426,15 @@ static int trawl_type(PyTypeObject *pytype, qpycore_metaobject *qo,
 
     if ((dict = sipPyTypeDictRef(pytype)) == NULL)
         return -1;
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyObject *snapshot = PyDict_Copy(dict);
+    Py_DECREF(dict);
+    if (!snapshot)
+        return -1;
+    dict = snapshot;
+#else
+    (void)sipMS;
+#endif
 
     while (PyDict_Next(dict, &pos, &key, &value))
     {
@@ -398,10 +456,18 @@ static int trawl_type(PyTypeObject *pytype, qpycore_metaobject *qo,
             // happens to use our special name.
             if (PyList_Check(sig_obj))
             {
-                for (Py_ssize_t i = 0; i < PyList_Size(sig_obj); ++i)
+                PyObject *signatures = PyList_AsTuple(sig_obj);
+                if (!signatures)
+                {
+                    Py_DECREF(sig_obj);
+                    rc = -1;
+                    break;
+                }
+
+                for (Py_ssize_t i = 0; i < PyTuple_Size(signatures); ++i)
                 {
                     // Set up the skeleton slot.
-                    PyObject *decoration = PyList_GetItem(sig_obj, i);
+                    PyObject *decoration = PyTuple_GetItem(signatures, i);
                     Chimera::Signature *slot_signature = Chimera::Signature::fromPyObject(decoration);
 
                     // Check if a slot of the same signature has already been
@@ -420,6 +486,7 @@ static int trawl_type(PyTypeObject *pytype, qpycore_metaobject *qo,
                         qo->pslots.append(
                                 new PyQtSlot(value, true, slot_signature));
                 }
+                Py_DECREF(signatures);
             }
 
             Py_DECREF(sig_obj);
@@ -430,10 +497,18 @@ static int trawl_type(PyTypeObject *pytype, qpycore_metaobject *qo,
 
             // Make sure the key is an ASCII string.  Delay the error checking
             // until we know we actually need it.
+#if SIP_ABI_MAJOR_VERSION >= 14
+            QByteArray key_name = qpycore_convert_ASCII(key);
+            const char *ascii_key = key_name.isNull() ? nullptr : key_name.constData();
+            bool is_property = qpycore_is_aux_type(value, "pyqtProperty");
+            bool is_signal = !is_property && qpycore_is_aux_type(value, "pyqtSignal");
+#else
             const char *ascii_key = sipString_AsASCIIString(&key);
+            bool is_property = PyObject_TypeCheck(value, qpycore_pyqtProperty_TypeObject);
+            bool is_signal = PyObject_TypeCheck(value, qpycore_pyqtSignal_TypeObject);
+#endif
 
-            // See if the value is of interest.
-            if (PyObject_TypeCheck(value, qpycore_pyqtProperty_TypeObject))
+            if (is_property)
             {
                 // It is a property.
 
@@ -447,6 +522,15 @@ static int trawl_type(PyTypeObject *pytype, qpycore_metaobject *qo,
 
                 qpycore_pyqtProperty *pp = (qpycore_pyqtProperty *)value;
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+                key = PyBytes_FromStringAndSize(ascii_key, key_name.size());
+                if (!key)
+                {
+                    Py_DECREF(value);
+                    rc = -1;
+                    break;
+                }
+#endif
                 pprops.insert(pp->pyqtprop_sequence, PropertyData(key, value));
 
                 // See if the property has a scope.  If so, collect all
@@ -457,7 +541,7 @@ static int trawl_type(PyTypeObject *pytype, qpycore_metaobject *qo,
                 if (mo)
                     builder.addRelatedMetaObject(mo);
             }
-            else if (PyObject_TypeCheck(value, qpycore_pyqtSignal_TypeObject))
+            else if (is_signal)
             {
                 // It is a signal.
 
@@ -480,7 +564,9 @@ static int trawl_type(PyTypeObject *pytype, qpycore_metaobject *qo,
                 }
                 while (ps);
 
+#if SIP_ABI_MAJOR_VERSION < 14
                 Py_DECREF(key);
+#endif
             }
             else
             {
@@ -507,6 +593,15 @@ static const QMetaObject *get_scope_qmetaobject(const Chimera *ct)
     if (!ct->typeDef())
         return 0;
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+    auto *sipMS = ct->moduleState();
+    sipTypeID td = sipTypeScope(ct->typeDef());
+    if (!td)
+        return nullptr;
+
+    auto *plugin = static_cast<const pyqt6ClassPluginDef *>(sipTypePluginData(td));
+    return plugin ? plugin->static_metaobject : nullptr;
+#else
     const sipTypeDef *td = sipTypeScope(ct->typeDef());
 
     if (!td)
@@ -517,16 +612,26 @@ static const QMetaObject *get_scope_qmetaobject(const Chimera *ct)
         return 0;
 
     return qpycore_get_qmetaobject((sipWrapperType *)sipTypeAsPyTypeObject(td));
+#endif
 }
 
 
 // Return the QMetaObject for a type.
+#if SIP_ABI_MAJOR_VERSION >= 14
+const QMetaObject *qpycore_get_qmetaobject(sipWrapperType *wt,
+        sipTypeID base_td, sipModuleState *sipMS)
+#else
 const QMetaObject *qpycore_get_qmetaobject(sipWrapperType *wt,
         const sipTypeDef *base_td)
+#endif
 {
     if (wt && sipIsUserType(wt))
     {
+#if SIP_ABI_MAJOR_VERSION >= 14
+        const qpycore_metaobject *qo = qpycore_get_dynamic_metaobject(wt, sipMS);
+#else
         const qpycore_metaobject *qo = qpycore_get_dynamic_metaobject(wt);
+#endif
 
         if (qo)
             return qo->mo;

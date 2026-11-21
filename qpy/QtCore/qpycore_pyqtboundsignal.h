@@ -44,7 +44,7 @@ typedef struct {
     // The unbound signal.
     qpycore_pyqtSignal *unbound_signal;
 
-    // A borrowed reference to the wrapped QObject that is bound to the signal.
+    // The wrapped QObject bound to the signal.  Owned by the ABI 14 type.
     PyObject *bound_pyobject;
 
     // The QObject that is bound to the signal.
@@ -55,10 +55,14 @@ typedef struct {
 
 
 // The type object.
+#if SIP_ABI_MAJOR_VERSION >= 14
+bool qpycore_pyqtBoundSignal_init_type(PyObject *module);
+#else
 extern PyTypeObject *qpycore_pyqtBoundSignal_TypeObject;
 
 
 bool qpycore_pyqtBoundSignal_init_type();
+#endif
 PyObject *qpycore_pyqtBoundSignal_New(qpycore_pyqtSignal *unbound_signal,
         PyObject *bound_pyobject, QObject *bound_qobject);
 sipErrorState qpycore_get_receiver_slot_signature(PyObject *slot,

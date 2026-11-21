@@ -99,6 +99,8 @@ public:
     public:
         // Destroy the signature and any result type objects.
         ~Signature();
+        ModuleState *moduleState() const {return _sip_module_state;}
+        Signature *copy() const;
 
         // The list of parsed argument types.
         QList<const Chimera *> parsed_arguments;
@@ -141,9 +143,11 @@ public:
 
         // Set if the parsed arguments are cached.
         bool _cached;
+        ModuleState *_sip_module_state;
 
-        Signature(const QByteArray &sig, bool cached)
-            : result(0), signature(sig), py_signature(sig), _cached(cached) {}
+        Signature(const QByteArray &sig, bool cached, ModuleState *sipMS)
+            : result(0), signature(sig), py_signature(sig), revision(0),
+              _cached(cached), _sip_module_state(sipMS) {}
 
         Signature(const Signature &);
         Signature &operator=(const Signature &);
@@ -307,6 +311,7 @@ private:
     static ToQVariantDataConvertors registeredToQVariantDataConvertors;
 
     // The registered user-defined enums.
+    static QByteArray pyEnumName(PyObject *type);
     static QHash<PyObject *, QByteArray> _py_enum_types;
 
     // The cache of previously parsed argument type lists.

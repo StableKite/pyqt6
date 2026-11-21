@@ -26,6 +26,11 @@ class QRunnable /Supertype=PyQt6.sip.wrapper/
 #include <qrunnable.h>
 %End
 
+%TypeCode
+#include "qpycore_misc.h"
+#include <utility>
+%End
+
 public:
     QRunnable();
     virtual ~QRunnable();
@@ -34,20 +39,17 @@ public:
     void setAutoDelete(bool _autoDelete);
     static QRunnable *create(SIP_PYCALLABLE functionToRun /KeepReference,TypeHint="Callable[[], None]"/) /Factory/;
 %MethodCode
-        sipRes = QRunnable::create([a0]() {
-            SIP_BLOCK_THREADS
-        
-            PyObject *res;
-        
-            res = PyObject_CallObject(a0, NULL);
-        
-            if (res)
-                Py_DECREF(res);
-            else
-                pyqt6_err_print();
-        
-            SIP_UNBLOCK_THREADS
-        });
+        auto run = qpycore_thread_function(a0);
+        if (!run)
+        {
+            sipError = sipErrorFail;
+        }
+        else
+        {
+            Py_BEGIN_ALLOW_THREADS
+            sipRes = QRunnable::create(std::move(run));
+            Py_END_ALLOW_THREADS
+        }
 %End
 
 private:

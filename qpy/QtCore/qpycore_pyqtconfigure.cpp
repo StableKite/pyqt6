@@ -43,7 +43,7 @@ enum ArgStatus
 
 
 static ArgStatus handle_argument(PyObject *self, QObject *qobj,
-        PyObject *name_obj, PyObject *value_obj);
+        PyObject *name_obj, PyObject *value_obj, QPyCoreModuleState *sipMS);
 
 
 // This is the helper for QObject.pyqtConfigure().
@@ -58,8 +58,16 @@ PyObject *qpycore_pyqtconfigure(PyObject *self, PyObject *args, PyObject *kwds)
     }
 
     // Get the QObject self.
+#if SIP_ABI_MAJOR_VERSION >= 14
+    auto *sipMS = sipGetModuleStateByType(Py_TYPE(self));
+    if (!sipMS)
+        return nullptr;
+    auto *qobj = static_cast<QObject *>(sipGetCppPtr(sipMS, self, sipType_QObject));
+#else
+    QPyCoreModuleState *sipMS = nullptr;
     QObject *qobj = reinterpret_cast<QObject *>(
             sipGetCppPtr((sipSimpleWrapper *)self, sipType_QObject));
+#endif
 
     if (!qobj)
         return 0;
@@ -69,7 +77,7 @@ PyObject *qpycore_pyqtconfigure(PyObject *self, PyObject *args, PyObject *kwds)
 
     while (PyDict_Next(kwds, &pos, &name_obj, &value_obj))
     {
-        ArgStatus as = handle_argument(self, qobj, name_obj, value_obj);
+        ArgStatus as = handle_argument(self, qobj, name_obj, value_obj, sipMS);
 
         if (as == AsError)
             return 0;
@@ -100,6 +108,14 @@ int qpycore_qobject_finalisation(PyObject *self, QObject *qobj, PyObject *kwds,
     if (!kwds)
         return 0;
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+    auto *sipMS = sipGetModuleStateByType(Py_TYPE(self));
+    if (!sipMS)
+        return -1;
+#else
+    QPyCoreModuleState *sipMS = nullptr;
+#endif
+
     // The dict we will be removing handled arguments from, 0 if it needs to be
     // created.
     PyObject *unused = (updated_kwds ? 0 : kwds);
@@ -109,7 +125,7 @@ int qpycore_qobject_finalisation(PyObject *self, QObject *qobj, PyObject *kwds,
 
     while (PyDict_Next(kwds, &pos, &name_obj, &value_obj))
     {
-        ArgStatus as = handle_argument(self, qobj, name_obj, value_obj);
+        ArgStatus as = handle_argument(self, qobj, name_obj, value_obj, sipMS);
 
         if (as == AsError)
             return -1;
@@ -142,7 +158,7 @@ int qpycore_qobject_finalisation(PyObject *self, QObject *qobj, PyObject *kwds,
 
 // Handle a single keyword argument.
 static ArgStatus handle_argument(PyObject *self, QObject *qobj,
-        PyObject *name_obj, PyObject *value_obj)
+        PyObject *name_obj, PyObject *value_obj, QPyCoreModuleState *sipMS)
 {
     const QMetaObject *mo = qobj->metaObject();
 
@@ -163,7 +179,7 @@ static ArgStatus handle_argument(PyObject *self, QObject *qobj,
         if (prop.userType() >= 0)
         {
             bool ok;
-            QVariant value = qpycore_PyObject_AsQVariant(prop, value_obj, &ok);
+            QVariant value = qpycore_PyObject_AsQVariant(prop, value_obj, &ok, sipMS);
 
             if (!ok)
                 return AsError;
@@ -195,24 +211,13 @@ static ArgStatus handle_argument(PyObject *self, QObject *qobj,
 
         if (sig)
         {
+#if SIP_ABI_MAJOR_VERSION >= 14
+            if (qpycore_is_aux_type(sig, "pyqtBoundSignal"))
+#else
             if (PyObject_TypeCheck(sig, qpycore_pyqtBoundSignal_TypeObject))
+#endif
             {
-                static PyObject *connect_obj = NULL;
-
-                if (!connect_obj)
-                {
-                    connect_obj = PyUnicode_FromString("connect");
-
-                    if (!connect_obj)
-                    {
-                        Py_DECREF(sig);
-                        return AsError;
-                    }
-                }
-
-                // Connect the slot.
-                PyObject *res = PyObject_CallMethodObjArgs(sig, connect_obj,
-                        value_obj, 0);
+                PyObject *res = PyObject_CallMethod(sig, "connect", "O", value_obj);
 
                 if (!res)
                 {

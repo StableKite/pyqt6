@@ -23,9 +23,11 @@
 
 
 #include <Python.h>
+#include <atomic>
 
 #include <QByteArray>
 #include <QMultiHash>
+#include <QMutex>
 #include <QMetaObject>
 #include <QObject>
 
@@ -91,7 +93,12 @@ private:
     static ProxyHash proxy_slots;
 
     // The proxy flags.
-    int proxy_flags;
+    std::atomic_int proxy_flags;
+    QMutex invocation_mutex;
+    unsigned active_calls = 0;
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyInterpreterView *view = nullptr;
+#endif
 
     // The normalised signature.
     QByteArray signature;
@@ -100,10 +107,10 @@ private:
     const QObject *transmitter;
 
     // The slot we are proxying for.
-    PyQtSlot *real_slot;
+    PyQtSlot *real_slot = nullptr;
 
     // The meta-object.
-    const QMetaObject *meta_object;
+    const QMetaObject *meta_object = nullptr;
 
     PyQtSlotProxy(const PyQtSlotProxy &);
     PyQtSlotProxy &operator=(const PyQtSlotProxy &);

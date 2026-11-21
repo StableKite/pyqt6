@@ -21,6 +21,7 @@
 #include <Python.h>
 
 #include <QHash>
+#include <QMutex>
 
 #include "qpycore_chimera.h"
 #include "qpycore_enums_flags.h"
@@ -38,13 +39,13 @@ extern "C" {static PyObject *decorator(PyObject *, PyObject *enum_cls);}
 // Forward declarations.
 static bool add_key_value(EnumFlag &enum_flag, bool &unsigned_enum,
         PyObject *key, PyObject *value);
-static bool objectify(const char *s, PyObject **objp);
 static bool parse_members(PyObject *members, EnumFlag &enum_flag,
         bool &unsigned_enum);
 
 
 // The enums keyed by the enum type object.
 static QHash<PyObject *, EnumFlag> enums_hash;
+static QMutex enums_mutex;
 
 
 // Implement the pyqtEnum enum decorator.
@@ -66,7 +67,11 @@ PyObject *qpycore_pyqtEnum(PyObject *enum_cls)
 // none.
 EnumFlag qpycore_pop_enum_flag(PyObject *enum_cls)
 {
-    EnumFlag enum_flag = enums_hash.take(enum_cls);
+    EnumFlag enum_flag;
+    {
+        QMutexLocker locker(&enums_mutex);
+        enum_flag = enums_hash.take(enum_cls);
+    }
 
     if (!enum_flag.name.isNull())
         Py_DECREF(enum_cls);
@@ -82,10 +87,17 @@ static PyObject *decorator(PyObject *, PyObject *enum_cls)
     // Check the type.
     EnumFlag enum_flag;
 
-    if (sipIsEnumFlag(enum_cls))
-        enum_flag.isFlag = true;
-    else
-        enum_flag.isFlag = false;
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyObject *module = qpycore_qtcore_module_ref();
+    if (!module)
+        return nullptr;
+
+    auto *sipMS = static_cast<sipModuleState *>(PyModule_GetState(module));
+#endif
+    enum_flag.isFlag = sipIsEnumFlag(enum_cls);
+#if SIP_ABI_MAJOR_VERSION >= 14
+    Py_DECREF(module);
+#endif
 
     // Get the name.
     PyObject *name = PyObject_GetAttr(enum_cls, qpycore_dunder_name);
@@ -99,12 +111,7 @@ static PyObject *decorator(PyObject *, PyObject *enum_cls)
         return 0;
 
     // Get the members.
-    static PyObject *members_s = 0;
-
-    if (!objectify("__members__", &members_s))
-        return 0;
-
-    PyObject *members = PyObject_GetAttr(enum_cls, members_s);
+    PyObject *members = PyObject_GetAttrString(enum_cls, "__members__");
     if (!members)
         return 0;
 
@@ -118,12 +125,7 @@ static PyObject *decorator(PyObject *, PyObject *enum_cls)
         return 0;
 
     // Get the pseudo fully qualified C++ name.
-    static PyObject *qualname_s = 0;
-
-    if (!objectify("__qualname__", &qualname_s))
-        return 0;
-
-    PyObject *fq_py_name = PyObject_GetAttr(enum_cls, qualname_s);
+    PyObject *fq_py_name = PyObject_GetAttrString(enum_cls, "__qualname__");
     if (!fq_py_name)
         return 0;
 
@@ -140,8 +142,12 @@ static PyObject *decorator(PyObject *, PyObject *enum_cls)
             unsigned_enum);
 
     // Save the parsed enum for when building the QMetaObject.
-    Py_INCREF(enum_cls);
-    enums_hash.insert(enum_cls, enum_flag);
+    {
+        QMutexLocker locker(&enums_mutex);
+        if (!enums_hash.contains(enum_cls))
+            Py_INCREF(enum_cls);
+        enums_hash.insert(enum_cls, enum_flag);
+    }
 
     // Return the enum class.
     Py_INCREF(enum_cls);
@@ -153,11 +159,6 @@ static PyObject *decorator(PyObject *, PyObject *enum_cls)
 static bool parse_members(PyObject *members, EnumFlag &enum_flag,
         bool &unsigned_enum)
 {
-    static PyObject *value_s = 0;
-
-    if (!objectify("value", &value_s))
-        return false;
-
     PyObject *items;
     Py_ssize_t nr_items;
 
@@ -195,7 +196,7 @@ static bool parse_members(PyObject *members, EnumFlag &enum_flag,
         }
 
         // Get the value.
-        value = PyObject_GetAttr(member, value_s);
+        value = PyObject_GetAttrString(member, "value");
 
         Py_DECREF(member);
 
@@ -247,21 +248,6 @@ static bool add_key_value(EnumFlag &enum_flag, bool &unsigned_enum,
         return false;
 
     enum_flag.keys.append(QPair<QByteArray, int>(key_ba, i_value));
-
-    return true;
-}
-
-
-// Convert an ASCII string to a Python object if it hasn't already been done.
-static bool objectify(const char *s, PyObject **objp)
-{
-    if (*objp == NULL)
-    {
-        *objp = PyUnicode_FromString(s);
-
-        if (*objp == NULL)
-            return false;
-    }
 
     return true;
 }

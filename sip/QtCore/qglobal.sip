@@ -172,18 +172,26 @@ bool qUnregisterResourceData(int, const unsigned char *, const unsigned char *, 
 // Implementations of pyqt[Set]PickleProtocol().
 void pyqtSetPickleProtocol(SIP_PYOBJECT /TypeHint="Optional[int]"/);
 %MethodCode
+#if SIP_ABI_MAJOR_VERSION >= 14
+    qpycore_set_pickle_protocol(a0);
+#else
     Py_XDECREF(qpycore_pickle_protocol);
     qpycore_pickle_protocol = a0;
     Py_INCREF(qpycore_pickle_protocol);
+#endif
 %End
 
 SIP_PYOBJECT pyqtPickleProtocol() /TypeHint="Optional[int]"/;
 %MethodCode
+#if SIP_ABI_MAJOR_VERSION >= 14
+    sipRes = qpycore_get_pickle_protocol();
+#else
     sipRes = qpycore_pickle_protocol;
     if (!sipRes)
         sipRes = Py_None;
 
     Py_INCREF(sipRes);
+#endif
 %End
 %If (- Qt_6_5_0)
 bool qEnvironmentVariableIsEmpty(const char *varName);

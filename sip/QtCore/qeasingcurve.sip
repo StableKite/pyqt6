@@ -27,6 +27,8 @@ class QEasingCurve /TypeHintIn="Union[QEasingCurve, QEasingCurve.Type]"/
 %End
 
 %TypeCode
+#include <QMutex>
+
 // The EasingFunction callback doesn't provide a context so we support a fixed
 // number of different functions.
 
@@ -35,8 +37,12 @@ const int ec_nr_custom_types = 10;
 struct ec_custom_type {
     PyObject *py_func;
     QEasingCurve::EasingFunction func;
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyInterpreterView *view = nullptr;
+#endif
 };
 
+static QMutex ec_lock;
 static qreal ec_call(int ec, qreal v);
 
 static qreal ec_func_0(qreal v)
@@ -107,9 +113,27 @@ static qreal ec_call(int ec, qreal v)
     PyObject *res_obj;
     qreal res = 0.0;
 
-    SIP_BLOCK_THREADS
+    PyObject *func;
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyInterpreterView *view;
+#endif
+    {
+        QMutexLocker locker(&ec_lock);
+        func = ec_custom_types[ec].py_func;
+#if SIP_ABI_MAJOR_VERSION >= 14
+        view = ec_custom_types[ec].view;
+#endif
+    }
 
-    res_obj = PyObject_CallFunction(ec_custom_types[ec].py_func, (char *)"(d)", (double)v);
+#if SIP_ABI_MAJOR_VERSION >= 14
+    auto *token = PyThreadState_EnsureFromView(view);
+    if (!token)
+        return res;
+#else
+    SIP_BLOCK_THREADS
+#endif
+
+    res_obj = PyObject_CallFunction(func, "(d)", (double)v);
 
     if (res_obj)
     {
@@ -125,7 +149,11 @@ static qreal ec_call(int ec, qreal v)
     if (!res_obj)
         pyqt6_err_print();
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyThreadState_Release(token);
+#else
     SIP_UNBLOCK_THREADS
+#endif
 
     return res;
 }
@@ -234,6 +262,7 @@ public:
 %MethodCode
         int i;
         ec_custom_type *ct;
+        QMutexLocker locker(&ec_lock);
         
         for (i = 0; i < ec_nr_custom_types; ++i)
         {
@@ -252,10 +281,19 @@ public:
         {
             if (!ct->py_func)
             {
+#if SIP_ABI_MAJOR_VERSION >= 14
+                ct->view = PyInterpreterView_FromCurrent();
+                if (!ct->view)
+                {
+                    sipError = sipErrorFail;
+                    return NULL;
+                }
+#endif
                 ct->py_func = a0;
                 Py_INCREF(a0);
             }
         
+            locker.unlock();
             sipCpp->setCustomType(ct->func);
         }
 %End
@@ -268,6 +306,7 @@ public:
         
         if (func)
         {
+            QMutexLocker locker(&ec_lock);
             for (int i = 0; i < ec_nr_custom_types; ++i)
             {
                 if (ec_custom_types[i].func == func)

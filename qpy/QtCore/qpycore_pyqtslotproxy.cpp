@@ -36,7 +36,6 @@
 
 // Proxy flags.
 #define PROXY_SINGLE_SHOT   0x01    // The slot will only be called once.
-#define PROXY_SLOT_INVOKED  0x02    // The proxied slot is executing.
 #define PROXY_SLOT_DISABLED 0x04    // The proxy deleteLater() has been called
                                     // or should be called after the slot has
                                     // finished executing.
@@ -57,9 +56,17 @@ PyQtSlotProxy::PyQtSlotProxy(PyObject *slot, QObject *q_tx,
     : QObject(), proxy_flags(single_shot ? PROXY_SINGLE_SHOT : 0),
         signature(slot_signature->signature), transmitter(q_tx)
 {
+#if SIP_ABI_MAJOR_VERSION >= 14
+    view = PyInterpreterView_FromCurrent();
+    if (!view)
+        return;
+
+    real_slot = new PyQtSlot(slot, false, slot_signature);
+#else
     SIP_BLOCK_THREADS
     real_slot = new PyQtSlot(slot, false, slot_signature);
     SIP_UNBLOCK_THREADS
+#endif
 
     // Create a new meta-object on the heap so that it looks like it has a slot
     // of the right name and signature.
@@ -95,7 +102,7 @@ PyQtSlotProxy::PyQtSlotProxy(PyObject *slot, QObject *q_tx,
 // Destroy a universal proxy.  This is called without the GIL.
 PyQtSlotProxy::~PyQtSlotProxy()
 {
-    Q_ASSERT((proxy_flags & PROXY_SLOT_INVOKED) == 0);
+    Q_ASSERT(active_calls == 0);
 
     if (transmitter)
     {
@@ -117,12 +124,24 @@ PyQtSlotProxy::~PyQtSlotProxy()
 
     // Qt can still be tidying up after Python has gone so make sure that it
     // hasn't.
+#if SIP_ABI_MAJOR_VERSION >= 14
+    if (view)
+    {
+        if (auto *thread = PyThreadState_EnsureFromView(view))
+        {
+            delete real_slot;
+            PyThreadState_Release(thread);
+        }
+        PyInterpreterView_Close(view);
+    }
+#else
     if (Py_IsInitialized())
     {
         SIP_BLOCK_THREADS
         delete real_slot;
         SIP_UNBLOCK_THREADS
     }
+#endif
 
     if (meta_object)
     {
@@ -188,19 +207,33 @@ void PyQtSlotProxy::unislot(void **qargs)
     // If we are marked as disabled (possible if a queued signal has been
     // disconnected but there is still a signal in the event queue) then just
     // ignore the call.
-    if (proxy_flags & PROXY_SLOT_DISABLED)
-        return;
+    {
+        QMutexLocker lock(&invocation_mutex);
+        if ((proxy_flags & PROXY_SLOT_DISABLED) ||
+                ((proxy_flags & PROXY_SINGLE_SHOT) && active_calls))
+            return;
+        ++active_calls;
+    }
 
     // sender() must be called without the GIL to avoid possible deadlocks
     // between the GIL and Qt's internal thread data mutex.
     QObject *new_last_sender = sender();
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+    auto *thread = PyThreadState_EnsureFromView(view);
+    if (!thread)
+    {
+        QMutexLocker lock(&invocation_mutex);
+        --active_calls;
+        return;
+    }
+    PyObject *previous_error = PyErr_GetRaisedException();
+#else
     SIP_BLOCK_THREADS
+#endif
 
     QObject *saved_last_sender = last_sender;
     last_sender = new_last_sender;
-
-    proxy_flags |= PROXY_SLOT_INVOKED;
 
     switch (real_slot->invoke(qargs, (proxy_flags & PROXY_NO_RCVR_CHECK)))
     {
@@ -216,18 +249,19 @@ void PyQtSlotProxy::unislot(void **qargs)
         break;
     }
 
-    proxy_flags &= ~PROXY_SLOT_INVOKED;
-
-    // Self destruct if we are a single shot or disabled.
-    if (proxy_flags & (PROXY_SINGLE_SHOT|PROXY_SLOT_DISABLED))
-    {
-        // See the comment in disable() for why we deleteLater().
-        deleteLater();
-    }
-
     last_sender = saved_last_sender;
-
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyErr_SetRaisedException(previous_error);
+    PyThreadState_Release(thread);
+#else
     SIP_UNBLOCK_THREADS
+#endif
+
+    QMutexLocker lock(&invocation_mutex);
+    if (proxy_flags & PROXY_SINGLE_SHOT)
+        proxy_flags |= PROXY_SLOT_DISABLED;
+    if (--active_calls == 0 && (proxy_flags & PROXY_SLOT_DISABLED))
+        deleteLater();
 }
 
 
@@ -235,13 +269,14 @@ void PyQtSlotProxy::unislot(void **qargs)
 // until the proxied slot returns.
 void PyQtSlotProxy::disable()
 {
+    QMutexLocker lock(&invocation_mutex);
     proxy_flags |= PROXY_SLOT_DISABLED;
 
     // Delete it if the slot isn't currently executing, otherwise it will be
     // done after the slot returns.  Note that we don't rely on deleteLater()
     // providing the necessary delay because the slot could process the event
     // loop and the proxy would be deleted too soon.
-    if ((proxy_flags & PROXY_SLOT_INVOKED) == 0)
+    if (active_calls == 0)
     {
         // Despite what the Qt documentation suggests, if there are outstanding
         // queued signals then we may crash so we always delete later when the

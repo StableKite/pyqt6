@@ -19,12 +19,213 @@
 
 
 #include <Python.h>
+#include <QMutex>
+#include <utility>
 
 #include "qpycore_api.h"
 #include "qpycore_pyqtpyobject.h"
 
 #include "sipAPIQtCore.h"
 
+
+#if SIP_ABI_MAJOR_VERSION >= 14
+namespace
+{
+using Interpreter = std::shared_ptr<PyInterpreterView>;
+
+// Qt streams can deserialize a QVariant while its calling Python thread is
+// detached. Retain the QtCore interpreter's view for those native calls.
+QMutex pickle_mutex;
+Interpreter pickle_interpreter;
+PyObject *pickle_protocol = nullptr;
+
+Interpreter current_pickle_interpreter()
+{
+    QMutexLocker lock(&pickle_mutex);
+    return pickle_interpreter;
+}
+}
+
+class PyQt_PyObject::Payload
+{
+public:
+    Payload(PyObject *object, Interpreter owner)
+        : object(Py_NewRef(object)), owner(std::move(owner)) {}
+
+    ~Payload()
+    {
+        if (auto *thread = PyThreadState_EnsureFromView(owner.get()))
+        {
+            Py_DECREF(object);
+            PyThreadState_Release(thread);
+        }
+    }
+
+    PyObject *const object;
+    const Interpreter owner;
+};
+
+
+int qpycore_init_pyobject_bridge()
+{
+    PyInterpreterView *view = PyInterpreterView_FromCurrent();
+    if (!view)
+        return -1;
+
+    QMutexLocker lock(&pickle_mutex);
+    pickle_interpreter.reset(view, PyInterpreterView_Close);
+    return 0;
+}
+
+
+void qpycore_clear_pyobject_bridge()
+{
+    Interpreter previous;
+    PyObject *protocol;
+    {
+        QMutexLocker lock(&pickle_mutex);
+        protocol = std::exchange(pickle_protocol, nullptr);
+        previous.swap(pickle_interpreter);
+    }
+    Py_XDECREF(protocol);
+}
+
+
+void qpycore_set_pickle_protocol(PyObject *value)
+{
+    PyObject *previous;
+    {
+        QMutexLocker lock(&pickle_mutex);
+        previous = std::exchange(pickle_protocol, Py_NewRef(value));
+    }
+    Py_XDECREF(previous);
+}
+
+
+PyObject *qpycore_get_pickle_protocol()
+{
+    QMutexLocker lock(&pickle_mutex);
+    return Py_NewRef(pickle_protocol ? pickle_protocol : Py_None);
+}
+
+
+PyQt_PyObject::PyQt_PyObject(PyObject *py)
+{
+    if (py)
+    {
+        if (auto owner = current_pickle_interpreter())
+            payload = std::make_shared<Payload>(py, std::move(owner));
+    }
+}
+
+
+PyQt_PyObject::PyQt_PyObject() = default;
+PyQt_PyObject::PyQt_PyObject(const PyQt_PyObject &) = default;
+PyQt_PyObject::~PyQt_PyObject() = default;
+PyQt_PyObject &PyQt_PyObject::operator=(const PyQt_PyObject &) = default;
+
+
+PyObject *PyQt_PyObject::borrowedPyObject() const
+{
+    return payload ? payload->object : nullptr;
+}
+
+
+PyQt_PyObject::operator QString() const
+{
+    auto retained = payload;
+    if (!retained)
+        return QString();
+
+    auto *thread = PyThreadState_EnsureFromView(retained->owner.get());
+    if (!thread)
+        return QString();
+
+    PyObject *previous_error = PyErr_GetRaisedException();
+    PyObject *text = PyObject_Str(retained->object);
+    QString result = text ? qpycore_PyObject_AsQString(text)
+            : QString("PyQt_PyObject string conversion failed");
+    Py_XDECREF(text);
+    PyErr_SetRaisedException(previous_error);
+    PyThreadState_Release(thread);
+    return result;
+}
+
+
+bool operator==(const PyQt_PyObject &self, const PyQt_PyObject &other)
+{
+    return self.borrowedPyObject() == other.borrowedPyObject();
+}
+
+
+QDataStream &operator<<(QDataStream &out, const PyQt_PyObject &obj)
+{
+    QByteArray bytes;
+    auto retained = obj.payload;
+    if (retained)
+    {
+        if (auto *thread = PyThreadState_EnsureFromView(retained->owner.get()))
+        {
+            PyObject *previous_error = PyErr_GetRaisedException();
+            PyObject *pickle = PyImport_ImportModule("pickle");
+            if (pickle)
+            {
+                PyObject *protocol = qpycore_get_pickle_protocol();
+                PyObject *serialized = PyObject_CallMethod(pickle, "dumps",
+                        "OO", retained->object, protocol);
+                if (serialized && PyBytes_Check(serialized))
+                    bytes = QByteArray(PyBytes_AsString(serialized), PyBytes_Size(serialized));
+
+                Py_XDECREF(serialized);
+                Py_DECREF(protocol);
+                Py_DECREF(pickle);
+            }
+            if (PyErr_Occurred())
+                pyqt6_err_print();
+            PyErr_SetRaisedException(previous_error);
+            PyThreadState_Release(thread);
+        }
+    }
+
+    out.writeBytes(bytes.constData(), bytes.size());
+    return out;
+}
+
+
+QDataStream &operator>>(QDataStream &in, PyQt_PyObject &obj)
+{
+    char *data = nullptr;
+    qint64 size = 0;
+    in.readBytes(data, size);
+    std::unique_ptr<char[]> bytes(data);
+    if (!size)
+        return in;
+
+    auto owner = current_pickle_interpreter();
+    if (!owner)
+        return in;
+
+    if (auto *thread = PyThreadState_EnsureFromView(owner.get()))
+    {
+        PyObject *previous_error = PyErr_GetRaisedException();
+        PyObject *pickle = PyImport_ImportModule("pickle");
+        PyObject *serialized = pickle ? PyBytes_FromStringAndSize(bytes.get(), size)
+                : nullptr;
+        PyObject *value = serialized ? PyObject_CallMethod(pickle, "loads", "O", serialized)
+                : nullptr;
+        if (value)
+            obj.payload = std::make_shared<PyQt_PyObject::Payload>(value, owner);
+
+        Py_XDECREF(value);
+        Py_XDECREF(serialized);
+        Py_XDECREF(pickle);
+        PyErr_SetRaisedException(previous_error);
+        PyThreadState_Release(thread);
+    }
+    return in;
+}
+
+#else
 
 // The current pickle protocol.
 PyObject *qpycore_pickle_protocol;
@@ -236,3 +437,11 @@ QDataStream &operator>>(QDataStream &in, PyQt_PyObject &obj)
 
     return in;
 }
+
+
+PyObject *PyQt_PyObject::borrowedPyObject() const
+{
+    return pyobject;
+}
+
+#endif

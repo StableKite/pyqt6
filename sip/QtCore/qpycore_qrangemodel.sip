@@ -42,7 +42,7 @@ class QPySequenceRange : public QPyAbstractRange
 %End
 
 public:
-    QPySequenceRange(SIP_PYOBJECT data, bool editable = false);
+    QPySequenceRange(SIP_PYOBJECT data, bool editable = false) /HoldGIL/;
 
 signals:
     void dataChanged(int index);
@@ -56,7 +56,7 @@ class QPyTableRange : public QPyAbstractRange
 %End
 
 public:
-    QPyTableRange(SIP_PYOBJECT data, bool editable = false);
+    QPyTableRange(SIP_PYOBJECT data, bool editable = false) /HoldGIL/;
 
 signals:
     void dataChanged(int row, int column);

@@ -27,6 +27,22 @@
 extern "C" {static void Signature_delete(PyObject *cap);}
 
 
+Chimera::Signature *Chimera::Signature::copy() const
+{
+    auto *cloned = new Signature(signature, false, _sip_module_state);
+    cloned->py_signature = py_signature;
+    cloned->revision = revision;
+
+    for (const Chimera *arg : parsed_arguments)
+        cloned->parsed_arguments.append(new Chimera(*arg));
+
+    if (result)
+        cloned->result = new Chimera(*result);
+
+    return cloned;
+}
+
+
 // Destroy the signature and any type objects.
 Chimera::Signature::~Signature()
 {

@@ -48,9 +48,16 @@ struct qpycore_metaobject
 };
 
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+const qpycore_metaobject *qpycore_get_dynamic_metaobject(sipWrapperType *wt,
+        sipModuleState *sipMS);
+const QMetaObject *qpycore_get_qmetaobject(sipWrapperType *wt,
+        sipTypeID base_td, sipModuleState *sipMS);
+#else
 const qpycore_metaobject *qpycore_get_dynamic_metaobject(sipWrapperType *wt);
 const QMetaObject *qpycore_get_qmetaobject(sipWrapperType *wt,
         const sipTypeDef *base_td = 0);
+#endif
 
 
 #endif

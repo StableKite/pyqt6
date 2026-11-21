@@ -5,7 +5,17 @@ import weakref
 from concurrent.futures import ThreadPoolExecutor
 from threading import Barrier
 
-from PyQt6.QtCore import QCoreApplication, QObject, Qt, pyqtSignal
+from PyQt6.QtCore import (
+    Q_ARG,
+    Q_RETURN_ARG,
+    QCoreApplication,
+    QMetaObject,
+    QObject,
+    Qt,
+    pyqtProperty,
+    pyqtSignal,
+    pyqtSlot,
+)
 
 
 class Emitter(QObject):
@@ -68,7 +78,28 @@ def test_receiver_lifetime():
     assert received == [1, 3]
 
 
+def test_dynamic_metaobject():
+    class Probe(Emitter):
+        @pyqtProperty(int)
+        def answer(self):
+            return 42
+
+        @pyqtSlot(int, result=int)
+        def double(self, value):
+            return 2 * value
+
+    obj = Probe()
+    assert obj.metaObject().indexOfSignal("value(int)") >= 0
+    assert Probe.staticMetaObject.indexOfProperty("answer") >= 0
+    assert obj.property("answer") == 42
+    assert QMetaObject.invokeMethod(
+        obj, "double", Qt.ConnectionType.DirectConnection,
+        Q_RETURN_ARG(int), Q_ARG(int, 21),
+    ) == 42
+
+
 if __name__ == '__main__':
     application = QCoreApplication([])
     test_receiver_lifetime()
     test_joined_emissions(application)
+    test_dynamic_metaobject()

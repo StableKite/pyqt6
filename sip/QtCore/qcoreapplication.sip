@@ -22,12 +22,19 @@
 
 %ModuleCode
 #include <qcoreapplication.h>
+#include "qpycore_misc.h"
 %End
 
 class QCoreApplication : public QObject
 {
 %TypeHeaderCode
 #include <qcoreapplication.h>
+%End
+
+%TypeCode
+#include <memory>
+
+#include "qpycore_misc.h"
 %End
 
 public:
@@ -154,6 +161,51 @@ public:
 %If (PyQt_Permissions)
     void requestPermission(const QPermission &permission, SIP_PYCALLABLE handler /TypeHint="Callable[[QPermission], None]"/) /ReleaseGIL/;
 %MethodCode
+#if SIP_ABI_MAJOR_VERSION >= 14
+        PyObject *module = qpycore_qtcore_module_ref(sipMS);
+        if (!module)
+        {
+            sipError = sipErrorFail;
+            return NULL;
+        }
+
+        PyInterpreterView *view = PyInterpreterView_FromCurrent();
+        if (!view)
+        {
+            Py_DECREF(module);
+            sipError = sipErrorFail;
+            return NULL;
+        }
+
+        // Qt may discard the callback when the application exits.
+        auto handler = std::shared_ptr<PyObject>(Py_NewRef(a1),
+                [view, module](PyObject *callable) {
+            if (auto *token = PyThreadState_EnsureFromView(view))
+            {
+                Py_DECREF(callable);
+                Py_DECREF(module);
+                PyThreadState_Release(token);
+            }
+
+            PyInterpreterView_Close(view);
+        });
+
+        Py_BEGIN_ALLOW_THREADS
+        sipCpp->requestPermission(*a0, [handler, sipMS, view](const QPermission &permission) {
+            if (auto *token = PyThreadState_EnsureFromView(view))
+            {
+                PyObject *result = sipCallMethod(nullptr, handler.get(), "N",
+                        new QPermission(permission), sipType_QPermission, nullptr);
+                if (result)
+                    Py_DECREF(result);
+                else
+                    pyqt6_err_print();
+
+                PyThreadState_Release(token);
+            }
+        });
+        Py_END_ALLOW_THREADS
+#else
         // Make sure the callable doesn't get garbage collected until it is invoked.
         Py_INCREF(a1);
         
@@ -177,6 +229,7 @@ public:
         });
         
         Py_END_ALLOW_THREADS
+#endif
 %End
 
 %End

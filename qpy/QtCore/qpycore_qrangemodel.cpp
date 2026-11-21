@@ -27,6 +27,7 @@
 #include "qpycore_qrangemodel.h"
 
 #include "qpycore_api.h"
+#include "qpycore_misc.h"
 
 #include "sipAPIQtCore.h"
 
@@ -35,18 +36,41 @@
 QPyAbstractRange::QPyAbstractRange(PyObject *data, bool editable) :
         m_data(data), m_editable(editable)
 {
+#if SIP_ABI_MAJOR_VERSION >= 14
+    Py_INCREF(m_data);
+    PyObject *module = qpycore_qtcore_module_ref();
+    if (module)
+    {
+        m_state = static_cast<sipModuleState *>(PyModule_GetState(module));
+        Py_DECREF(module);
+        m_view = PyInterpreterView_FromCurrent();
+    }
+#else
     SIP_BLOCK_THREADS
     Py_INCREF(m_data);
     SIP_UNBLOCK_THREADS
+#endif
 }
 
 
 // Destroy the range.
 QPyAbstractRange::~QPyAbstractRange()
 {
+#if SIP_ABI_MAJOR_VERSION >= 14
+    if (m_view)
+    {
+        if (auto *thread = PyThreadState_EnsureFromView(m_view))
+        {
+            Py_DECREF(m_data);
+            PyThreadState_Release(thread);
+        }
+        PyInterpreterView_Close(m_view);
+    }
+#else
     SIP_BLOCK_THREADS
     Py_DECREF(m_data);
     SIP_UNBLOCK_THREADS
+#endif
 }
 
 
@@ -73,13 +97,17 @@ bool QPyAbstractRange::populate1DFromList(QVariantList &range, PyObject *data)
 
     for (Py_ssize_t i = 0; i < size; ++i)
     {
-        PyObject *val = PyList_GetItem(data, i);
+#if SIP_ABI_MAJOR_VERSION >= 14
+        PyObject *val = PyList_GetItemRef(data, i);
+#else
+        PyObject *val = Py_XNewRef(PyList_GetItem(data, i));
+#endif
         if (!val)
             return false;
 
         int is_err = 0;
 
-        QVariant qv = qpycore_PyObject_AsQVariant(val, &is_err);
+        QVariant qv = qpycore_PyObject_AsQVariant(val, &is_err, moduleState());
         Py_DECREF(val);
 
         if (is_err)
@@ -114,7 +142,7 @@ bool QPyAbstractRange::populate1DFromSequence(QVariantList &range,
 
         int is_err = 0;
 
-        QVariant qv = qpycore_PyObject_AsQVariant(val, &is_err);
+        QVariant qv = qpycore_PyObject_AsQVariant(val, &is_err, moduleState());
         Py_DECREF(val);
 
         if (is_err)
@@ -142,7 +170,7 @@ sipQRangeModel *QPySequenceRange::create(QObject *parent)
 
     if (editable())
     {
-        if (populateFromList(m_seq_range, data()))
+        if (populate1DFromList(m_seq_range, borrowedData()))
         {
             model = new sipQRangeModel(std::ref(m_seq_range), parent);
             QObject::connect(model, &QRangeModel::dataChanged, this,
@@ -151,7 +179,7 @@ sipQRangeModel *QPySequenceRange::create(QObject *parent)
     }
     else
     {
-        if (populateFromSequence(m_seq_range, data()))
+        if (populate1DFromSequence(m_seq_range, borrowedData()))
             model = new sipQRangeModel(std::cref(m_seq_range), parent);
     }
 
@@ -170,45 +198,35 @@ void QPySequenceRange::handleDataChanged(const QModelIndex &tl,
 
     bool do_emit = false;
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+    auto *view = interpreterView();
+    auto *thread = view ? PyThreadState_EnsureFromView(view) : nullptr;
+    if (!thread)
+        return;
+
+    PyObject *previous_error = PyErr_GetRaisedException();
+    PyObject *module = qpycore_qtcore_module_ref(moduleState());
+    PyObject *py_data = module ? qpycore_PyObject_FromQVariant(tl.data(),
+            moduleState()) : nullptr;
+#else
     SIP_BLOCK_THREADS
 
-    // Note that we don't report any errors.
     PyObject *py_data = qpycore_PyObject_FromQVariant(tl.data());
+#endif
     if (py_data)
-        do_emit = (PyList_SetItem(data(), tl.row(), py_data) == 0);
+        do_emit = (PyList_SetItem(borrowedData(), tl.row(), py_data) == 0);
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+    Py_XDECREF(module);
+    PyErr_SetRaisedException(previous_error);
+    PyThreadState_Release(thread);
+#else
     SIP_UNBLOCK_THREADS
+#endif
 
-    // The signal must be emited without the GIL.
+    // Emit the signal after detaching from the interpreter.
     if (do_emit)
         emit dataChanged(tl.row());
-}
-
-
-// Populate a sequence range from a Python list.
-bool QPySequenceRange::populateFromList(QVariantList &range, PyObject *data)
-{
-    bool ok = true;
-
-    SIP_BLOCK_THREADS
-    ok = populate1DFromList(range, data);
-    SIP_UNBLOCK_THREADS
-
-    return ok;
-}
-
-
-// Populate a sequence range from a Python sequence.
-bool QPySequenceRange::populateFromSequence(QVariantList &range,
-        PyObject *data)
-{
-    bool ok;
-
-    SIP_BLOCK_THREADS
-    ok = populate1DFromSequence(range, data);
-    SIP_UNBLOCK_THREADS
-
-    return ok;
 }
 
 
@@ -223,7 +241,7 @@ QPyTableRange::QPyTableRange(PyObject *data, bool editable) :
 // be called with the GIL.
 sipQRangeModel *QPyTableRange::create(QObject *parent)
 {
-    if (!populate(m_table_range, data()))
+    if (!populate(m_table_range, borrowedData()))
         return nullptr;
 
     sipQRangeModel *model;
@@ -253,24 +271,45 @@ void QPyTableRange::handleDataChanged(const QModelIndex &tl,
 
     bool do_emit = false;
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+    auto *view = interpreterView();
+    auto *thread = view ? PyThreadState_EnsureFromView(view) : nullptr;
+    if (!thread)
+        return;
+
+    PyObject *previous_error = PyErr_GetRaisedException();
+    PyObject *module = qpycore_qtcore_module_ref(moduleState());
+    PyObject *py_data = module ? qpycore_PyObject_FromQVariant(tl.data(),
+            moduleState()) : nullptr;
+#else
     SIP_BLOCK_THREADS
 
-    // Note that we don't report any errors.
     PyObject *py_data = qpycore_PyObject_FromQVariant(tl.data());
+#endif
     if (py_data)
     {
-        PyObject *row_data = PySequence_GetItem(data(), tl.row());
+        PyObject *row_data = PySequence_GetItem(borrowedData(), tl.row());
 
         if (row_data != NULL)
         {
             do_emit = (PyList_SetItem(row_data, tl.column(), py_data) == 0);
             Py_DECREF(row_data);
         }
+        else
+        {
+            Py_DECREF(py_data);
+        }
     }
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+    Py_XDECREF(module);
+    PyErr_SetRaisedException(previous_error);
+    PyThreadState_Release(thread);
+#else
     SIP_UNBLOCK_THREADS
+#endif
 
-    // The signal must be emited without the GIL.
+    // Emit the signal after detaching from the interpreter.
     if (do_emit)
         emit dataChanged(tl.row(), tl.column());
 }
@@ -280,8 +319,6 @@ void QPyTableRange::handleDataChanged(const QModelIndex &tl,
 bool QPyTableRange::populate(QList<QVariantList> &range, PyObject *data)
 {
     bool ok = true;
-
-    SIP_BLOCK_THREADS
 
     if (PySequence_Check(data))
     {
@@ -336,8 +373,6 @@ bool QPyTableRange::populate(QList<QVariantList> &range, PyObject *data)
         raiseBadStructure();
         ok = false;
     }
-
-    SIP_UNBLOCK_THREADS
 
     return ok;
 }

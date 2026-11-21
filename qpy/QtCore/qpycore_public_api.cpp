@@ -19,11 +19,13 @@
 
 
 #include <Python.h>
+#include <memory>
 
 #include <QByteArray>
 #include <QHash>
 
 #include "qpycore_chimera.h"
+#include "qpycore_misc.h"
 #include "qpycore_event_handlers.h"
 #include "qpycore_objectified_strings.h"
 #include "qpycore_public_api.h"
@@ -314,6 +316,21 @@ sipErrorState pyqt6_get_connection_parts(PyObject *slot, QObject *transmitter,
         const char *signal_signature, bool single_shot, QObject **receiver,
         QByteArray &slot_signature)
 { 
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyObject *module = qpycore_qtcore_module_ref();
+    if (!module)
+        return sipErrorFail;
+
+    auto *sipMS = static_cast<sipModuleState *>(PyModule_GetState(module));
+    std::unique_ptr<const Chimera::Signature> parsed(Chimera::parse(
+            QByteArray(signal_signature), "a signal argument", sipMS));
+    sipErrorState status = parsed ? qpycore_get_receiver_slot_signature(
+            slot, transmitter, parsed.get(), single_shot, receiver,
+            slot_signature) : sipErrorFail;
+    parsed.reset();
+    Py_DECREF(module);
+    return status;
+#else
     static QHash<QByteArray, const Chimera::Signature *> cache;
 
     QByteArray key(signal_signature);
@@ -331,6 +348,7 @@ sipErrorState pyqt6_get_connection_parts(PyObject *slot, QObject *transmitter,
 
     return qpycore_get_receiver_slot_signature(slot, transmitter,
             parsed_signal_signature, single_shot, receiver, slot_signature);
+#endif
 }
 
 
@@ -339,7 +357,11 @@ sipErrorState pyqt6_get_connection_parts(PyObject *slot, QObject *transmitter,
 sipErrorState pyqt6_get_pyqtsignal_parts(PyObject *signal,
         QObject **transmitter, QByteArray &signal_signature)
 {
+#if SIP_ABI_MAJOR_VERSION >= 14
+    if (qpycore_is_aux_type(signal, "pyqtBoundSignal"))
+#else
     if (PyObject_TypeCheck(signal, qpycore_pyqtBoundSignal_TypeObject))
+#endif
     {
         qpycore_pyqtBoundSignal *bs = (qpycore_pyqtBoundSignal *)signal;
 
@@ -362,6 +384,9 @@ sipErrorState pyqt6_get_pyqtslot_parts(PyObject *slot, QObject **receiver,
     void *qobj;
     Chimera::Signature *sig;
     sipMethodDef slot_m;
+#if SIP_ABI_MAJOR_VERSION >= 14
+    sipModuleState *sipMS;
+#endif
 
     // Get the QObject.
     if (!sipGetMethod(slot, &slot_m))
@@ -372,6 +397,12 @@ sipErrorState pyqt6_get_pyqtslot_parts(PyObject *slot, QObject **receiver,
         goto bad_callable;
 
     is_err = 0;
+
+#if SIP_ABI_MAJOR_VERSION >= 14
+    sipMS = sipGetModuleStateByType(Py_TYPE(py_receiver));
+    if (!sipMS)
+        goto bad_callable;
+#endif
 
     qobj = sipForceConvertToType(py_receiver, sipType_QObject, 0,
             SIP_NO_CONVERTORS, 0, &is_err);
@@ -388,10 +419,19 @@ sipErrorState pyqt6_get_pyqtslot_parts(PyObject *slot, QObject **receiver,
         goto bad_callable;
 
     // Use the first one ignoring any others.
-    sig = Chimera::Signature::fromPyObject(PyList_GetItem(decorations, 0));
+    PyObject *decoration;
+#if SIP_ABI_MAJOR_VERSION >= 14
+    decoration = PyList_GetItemRef(decorations, 0);
+#else
+    decoration = Py_XNewRef(PyList_GetItem(decorations, 0));
+#endif
+    sig = decoration ? Chimera::Signature::fromPyObject(decoration) : nullptr;
+    if (sig)
+        slot_signature = sig->signature;
+    Py_XDECREF(decoration);
     Py_DECREF(decorations);
-
-    slot_signature = sig->signature;
+    if (!sig)
+        goto bad_callable;
     slot_signature.prepend('1');
 
     return sipErrorNone;
@@ -411,7 +451,11 @@ sipErrorState pyqt6_get_signal_signature(PyObject *signal,
 {
     qpycore_pyqtSignal *ps;
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+    if (qpycore_is_aux_type(signal, "pyqtBoundSignal"))
+#else
     if (PyObject_TypeCheck(signal, qpycore_pyqtBoundSignal_TypeObject))
+#endif
     {
         qpycore_pyqtBoundSignal *bs = (qpycore_pyqtBoundSignal *)signal;
 
@@ -424,7 +468,11 @@ sipErrorState pyqt6_get_signal_signature(PyObject *signal,
 
         ps = bs->unbound_signal;
     }
+#if SIP_ABI_MAJOR_VERSION >= 14
+    else if (qpycore_is_aux_type(signal, "pyqtSignal"))
+#else
     else if (PyObject_TypeCheck(signal, qpycore_pyqtSignal_TypeObject))
+#endif
     {
         ps = (qpycore_pyqtSignal *)signal;
     }
@@ -485,5 +533,11 @@ void pyqt6_update_argv_list(PyObject *argv_list, int argc, char **argv)
 // Get the QMetaObject instance for a Python type.
 const QMetaObject *pyqt6_get_qmetaobject(PyTypeObject *type)
 {
+#if SIP_ABI_MAJOR_VERSION >= 14
+    auto *sipMS = sipGetModuleStateByType(type);
+    return sipMS ? qpycore_get_qmetaobject(reinterpret_cast<sipWrapperType *>(type),
+            0, sipMS) : nullptr;
+#else
     return qpycore_get_qmetaobject((sipWrapperType *)type);
+#endif
 }

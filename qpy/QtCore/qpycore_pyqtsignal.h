@@ -60,22 +60,38 @@ typedef struct _qpycore_pyqtSignal {
     pyqt6EmitFunc emitter;
 
     // The non-signal overloads (if any).  This is only set for the default.
+#if SIP_ABI_MAJOR_VERSION >= 14
+    sipCallableImplFunc non_signals;
+    PyObject *native_module_ref;
+#else
     PyMethodDef *non_signals;
+#endif
 } qpycore_pyqtSignal;
 
 
+#if SIP_ABI_MAJOR_VERSION < 14
 int qpycore_get_lazy_attr(const sipTypeDef *td, PyObject *dict);
+#endif
 
 }
 
 
-// The type object.
+#if SIP_ABI_MAJOR_VERSION >= 14
+bool qpycore_pyqtSignal_init_type(PyObject *module);
+int qpycore_finalize_signal_type(sipModuleState *sipMS, sipTypeID,
+        PyTypeObject *py_type);
+PyObject *qpycore_signal_native_module(qpycore_pyqtSignal *signal);
+#else
 extern PyTypeObject *qpycore_pyqtSignal_TypeObject;
-
-
 bool qpycore_pyqtSignal_init_type();
+#endif
+
 qpycore_pyqtSignal *qpycore_pyqtSignal_New(const char *signature,
-        bool *fatal = 0);
+        bool *fatal, Chimera::ModuleState *sipMS
+#if SIP_ABI_MAJOR_VERSION < 14
+            = nullptr
+#endif
+        );
 qpycore_pyqtSignal *qpycore_find_signal(qpycore_pyqtSignal *ps,
         PyObject *subscript, const char *context);
 void qpycore_set_signal_name(qpycore_pyqtSignal *ps, const char *type_name,

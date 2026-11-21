@@ -27,6 +27,10 @@
 
 #include <QMetaType>
 #include <QDataStream>
+#include <sip.h>
+#if SIP_ABI_MAJOR_VERSION >= 14
+#include <memory>
+#endif
 
 
 // This class is used to wrap a PyObject so it can be passed around Qt's
@@ -42,8 +46,19 @@ public:
     PyQt_PyObject &operator=(const PyQt_PyObject &other);
     operator QString() const;
 
-    // The Python object being wrapped.
+    PyObject *borrowedPyObject() const;
+
+private:
+#if SIP_ABI_MAJOR_VERSION >= 14
+    class Payload;
+    std::shared_ptr<Payload> payload;
+#else
     PyObject *pyobject;
+#endif
+
+    friend bool operator==(const PyQt_PyObject &, const PyQt_PyObject &);
+    friend QDataStream &operator<<(QDataStream &, const PyQt_PyObject &);
+    friend QDataStream &operator>>(QDataStream &, PyQt_PyObject &);
 };
 
 bool operator==(const PyQt_PyObject &self, const PyQt_PyObject &other);

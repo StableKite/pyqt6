@@ -19,6 +19,7 @@
 
 
 #include "qpycore_event_handlers.h"
+#include "qpycore_pyqtsignal.h"
 
 #include <QMutexLocker>
 
@@ -187,6 +188,7 @@ static void free_monitor(sipModuleState *sipMS, void *data)
 int qpycore_register_event_handlers(sipModuleState *sipMS, PyObject *module)
 {
     static const sipEventHandlerSpec handlers[] = {
+        {sipEventFinalisingType, sipType_QObject, reinterpret_cast<void *>(qpycore_finalize_signal_type)},
         {sipEventWrappedInstance, sipType_QObject, reinterpret_cast<void *>(wrapped_instance_eh)},
         {sipEventCollectingWrapper, sipType_QObject, reinterpret_cast<void *>(collecting_wrapper_eh)},
         {sipEventNone, 0, nullptr}

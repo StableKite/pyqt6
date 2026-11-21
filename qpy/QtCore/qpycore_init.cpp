@@ -47,6 +47,7 @@ static PyObject *cleanup_on_exit(PyObject *module, PyObject *)
     if (!sipMS)
         return nullptr;
     qpycore_clear_qt_message_handler(sipMS);
+    qpycore_clear_pyobject_bridge();
     pyqt6_cleanup_qobjects(sipMS);
 #else
     (void)module;
@@ -81,6 +82,10 @@ void qpycore_init()
 {
     // We haven't created a QCoreApplication instance.
     qpycore_created_qapp = false;
+#if SIP_ABI_MAJOR_VERSION >= 14
+    if (qpycore_init_pyobject_bridge() < 0)
+        return;
+#endif
 
     // Export the private helpers, ie. those that should not be used by
     // external handwritten code.

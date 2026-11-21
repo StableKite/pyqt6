@@ -19,15 +19,19 @@
 
 
 #include <Python.h>
+#include <atomic>
 #include <structmember.h>
 
 #include "qpycore_chimera.h"
+#include "qpycore_misc.h"
 #include "qpycore_pyqtproperty.h"
 #include "qpycore_pyqtsignal.h"
 
 
 // The type object.
+#if SIP_ABI_MAJOR_VERSION < 14
 PyTypeObject *qpycore_pyqtProperty_TypeObject;
+#endif
 
 
 // Forward declarations.
@@ -144,7 +148,7 @@ static PyType_Spec qpycore_pyqtProperty_Spec = {
 // This is the sequence number to allocate to the next PyQt property to be
 // defined.  This ensures that properties appear in the QMetaObject in the same
 // order that they are defined in Python.
-static uint pyqtprop_sequence_nr = 0;
+static std::atomic_uint pyqtprop_sequence_nr{0};
 
 
 // The pyqtProperty dealloc function.
@@ -299,13 +303,30 @@ static int pyqtProperty_init(PyObject *self, PyObject *args, PyObject *kwds)
             "final", "notify", "revision", 0};
     qpycore_pyqtProperty *pp = (qpycore_pyqtProperty *)self;
 
-    pp->pyqtprop_sequence = pyqtprop_sequence_nr++;
+    pp->pyqtprop_sequence = pyqtprop_sequence_nr.fetch_add(1, std::memory_order_relaxed);
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds,
+#if SIP_ABI_MAJOR_VERSION >= 14
+    auto *sipMS = sipGetModuleStateByType(Py_TYPE(self));
+    if (!sipMS)
+        return -1;
+
+    PyTypeObject *signal_type = qpycore_aux_type_ref(sipMS, "pyqtSignal");
+    if (!signal_type)
+        return -1;
+#else
+    Chimera::ModuleState *sipMS = nullptr;
+    PyTypeObject *signal_type = qpycore_pyqtSignal_TypeObject;
+#endif
+
+    bool parsed = PyArg_ParseTupleAndKeywords(args, kwds,
             "O|OOOOOiiiiiiO!i:pyqtProperty",
             const_cast<char **>(kwlist), &type, &get, &set, &reset, &del, &doc,
             &designable, &scriptable, &stored, &user, &constant, &final,
-            qpycore_pyqtSignal_TypeObject, &notify, &revision))
+            signal_type, &notify, &revision);
+#if SIP_ABI_MAJOR_VERSION >= 14
+    Py_DECREF(signal_type);
+#endif
+    if (!parsed)
         return -1;
 
     if (get == Py_None)
@@ -324,7 +345,7 @@ static int pyqtProperty_init(PyObject *self, PyObject *args, PyObject *kwds)
         notify = 0;
 
     // Parse the type.
-    const Chimera *ptype = Chimera::parse(type);
+    const Chimera *ptype = Chimera::parse(type, sipMS);
 
     if (!ptype)
     {
@@ -573,6 +594,18 @@ static PyObject *getter_docstring(PyObject *getter)
 
 
 // Initialise the type and return true if there was no error.
+#if SIP_ABI_MAJOR_VERSION >= 14
+bool qpycore_pyqtProperty_init_type(PyObject *module)
+{
+    PyObject *type = PyType_FromModuleAndSpec(module, &qpycore_pyqtProperty_Spec, nullptr);
+    if (!type)
+        return false;
+
+    int status = PyModule_AddObjectRef(module, "pyqtProperty", type);
+    Py_DECREF(type);
+    return status == 0;
+}
+#else
 bool qpycore_pyqtProperty_init_type()
 {
     qpycore_pyqtProperty_TypeObject = (PyTypeObject *)PyType_FromSpec(
@@ -580,3 +613,4 @@ bool qpycore_pyqtProperty_init_type()
 
     return qpycore_pyqtProperty_TypeObject;
 }
+#endif

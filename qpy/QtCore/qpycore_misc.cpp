@@ -21,6 +21,8 @@
 #include <Python.h>
 
 #include <QByteArray>
+#include <memory>
+#include <utility>
 
 #include "qpycore_api.h"
 #include "qpycore_misc.h"
@@ -58,8 +60,60 @@ QByteArray qpycore_convert_ASCII(PyObject *str_obj)
 }
 
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+// Resolve QtCore in the attached interpreter without importing it recursively.
+PyObject *qpycore_qtcore_module_ref(sipModuleState *expected)
+{
+    PyObject *name = PyUnicode_FromString("PyQt6.QtCore");
+    if (!name)
+        return nullptr;
+
+    PyObject *module = PyImport_GetModule(name);
+    Py_DECREF(name);
+    if (!module || (expected && PyModule_GetState(module) != expected))
+    {
+        Py_XDECREF(module);
+        if (!PyErr_Occurred())
+            PyErr_SetString(PyExc_RuntimeError, "QtCore module state is unavailable");
+        return nullptr;
+    }
+
+    return module;
+}
+
+
+PyTypeObject *qpycore_aux_type_ref(sipModuleState *sipMS, const char *name)
+{
+    PyObject *module = qpycore_qtcore_module_ref(sipMS);
+    if (!module)
+        return nullptr;
+
+    PyObject *type = PyObject_GetAttrString(module, name);
+    Py_DECREF(module);
+    if (type && !PyType_Check(type))
+    {
+        Py_DECREF(type);
+        PyErr_Format(PyExc_TypeError, "QtCore.%s must be a type", name);
+        return nullptr;
+    }
+
+    return reinterpret_cast<PyTypeObject *>(type);
+}
+
+
+bool qpycore_is_aux_type(PyObject *obj, const char *name)
+{
+    PyTypeObject *type = qpycore_aux_type_ref(nullptr, name);
+    if (!type)
+        return false;
+
+    bool matches = PyObject_TypeCheck(obj, type);
+    Py_DECREF(type);
+    return matches;
+}
+#else
+
 // Return true if the given type was wrapped for PyQt.
-#if SIP_ABI_MAJOR_VERSION < 14
 bool qpycore_is_pyqt_type(const sipTypeDef *td)
 {
     return sipCheckPluginForType(td, "PyQt6.QtCore");
@@ -82,4 +136,79 @@ void qpycore_Unicode_ConcatAndDel(PyObject **string, PyObject *newpart)
     }
 
     Py_XDECREF(newpart);
+}
+
+
+namespace
+{
+class QtCoreThreadPoolCall
+{
+public:
+#if SIP_ABI_MAJOR_VERSION >= 14
+    QtCoreThreadPoolCall(PyObject *callable, PyInterpreterView *view)
+        : callable(Py_NewRef(callable)), view(view) {}
+#else
+    explicit QtCoreThreadPoolCall(PyObject *callable) : callable(Py_NewRef(callable)) {}
+#endif
+
+    ~QtCoreThreadPoolCall()
+    {
+#if SIP_ABI_MAJOR_VERSION >= 14
+        if (auto *thread = PyThreadState_EnsureFromView(view))
+        {
+            Py_DECREF(callable);
+            PyThreadState_Release(thread);
+        }
+        PyInterpreterView_Close(view);
+#else
+        SIP_BLOCK_THREADS
+        Py_DECREF(callable);
+        SIP_UNBLOCK_THREADS
+#endif
+    }
+
+    void run() const
+    {
+#if SIP_ABI_MAJOR_VERSION >= 14
+        auto *thread = PyThreadState_EnsureFromView(view);
+        if (!thread)
+            return;
+
+        PyObject *previous_error = PyErr_GetRaisedException();
+#else
+        SIP_BLOCK_THREADS
+#endif
+        PyObject *result = PyObject_CallNoArgs(callable);
+        if (result)
+            Py_DECREF(result);
+        else
+            pyqt6_err_print();
+#if SIP_ABI_MAJOR_VERSION >= 14
+        PyErr_SetRaisedException(previous_error);
+        PyThreadState_Release(thread);
+#else
+        SIP_UNBLOCK_THREADS
+#endif
+    }
+
+private:
+    PyObject *const callable;
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyInterpreterView *const view;
+#endif
+};
+}
+
+std::function<void()> qpycore_thread_function(PyObject *callable)
+{
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyInterpreterView *view = PyInterpreterView_FromCurrent();
+    if (!view)
+        return {};
+
+    auto call = std::make_shared<QtCoreThreadPoolCall>(callable, view);
+#else
+    auto call = std::make_shared<QtCoreThreadPoolCall>(callable);
+#endif
+    return [call] { call->run(); };
 }

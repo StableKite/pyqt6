@@ -109,7 +109,14 @@ void qpycore_qmetaobject_connectslotsbyname(QObject *qobj,
         PyObject *qobj_wrapper);
 
 // Support for pyqt[Set]PickleProtocol().
+#if SIP_ABI_MAJOR_VERSION >= 14
+int qpycore_init_pyobject_bridge();
+void qpycore_clear_pyobject_bridge();
+void qpycore_set_pickle_protocol(PyObject *value);
+PyObject *qpycore_get_pickle_protocol();
+#else
 extern PyObject *qpycore_pickle_protocol;
+#endif
 
 // Support for qDebug() etc.
 int qpycore_current_context(const char **file, const char **function);

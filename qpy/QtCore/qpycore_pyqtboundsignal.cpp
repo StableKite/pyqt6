@@ -37,7 +37,9 @@
 
 
 // The type object.
+#if SIP_ABI_MAJOR_VERSION < 14
 PyTypeObject *qpycore_pyqtBoundSignal_TypeObject;
+#endif
 
 
 // Forward declarations.
@@ -45,6 +47,10 @@ extern "C" {
 static PyObject *pyqtBoundSignal_call(PyObject *self, PyObject *args,
         PyObject *kw);
 static void pyqtBoundSignal_dealloc(PyObject *self);
+#if SIP_ABI_MAJOR_VERSION >= 14
+static int pyqtBoundSignal_traverse(PyObject *self, visitproc visit, void *arg);
+static int pyqtBoundSignal_clear(PyObject *self);
+#endif
 static Py_hash_t pyqtBoundSignal_hash(PyObject *self);
 static PyObject *pyqtBoundSignal_repr(PyObject *self);
 static PyObject *pyqtBoundSignal_richcompare(PyObject *self, PyObject *other,
@@ -126,7 +132,12 @@ static PyGetSetDef pyqtBoundSignal_getset[] = {
 
 // Define the slots.
 static PyType_Slot qpycore_pyqtBoundSignal_Slots[] = {
+#if SIP_ABI_MAJOR_VERSION >= 14
+    {Py_tp_traverse,    (void *)pyqtBoundSignal_traverse},
+    {Py_tp_clear,       (void *)pyqtBoundSignal_clear},
+#else
     {Py_tp_new,         (void *)PyType_GenericNew},
+#endif
     {Py_tp_dealloc,     (void *)pyqtBoundSignal_dealloc},
     {Py_tp_repr,        (void *)pyqtBoundSignal_repr},
     {Py_tp_richcompare, (void *)pyqtBoundSignal_richcompare},
@@ -144,7 +155,11 @@ static PyType_Spec qpycore_pyqtBoundSignal_Spec = {
     "PyQt6.QtCore.pyqtBoundSignal",
     sizeof (qpycore_pyqtBoundSignal),
     0,
+#if SIP_ABI_MAJOR_VERSION >= 14
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC | Py_TPFLAGS_DISALLOW_INSTANTIATION,
+#else
     Py_TPFLAGS_DEFAULT,
+#endif
     qpycore_pyqtBoundSignal_Slots
 };
 
@@ -196,7 +211,7 @@ static PyObject *pyqtBoundSignal_repr(PyObject *self)
 static PyObject *pyqtBoundSignal_richcompare(PyObject *self, PyObject *other,
         int op)
 {
-    if ((op != Py_EQ && op != Py_NE) || !PyObject_TypeCheck(other, qpycore_pyqtBoundSignal_TypeObject))
+    if ((op != Py_EQ && op != Py_NE) || Py_TYPE(other) != Py_TYPE(self))
     {
         Py_INCREF(Py_NotImplemented);
         return Py_NotImplemented;
@@ -262,15 +277,66 @@ static PyObject *pyqtBoundSignal_call(PyObject *self, PyObject *args,
 // The type dealloc slot.
 static void pyqtBoundSignal_dealloc(PyObject *self)
 {
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyObject_GC_UnTrack(self);
+    pyqtBoundSignal_clear(self);
+    PyTypeObject *type = Py_TYPE(self);
+    PyObject_GC_Del(self);
+    Py_DECREF(type);
+#else
     qpycore_pyqtBoundSignal *bs = (qpycore_pyqtBoundSignal *)self;
-
     Py_XDECREF((PyObject *)bs->unbound_signal);
-
     PyObject_Del(self);
+#endif
 }
 
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+static int pyqtBoundSignal_traverse(PyObject *self, visitproc visit, void *arg)
+{
+    auto *bs = reinterpret_cast<qpycore_pyqtBoundSignal *>(self);
+    Py_VISIT(Py_TYPE(self));
+    Py_VISIT(bs->unbound_signal);
+    Py_VISIT(bs->bound_pyobject);
+    return 0;
+}
+
+
+static int pyqtBoundSignal_clear(PyObject *self)
+{
+    auto *bs = reinterpret_cast<qpycore_pyqtBoundSignal *>(self);
+    bs->bound_qobject = nullptr;
+    Py_CLEAR(bs->unbound_signal);
+    Py_CLEAR(bs->bound_pyobject);
+    return 0;
+}
+
+
+static bool bound_signal_is_live(const qpycore_pyqtBoundSignal *bs)
+{
+    if (bs->bound_pyobject && sipGetAddress(
+            reinterpret_cast<sipSimpleWrapper *>(bs->bound_pyobject)))
+        return true;
+
+    PyErr_SetString(PyExc_RuntimeError, "the signal's QObject has been deleted");
+    return false;
+}
+#endif
+
+
 // Initialise the type and return true if there was no error.
+#if SIP_ABI_MAJOR_VERSION >= 14
+bool qpycore_pyqtBoundSignal_init_type(PyObject *module)
+{
+    PyObject *type = PyType_FromModuleAndSpec(module, &qpycore_pyqtBoundSignal_Spec, nullptr);
+    if (!type)
+        return false;
+
+    int status = PyModule_AddObjectRef(module, "pyqtBoundSignal", type);
+    Py_DECREF(type);
+    return status == 0;
+}
+#else
 bool qpycore_pyqtBoundSignal_init_type()
 {
     qpycore_pyqtBoundSignal_TypeObject = (PyTypeObject *)PyType_FromSpec(
@@ -278,21 +344,33 @@ bool qpycore_pyqtBoundSignal_init_type()
 
     return qpycore_pyqtBoundSignal_TypeObject;
 }
+#endif
 
 
 // Create a bound signal.
 PyObject *qpycore_pyqtBoundSignal_New(qpycore_pyqtSignal *unbound_signal,
         PyObject *bound_pyobject, QObject *bound_qobject)
 {
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyTypeObject *type = qpycore_aux_type_ref(nullptr, "pyqtBoundSignal");
+    auto *bs = type ? reinterpret_cast<qpycore_pyqtBoundSignal *>(
+            PyType_GenericAlloc(type, 0)) : nullptr;
+    Py_XDECREF(type);
+#else
     qpycore_pyqtBoundSignal *bs = (qpycore_pyqtBoundSignal *)PyType_GenericNew(
             qpycore_pyqtBoundSignal_TypeObject, 0, 0);
+#endif
 
     if (bs)
     {
         Py_INCREF((PyObject *)unbound_signal);
         bs->unbound_signal = unbound_signal;
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+        bs->bound_pyobject = Py_NewRef(bound_pyobject);
+#else
         bs->bound_pyobject = bound_pyobject;
+#endif
         bs->bound_qobject = bound_qobject;
     }
 
@@ -323,6 +401,12 @@ static PyObject *pyqtBoundSignal_connect(PyObject *self, PyObject *args,
         PyObject *kwd_args)
 {
     qpycore_pyqtBoundSignal *bs = (qpycore_pyqtBoundSignal *)self;
+#if SIP_ABI_MAJOR_VERSION >= 14
+    auto *sipMS = sipGetModuleStateByType(Py_TYPE(self));
+    if (!sipMS)
+        return nullptr;
+#endif
+
 
     static const char *kwds[] = {
         "slot",
@@ -354,6 +438,11 @@ static PyObject *pyqtBoundSignal_connect(PyObject *self, PyObject *args,
 
         q_type = static_cast<Qt::ConnectionType>(v);
     }
+
+#if SIP_ABI_MAJOR_VERSION >= 14
+    if (!bound_signal_is_live(bs))
+        return nullptr;
+#endif
 
     QObject *q_tx = bs->bound_qobject, *q_rx;
     Chimera::Signature *signal_signature = bs->unbound_signal->parsed_signature;
@@ -420,10 +509,18 @@ static sipErrorState get_receiver_slot_signature(PyObject *slot,
         bool unique_connection_check, int no_receiver_check)
 {
     // See if the slot is a signal.
+    #if SIP_ABI_MAJOR_VERSION >= 14
+    if (qpycore_is_aux_type(slot, "pyqtBoundSignal"))
+#else
     if (PyObject_TypeCheck(slot, qpycore_pyqtBoundSignal_TypeObject))
+#endif
     {
         qpycore_pyqtBoundSignal *bs = (qpycore_pyqtBoundSignal *)slot;
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+        if (!bound_signal_is_live(bs))
+            return sipErrorFail;
+#endif
         *receiver = bs->bound_qobject;
         slot_signature = bs->unbound_signal->parsed_signature->signature;
 
@@ -461,7 +558,9 @@ static sipErrorState get_receiver_slot_signature(PyObject *slot,
             }
         }
 
+#if SIP_ABI_MAJOR_VERSION < 14
         Py_BEGIN_ALLOW_THREADS
+#endif
 
         proxy = new PyQtSlotProxy(slot, transmitter, signal_signature,
                 single_shot);
@@ -482,7 +581,9 @@ static sipErrorState get_receiver_slot_signature(PyObject *slot,
             proxy = 0;
         }
 
+#if SIP_ABI_MAJOR_VERSION < 14
         Py_END_ALLOW_THREADS
+#endif
 
         if (!proxy)
             return sipErrorFail;
@@ -523,12 +624,23 @@ PyObject *qpycore_qobject_disconnect(const QObject *q_obj)
 static PyObject *pyqtBoundSignal_disconnect(PyObject *self, PyObject *args)
 {
     qpycore_pyqtBoundSignal *bs = (qpycore_pyqtBoundSignal *)self;
+#if SIP_ABI_MAJOR_VERSION >= 14
+    auto *sipMS = sipGetModuleStateByType(Py_TYPE(self));
+    if (!sipMS)
+        return nullptr;
+#endif
+
 
     PyObject *py_slot = 0, *res_obj;
     Chimera::Signature *signal_signature = bs->unbound_signal->parsed_signature;
 
     if (!PyArg_ParseTuple(args, "|O:disconnect", &py_slot))
         return 0;
+
+#if SIP_ABI_MAJOR_VERSION >= 14
+    if (!bound_signal_is_live(bs))
+        return nullptr;
+#endif
 
     // See if we are disconnecting everything from the overload.
     if (!py_slot)
@@ -566,10 +678,18 @@ static PyObject *pyqtBoundSignal_disconnect(PyObject *self, PyObject *args)
     }
 
     // See if the slot is a signal.
+    #if SIP_ABI_MAJOR_VERSION >= 14
+    if (qpycore_is_aux_type(py_slot, "pyqtBoundSignal"))
+#else
     if (PyObject_TypeCheck(py_slot, qpycore_pyqtBoundSignal_TypeObject))
+#endif
     {
         qpycore_pyqtBoundSignal *slot_bs = (qpycore_pyqtBoundSignal *)py_slot;
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+        if (!bound_signal_is_live(slot_bs))
+            return nullptr;
+#endif
         return disconnect(bs, slot_bs->bound_qobject,
                 slot_bs->unbound_signal->parsed_signature->signature.constData());
     }
@@ -655,6 +775,11 @@ static PyObject *pyqtBoundSignal_emit(PyObject *self, PyObject *args)
 {
     qpycore_pyqtBoundSignal *bs = (qpycore_pyqtBoundSignal *)self;
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+    if (!bound_signal_is_live(bs))
+        return nullptr;
+#endif
+
     if (!bs->bound_qobject->signalsBlocked())
     {
         Q_ASSERT(PyTuple_Check(args));
@@ -664,8 +789,20 @@ static PyObject *pyqtBoundSignal_emit(PyObject *self, PyObject *args)
         // Use the emitter if there is one.
         if (ps->emitter)
         {
+#if SIP_ABI_MAJOR_VERSION >= 14
+            PyObject *module = qpycore_signal_native_module(ps);
+            if (!module)
+                return nullptr;
+
+            auto *sipMS = static_cast<sipModuleState *>(PyModule_GetState(module));
+            int status = ps->emitter(sipMS, bs->bound_qobject, args);
+            Py_DECREF(module);
+            if (status < 0)
+                return nullptr;
+#else
             if (ps->emitter(bs->bound_qobject, args) < 0)
                 return 0;
+#endif
         }
         else
         {
@@ -887,6 +1024,9 @@ static bool get_receiver(PyObject *slot,
         return true;
 
     int iserr = 0;
+#if SIP_ABI_MAJOR_VERSION >= 14
+    auto *sipMS = signal_signature->moduleState();
+#endif
     void *rx = sipForceConvertToType(rx_self, sipType_QObject, 0,
             SIP_NO_CONVERTORS, 0, &iserr);
 

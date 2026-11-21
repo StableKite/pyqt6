@@ -23,6 +23,7 @@
 #include <QtGlobal>
 #include <QByteArray>
 #include <QMetaObject>
+#include <QVarLengthArray>
 
 #include "qpycore_chimera.h"
 #include "qpycore_misc.h"
@@ -30,8 +31,9 @@
 #include "qpycore_pyqtsignal.h"
 
 
-// The type object.
+#if SIP_ABI_MAJOR_VERSION < 14
 PyTypeObject *qpycore_pyqtSignal_TypeObject;
+#endif
 
 
 // Forward declarations.
@@ -49,7 +51,7 @@ static PyObject *pyqtSignal_get_signatures(PyObject *self, void *);
 
 static int init_signal_from_types(qpycore_pyqtSignal *ps, const char *name,
         const QList<QByteArray> *parameter_names, int revision,
-        PyObject *types);
+        PyObject *types, Chimera::ModuleState *sipMS);
 static void append_overload(qpycore_pyqtSignal *ps);
 static bool is_signal_name(const char *sig, const QByteArray &name);
 
@@ -117,11 +119,14 @@ static PyObject *pyqtSignal_get_doc(PyObject *self, void *)
     QByteArray doc;
 
     // Get any docstrings from any non-signal overloads.
+#if SIP_ABI_MAJOR_VERSION < 14
     if (ps->non_signals && ps->non_signals->ml_doc)
     {
         doc.append('\n');
         doc.append(ps->non_signals->ml_doc);
     }
+
+#endif
 
     // Get any docstrings from the signals.
     do
@@ -226,7 +231,14 @@ static void pyqtSignal_dealloc(PyObject *self)
         }
     }
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+    auto *type = Py_TYPE(self);
+    Py_XDECREF(((qpycore_pyqtSignal *)self)->native_module_ref);
     PyObject_Del(self);
+    Py_DECREF(type);
+#else
+    PyObject_Del(self);
+#endif
 }
 
 
@@ -242,6 +254,12 @@ static PyObject *pyqtSignal_descr_get(PyObject *self, PyObject *obj,
         Py_INCREF(self);
         return self;
     }
+
+#if SIP_ABI_MAJOR_VERSION >= 14
+    auto *sipMS = sipGetModuleStateByType(Py_TYPE(self));
+    if (!sipMS)
+        return nullptr;
+#endif
 
     // Get the QObject.
     int is_err = 0;
@@ -262,6 +280,14 @@ static int pyqtSignal_init(PyObject *self, PyObject *args, PyObject *kwd_args)
 {
     qpycore_pyqtSignal *ps = (qpycore_pyqtSignal *)self;
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+    auto *sipMS = sipGetModuleStateByType(Py_TYPE(self));
+    if (!sipMS)
+        return -1;
+#else
+    Chimera::ModuleState *sipMS = nullptr;
+#endif
+
     // Get the keyword arguments.
     PyObject *name_obj = 0;
     const char *name = 0;
@@ -277,8 +303,12 @@ static int pyqtSignal_init(PyObject *self, PyObject *args, PyObject *kwd_args)
         {
             if (PyUnicode_CompareWithASCIIString(key, "name") == 0)
             {
-                name_obj = value;
-                name = sipString_AsASCIIString(&name_obj);
+                if (PyUnicode_Check(value))
+                    name_obj = PyUnicode_AsASCIIString(value);
+                else if (PyBytes_Check(value))
+                    name_obj = Py_NewRef(value);
+
+                name = name_obj ? PyBytes_AsString(name_obj) : nullptr;
 
                 if (!name)
                 {
@@ -394,17 +424,17 @@ static int pyqtSignal_init(PyObject *self, PyObject *args, PyObject *kwd_args)
             {
                 // The first is the default.
                 rc = init_signal_from_types(ps, name, parameter_names,
-                        revision, types);
+                        revision, types, sipMS);
             }
             else
             {
-                qpycore_pyqtSignal *overload = (qpycore_pyqtSignal *)PyType_GenericNew(qpycore_pyqtSignal_TypeObject, 0, 0);
+                qpycore_pyqtSignal *overload = (qpycore_pyqtSignal *)PyType_GenericNew(Py_TYPE(self), 0, 0);
 
                 if (!overload)
                 {
                     rc = -1;
                 }
-                else if ((rc = init_signal_from_types(overload, name, 0, revision, types)) < 0)
+                else if ((rc = init_signal_from_types(overload, name, 0, revision, types, sipMS)) < 0)
                 {
                     Py_DECREF((PyObject *)overload);
                 }
@@ -428,7 +458,7 @@ static int pyqtSignal_init(PyObject *self, PyObject *args, PyObject *kwd_args)
             }
         }
     }
-    else if (init_signal_from_types(ps, name, parameter_names, revision, args) < 0)
+    else if (init_signal_from_types(ps, name, parameter_names, revision, args, sipMS) < 0)
     {
         if (name)
         {
@@ -462,6 +492,18 @@ static PyObject *pyqtSignal_mp_subscript(PyObject *self, PyObject *subscript)
 
 
 // Initialise the type and return true if there was no error.
+#if SIP_ABI_MAJOR_VERSION >= 14
+bool qpycore_pyqtSignal_init_type(PyObject *module)
+{
+    PyObject *type = PyType_FromModuleAndSpec(module, &qpycore_pyqtSignal_Spec, nullptr);
+    if (!type)
+        return false;
+
+    int status = PyModule_AddObjectRef(module, "pyqtSignal", type);
+    Py_DECREF(type);
+    return status == 0;
+}
+#else
 bool qpycore_pyqtSignal_init_type()
 {
     qpycore_pyqtSignal_TypeObject = (PyTypeObject *)PyType_FromSpec(
@@ -469,10 +511,12 @@ bool qpycore_pyqtSignal_init_type()
 
     return qpycore_pyqtSignal_TypeObject;
 }
+#endif
 
 
 // Create a new signal instance.
-qpycore_pyqtSignal *qpycore_pyqtSignal_New(const char *signature, bool *fatal)
+qpycore_pyqtSignal *qpycore_pyqtSignal_New(const char *signature, bool *fatal,
+        Chimera::ModuleState *sipMS)
 {
     // Assume any error is fatal.
     if (fatal)
@@ -483,7 +527,7 @@ qpycore_pyqtSignal *qpycore_pyqtSignal_New(const char *signature, bool *fatal)
     const char *full_sig = strchr(signature, '|');
 
     Chimera::Signature *parsed_signature = Chimera::parse(
-            (full_sig ? full_sig + 1 : signature), "a signal argument");
+            (full_sig ? full_sig + 1 : signature), "a signal argument", sipMS);
 
     // At first glance the parse should never fail because the signature
     // originates from the .sip file.  However it might if it includes a type
@@ -506,8 +550,15 @@ qpycore_pyqtSignal *qpycore_pyqtSignal_New(const char *signature, bool *fatal)
     parsed_signature->signature.prepend('2');
 
     // Create and initialise the signal.
-    qpycore_pyqtSignal *ps = (qpycore_pyqtSignal *)PyType_GenericNew(
-            qpycore_pyqtSignal_TypeObject, 0, 0);
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyTypeObject *signal_type = qpycore_aux_type_ref(sipMS, "pyqtSignal");
+    auto *ps = signal_type ? reinterpret_cast<qpycore_pyqtSignal *>(
+            PyType_GenericNew(signal_type, nullptr, nullptr)) : nullptr;
+    Py_XDECREF(signal_type);
+#else
+    auto *ps = reinterpret_cast<qpycore_pyqtSignal *>(
+            PyType_GenericNew(qpycore_pyqtSignal_TypeObject, nullptr, nullptr));
+#endif
 
     if (!ps)
     {
@@ -552,7 +603,17 @@ qpycore_pyqtSignal *qpycore_find_signal(qpycore_pyqtSignal *ps,
     Py_INCREF(subscript);
 
     // Parse the subscript as a tuple of types.
-    Chimera::Signature *ss_signature = Chimera::parse(args, 0, context);
+#if SIP_ABI_MAJOR_VERSION >= 14
+    auto *sipMS = sipGetModuleStateByType(Py_TYPE(ps));
+    if (!sipMS)
+    {
+        Py_DECREF(args);
+        return nullptr;
+    }
+#else
+    Chimera::ModuleState *sipMS = nullptr;
+#endif
+    Chimera::Signature *ss_signature = Chimera::parse(args, 0, context, sipMS);
 
     Py_DECREF(args);
 
@@ -584,10 +645,10 @@ qpycore_pyqtSignal *qpycore_find_signal(qpycore_pyqtSignal *ps,
 // Initialise a signal when given a tuple of types.
 static int init_signal_from_types(qpycore_pyqtSignal *ps, const char *name,
         const QList<QByteArray> *parameter_names, int revision,
-        PyObject *types)
+        PyObject *types, Chimera::ModuleState *sipMS)
 {
     Chimera::Signature *parsed_signature = Chimera::parse(types, name,
-            "a pyqtSignal() type argument");
+            "a pyqtSignal() type argument", sipMS);
 
     if (!parsed_signature)
         return -1;
@@ -651,52 +712,53 @@ void qpycore_set_signal_name(qpycore_pyqtSignal *ps, const char *type_name,
 }
 
 
-// Handle the getting of a lazy attribute, ie. a native Qt signal.
-int qpycore_get_lazy_attr(const sipTypeDef *td, PyObject *dict)
+// Install native Qt signals on the wrapped type before it is published.
+static int add_native_signals(const pyqt6ClassPluginDef *plugin, PyObject *dict,
+        Chimera::ModuleState *sipMS
+#if SIP_ABI_MAJOR_VERSION >= 14
+        , PyObject *module_ref
+#endif
+        )
 {
-    const pyqt6ClassPluginDef *plugin = reinterpret_cast<const pyqt6ClassPluginDef *>(sipTypePluginData(td));
-
-    // Handle the trvial cases.
-    if (!plugin)
+    if (!plugin || !plugin->qt_signals)
         return 0;
 
     const pyqt6QtSignal *sigs = plugin->qt_signals;
-
-    if (!sigs)
-        return 0;
-
     QByteArray default_name;
-    qpycore_pyqtSignal *default_signal = 0;
+    qpycore_pyqtSignal *default_signal = nullptr;
 
-    do
+    for (; sigs->signature; ++sigs)
     {
-        // See if we have come to the end of the current signal.
         if (default_signal && !is_signal_name(sigs->signature, default_name))
         {
-            if (PyDict_SetItemString(dict, default_name.constData(), (PyObject *)default_signal) < 0)
+            int status = PyDict_SetItemString(dict, default_name.constData(),
+                    reinterpret_cast<PyObject *>(default_signal));
+            Py_DECREF(reinterpret_cast<PyObject *>(default_signal));
+            default_signal = nullptr;
+            if (status < 0)
                 return -1;
-
-            default_signal = 0;
         }
 
         bool fatal;
-
         qpycore_pyqtSignal *sig = qpycore_pyqtSignal_New(sigs->signature,
-                &fatal);
-
+                &fatal, sipMS);
         if (!sig)
         {
             if (fatal)
+            {
+                Py_XDECREF(reinterpret_cast<PyObject *>(default_signal));
                 return -1;
-
+            }
             PyErr_Clear();
             continue;
         }
 
         sig->docstring = sigs->docstring;
         sig->emitter = sigs->emitter;
+#if SIP_ABI_MAJOR_VERSION >= 14
+        sig->native_module_ref = Py_NewRef(module_ref);
+#endif
 
-        // See if this is a new default.
         if (default_signal)
         {
             sig->default_signal = default_signal;
@@ -705,22 +767,69 @@ int qpycore_get_lazy_attr(const sipTypeDef *td, PyObject *dict)
         else
         {
             sig->non_signals = sigs->non_signals;
-
-            default_signal = sig->default_signal = sig;
+            default_signal = sig;
 
             default_name = sigs->signature;
             default_name.truncate(default_name.indexOf('('));
         }
     }
-    while ((++sigs)->signature);
 
-    // Save the last one, if any (in case of a non-fatal error).
     if (!default_signal)
         return 0;
 
-    return PyDict_SetItemString(dict, default_name.constData(),
-            (PyObject *)default_signal);
+    int status = PyDict_SetItemString(dict, default_name.constData(),
+            reinterpret_cast<PyObject *>(default_signal));
+    Py_DECREF(reinterpret_cast<PyObject *>(default_signal));
+    return status;
 }
+
+
+#if SIP_ABI_MAJOR_VERSION >= 14
+int qpycore_finalize_signal_type(sipModuleState *sipMS, sipTypeID,
+        PyTypeObject *py_type)
+{
+    sipTypeID type = sipTypeFromPyTypeObject(py_type);
+    auto *plugin = static_cast<const pyqt6ClassPluginDef *>(sipTypePluginData(type));
+    if (!plugin || !plugin->qt_signals)
+        return 0;
+
+    PyObject *defining_module = PyType_GetModule(py_type);
+    if (!defining_module)
+        return -1;
+
+    PyObject *module_ref = PyWeakref_NewRef(defining_module, nullptr);
+    if (!module_ref)
+        return -1;
+
+    PyObject *dict = sipPyTypeDictRef(py_type);
+    int status = dict ? add_native_signals(plugin, dict, sipMS, module_ref) : -1;
+    if (status == 0)
+        PyType_Modified(py_type);
+
+    Py_XDECREF(dict);
+    Py_DECREF(module_ref);
+    return status;
+}
+
+
+PyObject *qpycore_signal_native_module(qpycore_pyqtSignal *signal)
+{
+    PyObject *module = nullptr;
+    if (signal->native_module_ref &&
+            PyWeakref_GetRef(signal->native_module_ref, &module) < 0)
+        return nullptr;
+
+    if (!module)
+        PyErr_SetString(PyExc_RuntimeError, "the Qt signal's module is unavailable");
+    return module;
+}
+#else
+int qpycore_get_lazy_attr(const sipTypeDef *td, PyObject *dict)
+{
+    auto *plugin = static_cast<const pyqt6ClassPluginDef *>(sipTypePluginData(td));
+    return add_native_signals(plugin, dict, nullptr);
+}
+#endif
 
 
 // Return true if a signal signatures has a particular name.
@@ -740,6 +849,44 @@ PyObject *qpycore_call_signal_overload(qpycore_pyqtSignal *ps, PyObject *bound,
         return 0;
     }
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyObject *module = qpycore_signal_native_module(ps);
+    if (!module)
+        return nullptr;
+
+    PyObject *keywords = kw ? PyDict_Copy(kw) : nullptr;
+    PyObject *keys = keywords ? PyDict_Keys(keywords) : nullptr;
+    PyObject *names = keys ? PyList_AsTuple(keys) : nullptr;
+    Py_XDECREF(keys);
+    if (kw && !names)
+    {
+        Py_XDECREF(keywords);
+        Py_DECREF(module);
+        return nullptr;
+    }
+
+    Py_ssize_t positional = PyTuple_Size(args);
+    Py_ssize_t named = names ? PyTuple_Size(names) : 0;
+    QVarLengthArray<PyObject *, 16> argv(positional + named);
+    for (Py_ssize_t i = 0; i < positional; ++i)
+        argv[i] = PyTuple_GetItem(args, i);
+
+    for (Py_ssize_t i = 0; i < named; ++i)
+        argv[positional + i] = PyDict_GetItem(keywords, PyTuple_GetItem(names, i));
+
+    auto *sipMS = static_cast<sipModuleState *>(PyModule_GetState(module));
+    PyObject *parse_state = nullptr;
+    PyObject *result = ps->non_signals(sipMS, &parse_state, bound, argv.data(),
+            positional, names);
+    Py_XDECREF(parse_state);
+    Py_XDECREF(names);
+    Py_XDECREF(keywords);
+    Py_DECREF(module);
+
+    if (!result && !PyErr_Occurred())
+        PyErr_SetString(PyExc_TypeError, "arguments do not match the native method overload");
+    return result;
+#else
     PyObject *func = PyCFunction_New(ps->non_signals, bound);
 
     if (!func)
@@ -750,4 +897,5 @@ PyObject *qpycore_call_signal_overload(qpycore_pyqtSignal *ps, PyObject *bound,
     Py_DECREF(func);
 
     return result;
+#endif
 }

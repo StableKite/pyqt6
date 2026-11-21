@@ -27,7 +27,7 @@
 // Create the slot for a callable.
 PyQtSlot::PyQtSlot(PyObject *callable, bool callable_is_method,
         const Chimera::Signature *slot_signature)
-    : mfunc(0), mself(0), mself_wr(0), other(0), signature(slot_signature)
+    : mfunc(0), mself(0), mself_wr(0), other(0), signature(slot_signature->copy())
 {
     if (callable_is_method)
     {
@@ -71,6 +71,7 @@ PyQtSlot::~PyQtSlot()
     Py_XDECREF(mself_wr);
     Py_XDECREF(mself);
     Py_XDECREF(other);
+    delete signature;
 }
 
 
@@ -115,9 +116,15 @@ PyQtSlot::Result PyQtSlot::invoke(void **qargs, PyObject *self, void *result,
             return (PyErr_Occurred() ? PyQtSlot::Failed : PyQtSlot::Ignored);
 
         // See if the instance has gone (which isn't an error).
-        if (self == Py_None ||
-                (!no_receiver_check && PyObject_TypeCheck(self, sipSimpleWrapper_Type)
-                 && !sipGetAddress((sipSimpleWrapper *)self)))
+#if SIP_ABI_MAJOR_VERSION >= 14
+        auto *sipMS = signature->moduleState();
+        const bool wrapped = !no_receiver_check &&
+                PyObject_TypeCheck(self, sipGetSimpleWrapperType());
+#else
+        const bool wrapped = !no_receiver_check &&
+                PyObject_TypeCheck(self, sipSimpleWrapper_Type);
+#endif
+        if (self == Py_None || (wrapped && !sipGetAddress((sipSimpleWrapper *)self)))
         {
             Py_DECREF(self);
             return PyQtSlot::Ignored;

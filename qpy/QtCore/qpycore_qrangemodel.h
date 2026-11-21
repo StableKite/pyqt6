@@ -31,6 +31,7 @@
 #include <qobject.h>
 #include <qrangemodel.h>
 #include <qvariant.h>
+#include "qpycore_public_api.h"
 
 
 class sipQRangeModel;
@@ -64,12 +65,21 @@ public:
 protected:
     // These are internal.
     static void raiseBadStructure();
-    static bool populate1DFromList(QVariantList &range, PyObject *data);
-    static bool populate1DFromSequence(QVariantList &range, PyObject *data);
+    bool populate1DFromList(QVariantList &range, PyObject *data);
+    bool populate1DFromSequence(QVariantList &range, PyObject *data);
+    PyObject *borrowedData() const {return m_data;}
+    QPyCoreModuleState *moduleState() const {return m_state;}
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyInterpreterView *interpreterView() const {return m_view;}
+#endif
 
 private:
     PyObject *m_data;
     bool m_editable;
+    QPyCoreModuleState *m_state = nullptr;
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyInterpreterView *m_view = nullptr;
+#endif
 };
 
 
@@ -94,8 +104,6 @@ private slots:
 private:
     QVariantList m_seq_range;
 
-    static bool populateFromList(QVariantList &range, PyObject *data);
-    static bool populateFromSequence(QVariantList &range, PyObject *data);
 };
 
 

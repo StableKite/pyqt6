@@ -42,50 +42,100 @@
 
 
 // Forward declarations.
+#if SIP_ABI_MAJOR_VERSION >= 14
+static int qt_metacall_worker(sipModuleState *sipMS, sipSimpleWrapper *pySelf,
+        PyTypeObject *pytype, sipTypeID base, QMetaObject::Call _c, int _id,
+        void **_a);
+#else
 static int qt_metacall_worker(sipSimpleWrapper *pySelf, PyTypeObject *pytype,
         sipTypeDef *base, QMetaObject::Call _c, int _id, void **_a);
+#endif
 
 
 // This is the helper for all implementations of QObject::metaObject().
+#if SIP_ABI_MAJOR_VERSION >= 14
+const QMetaObject *qpycore_qobject_metaobject(sipModuleState *sipMS,
+        sipSimpleWrapper *pySelf, sipTypeID base)
+#else
 const QMetaObject *qpycore_qobject_metaobject(sipSimpleWrapper *pySelf,
         sipTypeDef *base)
+#endif
 {
     sipWrapperType *wt = (pySelf ? (sipWrapperType *)Py_TYPE(pySelf) : 0);
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+    base = sipMakeAbsolute(base);
+    sipMS = sipGetModuleState();
+    return sipMS ? qpycore_get_qmetaobject(wt, base, sipMS) : nullptr;
+#else
     return qpycore_get_qmetaobject(wt, base);
+#endif
 }
 
 
 // This is the helper for all implementations of QObject::qt_metacall().
+#if SIP_ABI_MAJOR_VERSION >= 14
+int qpycore_qobject_qt_metacall(sipModuleState *sipMS, sipSimpleWrapper *pySelf,
+        sipTypeID base, QMetaObject::Call _c, int _id, void **_a)
+#else
 int qpycore_qobject_qt_metacall(sipSimpleWrapper *pySelf, sipTypeDef *base,
         QMetaObject::Call _c, int _id, void **_a)
+#endif
 {
     // Check if the Python object has gone.
     if (!pySelf)
         return -1;
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+    base = sipMakeAbsolute(base);
+    sipMS = sipGetModuleState();
+    return sipMS ? qt_metacall_worker(sipMS, pySelf, Py_TYPE(pySelf), base,
+            _c, _id, _a) : _id;
+#else
     return qt_metacall_worker(pySelf, Py_TYPE(pySelf), base, _c, _id, _a);
+#endif
 }
 
 
 // This does the real work for all implementations of QObject::qt_metacall().
+#if SIP_ABI_MAJOR_VERSION >= 14
+static int qt_metacall_worker(sipModuleState *sipMS, sipSimpleWrapper *pySelf,
+        PyTypeObject *pytype, sipTypeID base, QMetaObject::Call _c, int _id,
+        void **_a)
+#else
 static int qt_metacall_worker(sipSimpleWrapper *pySelf, PyTypeObject *pytype,
         sipTypeDef *base, QMetaObject::Call _c, int _id, void **_a)
+#endif
 {
-    // See if this is a wrapped C++ type rather than a Python sub-type.
+    // Only Python subtypes contribute extra meta-methods.
+#if SIP_ABI_MAJOR_VERSION >= 14
+    if (!pytype || !sipIsUserType(reinterpret_cast<sipWrapperType *>(pytype)))
+#else
     if (pytype == sipTypeAsPyTypeObject(base))
+#endif
         return _id;
 
     PyTypeObject *tp_base = reinterpret_cast<PyTypeObject *>(
             PyType_GetSlot(pytype, Py_tp_base));
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+    _id = qt_metacall_worker(sipMS, pySelf, tp_base, base, _c, _id, _a);
+#else
     _id = qt_metacall_worker(pySelf, tp_base, base, _c, _id, _a);
+#endif
 
     if (_id < 0)
         return _id;
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+    const qpycore_metaobject *qo = qpycore_get_dynamic_metaobject(
+            reinterpret_cast<sipWrapperType *>(pytype), sipMS);
+#else
     const qpycore_metaobject *qo = qpycore_get_dynamic_metaobject(
             (sipWrapperType *)pytype);
+#endif
+    if (!qo)
+        return _id;
 
     bool ok = true;
 
@@ -95,7 +145,14 @@ static int qt_metacall_worker(sipSimpleWrapper *pySelf, PyTypeObject *pytype,
         {
             if (_id < qo->nr_signals)
             {
+#if SIP_ABI_MAJOR_VERSION >= 14
+                auto *qthis = static_cast<QObject *>(sipGetCppPtr(sipMS,
+                        reinterpret_cast<PyObject *>(pySelf), sipType_QObject));
+#else
                 QObject *qthis = reinterpret_cast<QObject *>(sipGetCppPtr(pySelf, sipType_QObject));
+#endif
+                if (!qthis)
+                    return -1;
 
                 Py_BEGIN_ALLOW_THREADS
                 QMetaObject::activate(qthis, qo->mo, _id, _a);
@@ -200,6 +257,57 @@ static int qt_metacall_worker(sipSimpleWrapper *pySelf, PyTypeObject *pytype,
 
 
 // This is the helper for all implementations of QObject::qt_metacast().
+#if SIP_ABI_MAJOR_VERSION >= 14
+bool qpycore_qobject_qt_metacast(sipModuleState *sipMS,
+        sipSimpleWrapper *pySelf, sipTypeID base, const char *_clname,
+        void **sipCpp)
+{
+    *sipCpp = nullptr;
+    if (!_clname || !pySelf)
+        return false;
+
+    base = sipMakeAbsolute(base);
+    sipMS = sipGetModuleState();
+    if (!sipMS)
+        return false;
+
+    PyTypeObject *base_type = sipGetPyTypeRef(base);
+    if (!base_type)
+        return false;
+
+    PyTypeObject *type = Py_TYPE(pySelf);
+    bool matches = false;
+    if (type != base_type)
+    {
+        PyObject *mro = PyObject_GetAttrString(reinterpret_cast<PyObject *>(type),
+                "__mro__");
+        if (mro)
+        {
+            for (Py_ssize_t i = 0; i < PyTuple_Size(mro); ++i)
+            {
+                auto *entry = reinterpret_cast<PyTypeObject *>(PyTuple_GetItem(mro, i));
+                sipTypeID candidate = sipTypeFromPyTypeObject(entry);
+                if (!candidate)
+                    continue;
+
+                auto *info = static_cast<const pyqt6ClassPluginDef *>(
+                        sipTypePluginData(candidate));
+                if (qstrcmp(sipPyTypeName(entry), _clname) == 0 ||
+                        (info && info->qt_interface && qstrcmp(info->qt_interface, _clname) == 0))
+                {
+                    *sipCpp = sipGetCppPtr(sipMS, reinterpret_cast<PyObject *>(pySelf),
+                            candidate);
+                    matches = *sipCpp != nullptr;
+                    break;
+                }
+            }
+            Py_DECREF(mro);
+        }
+    }
+    Py_DECREF(base_type);
+    return matches;
+}
+#else
 bool qpycore_qobject_qt_metacast(sipSimpleWrapper *pySelf,
         const sipTypeDef *base, const char *_clname, void **sipCpp)
 {
@@ -268,12 +376,21 @@ bool qpycore_qobject_qt_metacast(sipSimpleWrapper *pySelf,
 
     return is_py_class;
 }
+#endif
 
 
 // This is a helper for QObject.staticMetaObject %GetCode.
 PyObject *qpycore_qobject_staticmetaobject(PyObject *type_obj)
 {
+#if SIP_ABI_MAJOR_VERSION >= 14
+    auto *sipMS = sipGetModuleStateByType(reinterpret_cast<PyTypeObject *>(type_obj));
+    if (!sipMS)
+        return nullptr;
+    const QMetaObject *mo = qpycore_get_qmetaobject(
+            reinterpret_cast<sipWrapperType *>(type_obj), 0, sipMS);
+#else
     const QMetaObject *mo = qpycore_get_qmetaobject((sipWrapperType *)type_obj);
+#endif
 
     if (!mo)
     {

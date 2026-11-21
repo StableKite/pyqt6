@@ -57,6 +57,10 @@ void qpycore_post_init(PyObject *module_dict)
     qpycore_register_event_handlers();
 #endif
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+    if (!qpycore_pyqtProperty_init_type(module))
+        return -1;
+#else
     // Initialise the pyqtProperty type and add it to the module dictionary.
     if (!qpycore_pyqtProperty_init_type())
         Py_FatalError("PyQt6.QtCore: Failed to initialise pyqtProperty type");
@@ -64,7 +68,12 @@ void qpycore_post_init(PyObject *module_dict)
     if (PyDict_SetItemString(module_dict, "pyqtProperty",
                 (PyObject *)qpycore_pyqtProperty_TypeObject) < 0)
         Py_FatalError("PyQt6.QtCore: Failed to set pyqtProperty type");
+#endif
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+    if (!qpycore_pyqtSignal_init_type(module))
+        return -1;
+#else
     // Initialise the pyqtSignal type and add it to the module dictionary.
     if (!qpycore_pyqtSignal_init_type())
         Py_FatalError("PyQt6.QtCore: Failed to initialise pyqtSignal type");
@@ -72,7 +81,12 @@ void qpycore_post_init(PyObject *module_dict)
     if (PyDict_SetItemString(module_dict, "pyqtSignal",
                 (PyObject *)qpycore_pyqtSignal_TypeObject) < 0)
         Py_FatalError("PyQt6.QtCore: Failed to set pyqtSignal type");
+#endif
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+    if (!qpycore_pyqtBoundSignal_init_type(module))
+        return -1;
+#else
     // Initialise the pyqtBoundSignal type and add it to the module dictionary.
     if (!qpycore_pyqtBoundSignal_init_type())
         Py_FatalError("PyQt6.QtCore: Failed to initialise pyqtBoundSignal type");
@@ -80,18 +94,26 @@ void qpycore_post_init(PyObject *module_dict)
     if (PyDict_SetItemString(module_dict, "pyqtBoundSignal",
                 (PyObject *)qpycore_pyqtBoundSignal_TypeObject) < 0)
         Py_FatalError("PyQt6.QtCore: Failed to set pyqtBoundSignal type");
+#endif
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+    if (!qpycore_pyqtMethodProxy_init_type(module))
+        return -1;
+#else
     // Initialise the private pyqtMethodProxy type.
     if (!qpycore_pyqtMethodProxy_init_type())
         Py_FatalError("PyQt6.QtCore: Failed to initialise pyqtMethodProxy type");
+#endif
 
     // Register the C++ type that wraps Python objects.
     qRegisterMetaType<PyQt_PyObject>("PyQt_PyObject");
     QMetaType::registerConverter<PyQt_PyObject, QString>();
 
+#if SIP_ABI_MAJOR_VERSION < 14
     // Register the lazy attribute getter.
     if (sipRegisterAttributeGetter(sipType_QObject, qpycore_get_lazy_attr) < 0)
         Py_FatalError("PyQt6.QtCore: Failed to register attribute getter");
+#endif
 
     // Objectify some strings.
     qpycore_dunder_name = PyUnicode_FromString("__name__");

@@ -33,6 +33,7 @@
 
 // The registered user-defined Python enum types.
 QHash<PyObject *, QByteArray> Chimera::_py_enum_types;
+static QMutex py_enum_types_mutex;
 
 // The cache of previously parsed argument type lists.
 QHash<QByteArray, QList<const Chimera *> > Chimera::_previously_parsed;
@@ -178,7 +179,9 @@ Chimera::~Chimera()
 void Chimera::registerPyEnum(PyObject *enum_type,
         const QByteArray &fq_cpp_name)
 {
-    Py_INCREF(enum_type);
+    QMutexLocker locker(&py_enum_types_mutex);
+    if (!_py_enum_types.contains(enum_type))
+        Py_INCREF(enum_type);
     _py_enum_types.insert(enum_type, fq_cpp_name);
 }
 
@@ -315,7 +318,7 @@ Chimera::Signature *Chimera::parse(const QByteArray &sig, const char *context, M
     // The legacy ABI has a single permanent context. ABI 14 may unload a
     // module, so it must retain no process-wide cache of wrapped types.
     constexpr bool use_cache = SIP_ABI_MAJOR_VERSION < 14;
-    Chimera::Signature *parsed_sig = new Chimera::Signature(sig, use_cache);
+    Chimera::Signature *parsed_sig = new Chimera::Signature(sig, use_cache, sipMS);
 
     if (len > 0)
     {
@@ -407,7 +410,7 @@ Chimera::Signature *Chimera::parse(PyObject *types, const char *name,
     if (!name)
         name = "";
 
-    Chimera::Signature *parsed_sig = new Chimera::Signature(name, false);
+    Chimera::Signature *parsed_sig = new Chimera::Signature(name, false, sipMS);
 
     parsed_sig->signature.append('(');
     parsed_sig->py_signature.append('[');
@@ -539,11 +542,8 @@ bool Chimera::parse_py_type(PyTypeObject *type_obj)
             }
         }
     }
-    else if (_py_enum_types.contains((PyObject *)type_obj))
+    else if (!(_name = pyEnumName((PyObject *)type_obj)).isNull())
     {
-        // Note that we use the fully qualified name.
-        _name = _py_enum_types.value((PyObject *)type_obj);
-
         metatype = QMetaType::fromName(_name);
     }
     else if (type_obj == &PyList_Type)
@@ -1569,7 +1569,7 @@ PyObject *Chimera::toPyObject(const QVariant &var) const
         {
             PyQt_PyObject pyobj_wrapper = var.value<PyQt_PyObject>();
 
-            if (!pyobj_wrapper.pyobject)
+            if (!pyobj_wrapper.borrowedPyObject())
             {
                 PyErr_SetString(PyExc_TypeError,
                         "unable to convert a QVariant back to a Python object");
@@ -1577,9 +1577,9 @@ PyObject *Chimera::toPyObject(const QVariant &var) const
                 return 0;
             }
 
-            Py_INCREF(pyobj_wrapper.pyobject);
+            Py_INCREF(pyobj_wrapper.borrowedPyObject());
 
-            return pyobj_wrapper.pyobject;
+            return pyobj_wrapper.borrowedPyObject();
         }
     }
 
@@ -1630,7 +1630,7 @@ PyObject *Chimera::toPyObject(void *cpp) const
         // Unwrap a Python object.
         PyQt_PyObject *pyobj_wrapper = reinterpret_cast<PyQt_PyObject *>(cpp);
 
-        if (!pyobj_wrapper->pyobject)
+        if (!pyobj_wrapper->borrowedPyObject())
         {
             PyErr_SetString(PyExc_TypeError,
                     "unable to convert a QVariant back to a Python object");
@@ -1638,9 +1638,9 @@ PyObject *Chimera::toPyObject(void *cpp) const
             return 0;
         }
 
-        Py_INCREF(pyobj_wrapper->pyobject);
+        Py_INCREF(pyobj_wrapper->borrowedPyObject());
 
-        return pyobj_wrapper->pyobject;
+        return pyobj_wrapper->borrowedPyObject();
     }
 
     PyObject *py = 0;
@@ -1903,7 +1903,14 @@ bool Chimera::isEnumOrFlag() const
     if (_is_qflags)
         return true;
 
-    return (_py_type ? _py_enum_types.contains((PyObject *)_py_type) : false);
+    return _py_type && !pyEnumName((PyObject *)_py_type).isNull();
+}
+
+
+QByteArray Chimera::pyEnumName(PyObject *type)
+{
+    QMutexLocker locker(&py_enum_types_mutex);
+    return _py_enum_types.value(type);
 }
 
 
@@ -1926,21 +1933,25 @@ int Chimera::get_enum_value(PyObject *py) const
 // Return the key of a user-defined enum.
 PyObject *Chimera::get_enum_key(int cpp) const
 {
-    PyObject *py = NULL;
-    QHashIterator<PyObject *, QByteArray> it(_py_enum_types);
-
-    while (it.hasNext())
+    PyObject *type = nullptr;
     {
-        it.next();
-
-        if (it.value() == _name)
+        QMutexLocker locker(&py_enum_types_mutex);
+        for (auto it = _py_enum_types.cbegin(); it != _py_enum_types.cend(); ++it)
         {
-            py = PyObject_CallFunction(it.key(), "(i)", cpp);
-            break;
+            if (it.value() == _name)
+            {
+                type = Py_NewRef(it.key());
+                break;
+            }
         }
     }
 
-    return py;
+    if (!type)
+        return nullptr;
+
+    PyObject *key = PyObject_CallFunction(type, "(i)", cpp);
+    Py_DECREF(type);
+    return key;
 }
 
 

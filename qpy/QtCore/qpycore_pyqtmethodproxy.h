@@ -23,9 +23,11 @@
 
 
 #include <Python.h>
+#include <sip.h>
 
 #include <QtGlobal>
 #include <QByteArray>
+#include <QPointer>
 
 #include "qpycore_namespace.h"
 
@@ -42,7 +44,7 @@ typedef struct _qpycore_pyqtMethodProxy {
     PyObject_HEAD
 
     // The QObject whose method being proxied.
-    QObject *qobject;
+    QPointer<QObject> *qobject;
 
     // The method index in the QObject's meta-object.
     int method_index;
@@ -54,11 +56,15 @@ typedef struct _qpycore_pyqtMethodProxy {
 }
 
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+bool qpycore_pyqtMethodProxy_init_type(PyObject *module);
+#else
 // The type object.
 extern PyTypeObject *qpycore_pyqtMethodProxy_TypeObject;
 
 
 bool qpycore_pyqtMethodProxy_init_type();
+#endif
 
 PyObject *qpycore_pyqtMethodProxy_New(QObject *qobject, int method_index,
         const QByteArray &py_name);

@@ -26,6 +26,7 @@
 #include <QObject>
 
 #include "qpycore_api.h"
+#include "qpycore_misc.h"
 #include "qpycore_pyqtboundsignal.h"
 #include "qpycore_pyqtmethodproxy.h"
 #include "qpycore_pyqtsignal.h"
@@ -74,6 +75,21 @@ PyObject *qpycore_qobject_getattr(const QObject *qobj, PyObject *py_qobj,
         // proxied is the same each time.
         if (method.methodType() == QMetaMethod::Signal)
         {
+#if SIP_ABI_MAJOR_VERSION >= 14
+            auto *sipMS = sipGetModuleStateByType(Py_TYPE(py_qobj));
+            if (!sipMS)
+                return nullptr;
+
+            QByteArray signature = method.methodSignature();
+            auto *signal = qpycore_pyqtSignal_New(signature.constData(), nullptr, sipMS);
+            if (!signal)
+                return nullptr;
+
+            PyObject *bound = qpycore_pyqtBoundSignal_New(signal, py_qobj,
+                    const_cast<QObject *>(qobj));
+            Py_DECREF(reinterpret_cast<PyObject *>(signal));
+            return bound;
+#else
             // We need to keep explicit references to the unbound signals
             // (because we don't use the type dictionary to do so) because they
             // own the parsed signature which may be needed by a PyQtSlotProxy
@@ -95,7 +111,7 @@ PyObject *qpycore_qobject_getattr(const QObject *qobj, PyObject *py_qobj,
             if (it == sig_hash->end())
             {
                 sig_obj = (PyObject *)qpycore_pyqtSignal_New(
-                        sig_str.constData());
+                        sig_str.constData(), nullptr);
 
                 if (!sig_obj)
                     return 0;
@@ -109,6 +125,7 @@ PyObject *qpycore_qobject_getattr(const QObject *qobj, PyObject *py_qobj,
 
             return qpycore_pyqtBoundSignal_New((qpycore_pyqtSignal *)sig_obj,
                     py_qobj, const_cast<QObject *>(qobj));
+#endif
         }
 
         // Respect the 'private' nature of __ names.

@@ -23,6 +23,7 @@
 
 
 #include <Python.h>
+#include <sip.h>
 
 
 class Chimera;
@@ -73,10 +74,14 @@ typedef struct {
 
 
 // The type object.
+#if SIP_ABI_MAJOR_VERSION >= 14
+bool qpycore_pyqtProperty_init_type(PyObject *module);
+#else
 extern PyTypeObject *qpycore_pyqtProperty_TypeObject;
 
 
 bool qpycore_pyqtProperty_init_type();
+#endif
 
 
 #endif
