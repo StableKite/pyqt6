@@ -20,6 +20,8 @@
 
 #include "qpycore_event_handlers.h"
 
+#include <QMutexLocker>
+
 #include "sipAPIQtCore.h"
 
 
@@ -28,7 +30,7 @@
 PyQtMonitor *PyQtMonitor::instance = SIP_NULLPTR;
 
 // Set if monitoring is enabled.
-bool PyQtMonitor::enabled = true;
+std::atomic_bool PyQtMonitor::enabled{true};
 
 
 // Forward declarations.
@@ -70,7 +72,10 @@ static void collecting_wrapper_eh(sipSimpleWrapper *self)
 void PyQtMonitor::monitor(QObject *cppInst)
 {
     // Connect the monitor.
-    monitored.insert(cppInst);
+    {
+        QMutexLocker lock(&monitored_mutex);
+        monitored.insert(cppInst);
+    }
 
     // Note that the C++ instance may be in the process of being destroyed.
     // This will happen if it is the argument to the destroyed() signal.
@@ -93,31 +98,34 @@ void PyQtMonitor::ignore(sipSimpleWrapper *pyObj)
     void *addr = sipGetAddress(pyObj);
 
     if (addr)
+    {
         // Note the reason given above we do not disconnect the monitor.
+        QMutexLocker lock(&monitored_mutex);
         monitored.remove(reinterpret_cast<QObject *>(addr));
+    }
 }
 
 
 // Invoked when a monitored C++ created QObject instance is destroyed.
 void PyQtMonitor::on_destroyed(QObject *cppInst)
 {
-    QSet<QObject *>::iterator it = monitored.find(cppInst);
-
-    // See if we are currently monitoring this instance.
-    if (it != monitored.end())
     {
-        monitored.erase(it);
+        QMutexLocker lock(&monitored_mutex);
 
-        if (sipGetInterpreter())
-        {
-            SIP_BLOCK_THREADS
+        // See if we are currently monitoring this instance.
+        if (!monitored.remove(cppInst))
+            return;
+    }
 
-            PyObject *pyObj = sipGetPyObject(cppInst, sipType_QObject);
+    if (sipGetInterpreter())
+    {
+        SIP_BLOCK_THREADS
 
-            if (pyObj)
-                sipInstanceDestroyed((sipSimpleWrapper *)pyObj);
+        PyObject *pyObj = sipGetPyObject(cppInst, sipType_QObject);
 
-            SIP_UNBLOCK_THREADS
-        }
+        if (pyObj)
+            sipInstanceDestroyed((sipSimpleWrapper *)pyObj);
+
+        SIP_UNBLOCK_THREADS
     }
 }

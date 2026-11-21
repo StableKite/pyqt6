@@ -22,8 +22,11 @@
 #define _QPYCORE_EVENT_HANDLERS_H
 
 
+#include <atomic>
+
 #include <sip.h>
 
+#include <QMutex>
 #include <QObject>
 #include <QSet>
 
@@ -37,12 +40,13 @@ public:
     void ignore(sipSimpleWrapper *pyObj);
 
     static PyQtMonitor *instance;
-    static bool enabled;
+    static std::atomic_bool enabled;
 
 private Q_SLOTS:
     void on_destroyed(QObject *);
 
 private:
+    QMutex monitored_mutex;
     QSet<QObject *> monitored;
 };
 
