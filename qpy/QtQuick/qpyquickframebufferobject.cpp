@@ -24,7 +24,7 @@
 
 #include "qpyquickframebufferobject.h"
 
-#include "sipAPIQtQuick.h"
+#include "qpyquick_sip.h"
 
 
 // The maximum number of Python QQuickFramebufferObject types.

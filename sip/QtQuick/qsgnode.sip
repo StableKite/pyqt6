@@ -27,7 +27,11 @@ class QSGNode /Supertype=PyQt6.sip.wrapper/
 %End
 
 %TypeCode
-static sipErrorState qsgnode_handle_flags(QSGNode *node, PyObject *self, QSGNode::Flags old_flags)
+static sipErrorState qsgnode_handle_flags(QSGNode *node, PyObject *self, QSGNode::Flags old_flags
+#if SIP_ABI_MAJOR_VERSION >= 14
+        , sipModuleState *sipMS
+#endif
+        )
 {
     QSGNode::Flags new_flags = node->flags();
 
@@ -235,7 +239,11 @@ public:
         
         sipCpp->setFlag(a0, a1);
         
-        sipError = qsgnode_handle_flags(sipCpp, sipSelf, old_flags);
+        sipError = qsgnode_handle_flags(sipCpp, sipSelf, old_flags
+#if SIP_ABI_MAJOR_VERSION >= 14
+                , sipMS
+#endif
+                );
 %End
 
     void setFlags(QSGNode::Flags, bool enabled = true);

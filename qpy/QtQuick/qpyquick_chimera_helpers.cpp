@@ -26,7 +26,7 @@
 
 #include "qpyquick_chimera_helpers.h"
 
-#include "sipAPIQtQuick.h"
+#include "qpyquick_sip.h"
 
 
 // Forward declarations.

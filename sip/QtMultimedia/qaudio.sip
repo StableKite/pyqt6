@@ -63,8 +63,17 @@ namespace QAudio
 %PostInitialisationCode
 // Implement QtAudio as an alternative name to QAudio.
 
-PyObject *qaudio = PyDict_GetItemString(sipModuleDict, sipName_QAudio);
-
-if (qaudio && PyDict_SetItemString(sipModuleDict, "QtAudio", qaudio) == 0)
-    Py_INCREF(qaudio);
+#if SIP_ABI_MAJOR_VERSION >= 14
+PyObject *qaudio = reinterpret_cast<PyObject *>(sipGetPyTypeRef(sipType_QAudio));
+if (!qaudio)
+    return -1;
+int result = PyDict_SetItemString(sipModuleDict, "QtAudio", qaudio);
+Py_DECREF(qaudio);
+if (result < 0)
+    return -1;
+#else
+PyObject *qaudio = PyDict_GetItemString(sipModuleDict, "QAudio");
+if (qaudio)
+    PyDict_SetItemString(sipModuleDict, "QtAudio", qaudio);
+#endif
 %End

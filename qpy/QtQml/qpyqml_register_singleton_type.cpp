@@ -26,7 +26,7 @@
 #include "qpyqml_api.h"
 #include "qpyqmlsingletonobject.h"
 
-#include "sipAPIQtQml.h"
+#include "qpyqml_sip.h"
 
 
 // Forward declarations.
@@ -94,7 +94,7 @@ static QQmlPrivate::RegisterSingletonType *init_type(PyTypeObject *py_type,
         PyObject *factory)
 {
     // Check the type is derived from QObject.
-    if (!PyType_IsSubtype(py_type, sipTypeAsPyTypeObject(sipType_QObject)))
+    if (!qpyqml_is_subtype(py_type, sipType_QObject))
     {
         PyErr_SetString(PyExc_TypeError,
                 "type being registered must be a sub-type of QObject");

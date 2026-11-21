@@ -27,7 +27,12 @@ typedef void (*pyqt6_qtquick_err_print_t)();
 extern pyqt6_qtquick_err_print_t pyqt6_qtquick_err_print;
 
 // Initialisation.
+#include "sip.h"
+#if SIP_ABI_MAJOR_VERSION >= 14
+void qpyquick_post_init(sipModuleState *module_state);
+#else
 void qpyquick_post_init();
+#endif
 
 
 #endif

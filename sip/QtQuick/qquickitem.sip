@@ -264,7 +264,14 @@ protected:
         
         if (res)
         {
+#if SIP_ABI_MAJOR_VERSION >= 14
+            int state = 0;
+            sipRes = reinterpret_cast<QSGNode *>(sipConvertToType(
+                    res, sipType_QSGNode, nullptr, SIP_NO_CONVERTORS, &state,
+                    &sipIsErr));
+#else
             sipParseResult(&sipIsErr, sipMethod, res, "H0", sipType_QSGNode, &sipRes);
+#endif
         
             if (!sipIsErr && sipRes && (sipRes->flags() & QSGNode::OwnedByParent))
                 sipTransferTo(res, (PyObject *)sipPySelf);

@@ -22,7 +22,7 @@
 
 #include "qpyqml_api.h"
 
-#include "sipAPIQtQml.h"
+#include "qpyqml_sip.h"
 
 
 // See if a Python object can be converted to a QJSValue.
@@ -30,7 +30,7 @@ int qpyqml_canConvertTo_QJSValue(PyObject *py)
 {
     // Note that the API doesn't provide the ability to test for a constrained
     // named enum.
-    if (PyObject_TypeCheck(py, sipTypeAsPyTypeObject(sipType_QJSValue_SpecialValue)))
+    if (qpyqml_is_instance(py, sipType_QJSValue_SpecialValue))
         return 1;
 
     if (PyBool_Check(py))
@@ -53,7 +53,7 @@ int qpyqml_canConvertTo_QJSValue(PyObject *py)
 int qpyqml_convertTo_QJSValue(PyObject *py, PyObject *transferObj,
         QJSValue **cpp, int *isErr)
 {
-    if (PyObject_TypeCheck(py, sipTypeAsPyTypeObject(sipType_QJSValue_SpecialValue)))
+    if (qpyqml_is_instance(py, sipType_QJSValue_SpecialValue))
     {
         int v = sipConvertToEnum(py, sipType_QJSValue_SpecialValue);
 

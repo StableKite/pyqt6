@@ -20,7 +20,7 @@
 
 #include "qpyqmlmodel.h"
 
-#include "sipAPIQtQml.h"
+#include "qpyqml_sip.h"
 
 
 // Forward declarations.
@@ -140,12 +140,9 @@ int QPyQmlModelProxy::addType(PyTypeObject *type)
 // Create the Python instance.
 void QPyQmlModelProxy::createPyObject(QObject *parent)
 {
-    static const sipTypeDef *model_td = 0;
-
     SIP_BLOCK_THREADS
 
-    if (!model_td)
-        model_td = sipFindType("QAbstractItemModel");
+    auto model_td = sipFindType("QAbstractItemModel");
 
     if (model_td)
     {

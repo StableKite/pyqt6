@@ -36,8 +36,30 @@ public:
         int position;
         int tupleSize;
         int type;
-        uint isVertexCoordinate;
-        QSGGeometry::AttributeType attributeType;
+        uint isVertexCoordinate {
+%GetCode
+            sipPy = PyLong_FromLong(sipCpp->isVertexCoordinate);
+%End
+%SetCode
+            unsigned int value = sipLong_AsUnsignedInt(sipPy);
+            if (PyErr_Occurred())
+                sipErr = 1;
+            else
+                sipCpp->isVertexCoordinate = value;
+%End
+        };
+        QSGGeometry::AttributeType attributeType {
+%GetCode
+            sipPy = sipConvertFromEnum(sipCpp->attributeType, sipType_QSGGeometry_AttributeType);
+%End
+%SetCode
+            int value = sipConvertToEnum(sipPy, sipType_QSGGeometry_AttributeType);
+            if (PyErr_Occurred())
+                sipErr = 1;
+            else
+                sipCpp->attributeType = static_cast<QSGGeometry::AttributeType>(value);
+%End
+        };
         static QSGGeometry::Attribute create(int pos, int tupleSize, int primitiveType, bool isPosition = false) /Factory/;
         static QSGGeometry::Attribute createWithAttributeType(int pos, int tupleSize, int primitiveType, QSGGeometry::AttributeType attributeType) /Factory/;
     };
@@ -173,7 +195,12 @@ public:
                             sipCpp->attributes = reinterpret_cast<QSGGeometry::Attribute *>(
                                     PyBytes_AsString(bytes));
             
+#if SIP_ABI_MAJOR_VERSION >= 14
+                            sipSetUserObject(reinterpret_cast<sipSimpleWrapper *>(sipSelf), bytes);
+                            Py_DECREF(bytes);
+#else
                             sipSetUserObject(sipSelf, bytes);
+#endif
                         }
                     }
                 }

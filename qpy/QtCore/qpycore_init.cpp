@@ -119,6 +119,7 @@ void qpycore_init()
         {"pyqt6_update_argv_list", reinterpret_cast<void *>(pyqt6_update_argv_list)},
 #if SIP_ABI_MAJOR_VERSION >= 14
         {"pyqt6_resource_provider", reinterpret_cast<void *>(qpycore_resource_provider)},
+        {"pyqt6_set_qobject_proxy_resolver", reinterpret_cast<void *>(qpycore_set_qobject_proxy_resolver)},
 #endif
         {nullptr, nullptr}
     };

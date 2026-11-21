@@ -20,7 +20,7 @@
 
 #include "qpyqmlvalidator.h"
 
-#include "sipAPIQtQml.h"
+#include "qpyqml_sip.h"
 
 
 // Forward declarations.
@@ -141,12 +141,9 @@ int QPyQmlValidatorProxy::addType(PyTypeObject *type)
 // Create the Python instance.
 void QPyQmlValidatorProxy::createPyObject(QObject *parent)
 {
-    static const sipTypeDef *validator_td = 0;
-
     SIP_BLOCK_THREADS
 
-    if (!validator_td)
-        validator_td = sipFindType("QValidator");
+    auto validator_td = sipFindType("QValidator");
 
     if (validator_td)
     {

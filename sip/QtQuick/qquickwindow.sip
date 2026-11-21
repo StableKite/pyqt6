@@ -217,5 +217,9 @@ class QQuickCloseEvent;
 %End
 
 %PostInitialisationCode
+#if SIP_ABI_MAJOR_VERSION >= 14
+qpyquick_post_init(sipMS);
+#else
 qpyquick_post_init();
+#endif
 %End

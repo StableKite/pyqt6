@@ -208,5 +208,9 @@ QJSEngine *qjsEngine(const QObject *);
 %End
 
 %PostInitialisationCode
+#if SIP_ABI_MAJOR_VERSION >= 14
+qpyqml_post_init(sipModuleDict, sipMS);
+#else
 qpyqml_post_init(sipModuleDict);
+#endif
 %End

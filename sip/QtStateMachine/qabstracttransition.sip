@@ -47,19 +47,33 @@ public:
 %MethodCode
         // We want to keep a reference to the animation but this is in addition to the
         // existing ones and does not replace them - so we can't use /KeepReference/.
-        sipCpp->addAnimation(a0);
-        
+
         // Use the user object as a list of the references.
-        PyObject *user = sipGetUserObject((sipSimpleWrapper *)sipSelf);
+#if SIP_ABI_MAJOR_VERSION >= 14
+        PyObject *user = sipGetUserObjectRef(reinterpret_cast<sipSimpleWrapper *>(sipSelf));
+#else
+        PyObject *user = Py_XNewRef(sipGetUserObject((sipSimpleWrapper *)sipSelf));
+#endif
         
         if (!user)
         {
             user = PyList_New(0);
-            sipSetUserObject((sipSimpleWrapper *)sipSelf, user);
+            if (user)
+            {
+#if SIP_ABI_MAJOR_VERSION >= 14
+                sipSetUserObject(reinterpret_cast<sipSimpleWrapper *>(sipSelf), user);
+#else
+                sipSetUserObject((sipSimpleWrapper *)sipSelf, Py_NewRef(user));
+#endif
+            }
         }
         
-        if (user)
-            PyList_Append(user, a0Wrapper);
+        if (!user || PyList_Append(user, a0Wrapper) < 0)
+            sipError = sipErrorFail;
+        else
+            sipCpp->addAnimation(a0);
+
+        Py_XDECREF(user);
 %End
 
     void removeAnimation(QAbstractAnimation *animation /GetWrapper/);
@@ -68,7 +82,11 @@ public:
         sipCpp->removeAnimation(a0);
         
         // Use the user object as a list of the references.
-        PyObject *user = sipGetUserObject((sipSimpleWrapper *)sipSelf);
+#if SIP_ABI_MAJOR_VERSION >= 14
+        PyObject *user = sipGetUserObjectRef(reinterpret_cast<sipSimpleWrapper *>(sipSelf));
+#else
+        PyObject *user = Py_XNewRef(sipGetUserObject((sipSimpleWrapper *)sipSelf));
+#endif
         
         if (user)
         {
@@ -80,6 +98,7 @@ public:
                     PyList_SetSlice(user, i, i + 1, NULL);
                 else
                     ++i;
+            Py_DECREF(user);
         }
 %End
 

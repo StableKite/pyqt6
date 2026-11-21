@@ -22,7 +22,7 @@
 #include "qpyquick_chimera_helpers.h"
 #include "qpyquick_register_type.h"
 
-#include "sipAPIQtQuick.h"
+#include "qpyquick_sip.h"
 
 
 // Imports from QtCore.
@@ -30,8 +30,19 @@ pyqt6_qtquick_err_print_t pyqt6_qtquick_err_print;
 
 
 // Perform any required initialisation.
+#if SIP_ABI_MAJOR_VERSION >= 14
+sipModuleState *qpyquick_module_state;
+#endif
+
+#if SIP_ABI_MAJOR_VERSION >= 14
+void qpyquick_post_init(sipModuleState *module_state)
+#else
 void qpyquick_post_init()
+#endif
 {
+#if SIP_ABI_MAJOR_VERSION >= 14
+    qpyquick_module_state = module_state;
+#endif
     // Import the Chimera helper registration functions.
     void (*register_from_qvariant_convertor)(FromQVariantConvertorFn);
     register_from_qvariant_convertor = (void (*)(FromQVariantConvertorFn))sipImportSymbol("pyqt6_register_from_qvariant_convertor");
@@ -54,5 +65,13 @@ void qpyquick_post_init()
     Q_ASSERT(pyqt6_qtquick_err_print);
 
     // Export the qml_register_type() helper.
+#if SIP_ABI_MAJOR_VERSION >= 14
+    static const sipSymbolSpec exports[] = {
+        {"qtquick_register_item", reinterpret_cast<void *>(qpyquick_register_type)},
+        {}
+    };
+    sipExportSymbols(exports);
+#else
     sipExportSymbol("qtquick_register_item", (void *)qpyquick_register_type);
+#endif
 }

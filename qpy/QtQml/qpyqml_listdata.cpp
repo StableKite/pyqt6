@@ -18,7 +18,7 @@
 // WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-#include <sip.h>
+#include "qpyqml_sip.h"
 
 #include "qpyqml_listdata.h"
 

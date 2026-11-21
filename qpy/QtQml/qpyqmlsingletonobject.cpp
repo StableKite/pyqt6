@@ -20,7 +20,7 @@
 
 #include "qpyqmlsingletonobject.h"
 
-#include "sipAPIQtQml.h"
+#include "qpyqml_sip.h"
 
 
 // The number of registered Python types.

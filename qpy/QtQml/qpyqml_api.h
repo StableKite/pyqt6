@@ -57,7 +57,12 @@ typedef const QMetaObject *(*pyqt6_qtqml_get_qmetaobject_t)(PyTypeObject *);
 extern pyqt6_qtqml_get_qmetaobject_t pyqt6_qtqml_get_qmetaobject;
 
 // Initialisation.
+#include "sip.h"
+#if SIP_ABI_MAJOR_VERSION >= 14
+void qpyqml_post_init(PyObject *module_dict, sipModuleState *module_state);
+#else
 void qpyqml_post_init(PyObject *module_dict);
+#endif
 
 
 #endif

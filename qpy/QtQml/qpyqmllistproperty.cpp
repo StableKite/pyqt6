@@ -27,7 +27,7 @@
 #include "qpyqmllistpropertywrapper.h"
 #include "qpyqml_listdata.h"
 
-#include "sipAPIQtQml.h"
+#include "qpyqml_sip.h"
 
 
 // The type object.
@@ -102,7 +102,7 @@ static PyObject *QQmlListProperty_call(PyObject *, PyObject *args,
 
     // Check the type is derived from QObject.
     if (!PyObject_TypeCheck(py_type, &PyType_Type) ||
-        !PyType_IsSubtype((PyTypeObject *)py_type, sipTypeAsPyTypeObject(sipType_QObject)))
+        !qpyqml_is_subtype((PyTypeObject *)py_type, sipType_QObject))
     {
         PyErr_Format(PyExc_TypeError,
                 "type argument must be a sub-type of QObject");

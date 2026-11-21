@@ -151,6 +151,7 @@ void qpycore_Unicode_ConcatAndDel(PyObject **string, PyObject *newpart);
 // Initialisation.
 #if SIP_ABI_MAJOR_VERSION >= 14
 void qpycore_init(PyObject *module, sipModuleState *sipMS);
+int qpycore_set_qobject_proxy_resolver(sipModuleState *caller, void *(*resolver)(void *));
 #else
 void qpycore_init();
 #endif

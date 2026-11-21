@@ -28,6 +28,7 @@
 
 #if SIP_ABI_MAJOR_VERSION >= 14
 
+#include <atomic>
 #include <memory>
 
 #include <QHash>
@@ -47,6 +48,17 @@ public:
     ~QObjectMonitor()
     {
         PyInterpreterView_Close(view);
+    }
+
+    void set_proxy_resolver(void *(*resolver)(void *))
+    {
+        proxy_resolver.store(resolver);
+    }
+
+    void *resolve_proxy(void *object) const
+    {
+        auto resolver = proxy_resolver.load();
+        return resolver ? resolver(object) : object;
     }
 
     void watch(QObject *object)
@@ -141,6 +153,7 @@ private:
 
     QMutex mutex;
     QHash<QObject *, bool> watchers;
+    std::atomic<void *(*)(void *)> proxy_resolver{nullptr};
     bool enabled = true;
     PyInterpreterView *const view;
     PyObject *module_ref;
@@ -152,6 +165,12 @@ static QObjectMonitor *get_monitor(sipModuleState *sipMS)
 {
     auto *owner = static_cast<MonitorOwner *>(sipGetModuleUserState());
     return owner ? owner->get() : nullptr;
+}
+
+static void *finalising_address_eh(sipModuleState *sipMS, sipTypeID, void *cpp)
+{
+    auto *monitor = get_monitor(sipMS);
+    return monitor ? monitor->resolve_proxy(cpp) : cpp;
 }
 
 static void wrapped_instance_eh(sipModuleState *sipMS, sipTypeID, void *cpp)
@@ -185,9 +204,26 @@ static void free_monitor(sipModuleState *sipMS, void *data)
 
 } // namespace
 
+int qpycore_set_qobject_proxy_resolver(sipModuleState *caller, void *(*resolver)(void *))
+{
+    auto *sipMS = sipABI_QtCore->api_get_module_state(caller, SIP_MODULE_TOKEN_QtCore);
+    if (sipMS)
+    {
+        if (auto *monitor = get_monitor(sipMS))
+        {
+            monitor->set_proxy_resolver(resolver);
+            return 0;
+        }
+    }
+
+    PyErr_SetString(PyExc_RuntimeError, "QtCore QObject monitor is unavailable");
+    return -1;
+}
+
 int qpycore_register_event_handlers(sipModuleState *sipMS, PyObject *module)
 {
     static const sipEventHandlerSpec handlers[] = {
+        {sipEventFinalisingAddress, sipType_QObject, reinterpret_cast<void *>(finalising_address_eh)},
         {sipEventFinalisingType, sipType_QObject, reinterpret_cast<void *>(qpycore_finalize_signal_type)},
         {sipEventWrappedInstance, sipType_QObject, reinterpret_cast<void *>(wrapped_instance_eh)},
         {sipEventCollectingWrapper, sipType_QObject, reinterpret_cast<void *>(collecting_wrapper_eh)},

@@ -25,7 +25,7 @@
 #include "qpyqmllistpropertywrapper.h"
 #include "qpyqmlobject.h"
 
-#include "sipAPIQtQml.h"
+#include "qpyqml_sip.h"
 
 
 // Imports from QtCore.
@@ -33,8 +33,19 @@ pyqt6_qtqml_err_print_t pyqt6_qtqml_err_print;
 
 
 // Perform any required initialisation.
+#if SIP_ABI_MAJOR_VERSION >= 14
+sipModuleState *qpyqml_module_state;
+#endif
+
+#if SIP_ABI_MAJOR_VERSION >= 14
+void qpyqml_post_init(PyObject *module_dict, sipModuleState *module_state)
+#else
 void qpyqml_post_init(PyObject *module_dict)
+#endif
 {
+#if SIP_ABI_MAJOR_VERSION >= 14
+    qpyqml_module_state = module_state;
+#endif
     // QtCore imports.
     pyqt6_qtqml_err_print = (pyqt6_qtqml_err_print_t)sipImportSymbol(
             "pyqt6_err_print");
@@ -63,7 +74,15 @@ void qpyqml_post_init(PyObject *module_dict)
     if (!qpyqml_QQmlListPropertyWrapper_init_type())
         Py_FatalError("PyQt6.QtQml: Failed to initialise QQmlListPropertyWrapper type");
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+    using SetProxyResolver = int (*)(sipModuleState *, void *(*)(void *));
+    auto set_proxy_resolver = reinterpret_cast<SetProxyResolver>(
+            sipImportSymbol("pyqt6_set_qobject_proxy_resolver"));
+    if (!set_proxy_resolver || set_proxy_resolver(module_state, QPyQmlObjectProxy::resolveProxy) < 0)
+        Py_FatalError("PyQt6.QtQml: Failed to register proxy resolver");
+#else
     // Register the proxy resolver.
     if (sipRegisterProxyResolver(sipType_QObject, QPyQmlObjectProxy::resolveProxy) < 0)
         Py_FatalError("PyQt6.QtQml: Failed to register proxy resolver");
+#endif
 }

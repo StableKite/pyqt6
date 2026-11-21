@@ -32,7 +32,7 @@
 #include "qpyqmlobject.h"
 #include "qpyqmlvalidator.h"
 
-#include "sipAPIQtQml.h"
+#include "qpyqml_sip.h"
 
 
 class QQmlPropertyValueInterceptor;
@@ -154,10 +154,8 @@ static int register_type(QQmlPrivate::RegisterType *rt)
 static QQmlPrivate::RegisterType *init_type(PyTypeObject *py_type, bool ctor,
         PyTypeObject *attached)
 {
-    PyTypeObject *qobject_type = sipTypeAsPyTypeObject(sipType_QObject);
-
     // Check the type is derived from QObject and get its meta-object.
-    if (!PyType_IsSubtype(py_type, qobject_type))
+    if (!qpyqml_is_subtype(py_type, sipType_QObject))
     {
         PyErr_SetString(PyExc_TypeError,
                 "type being registered must be a sub-type of QObject");
@@ -167,12 +165,10 @@ static QQmlPrivate::RegisterType *init_type(PyTypeObject *py_type, bool ctor,
     const QMetaObject *mo = pyqt6_qtqml_get_qmetaobject(py_type);
 
     // See if the type is a parser status.
-    bool is_parser_status = PyType_IsSubtype(py_type,
-            sipTypeAsPyTypeObject(sipType_QQmlParserStatus));
+    bool is_parser_status = qpyqml_is_subtype(py_type, sipType_QQmlParserStatus);
 
     // See if the type is a property value source.
-    bool is_value_source = PyType_IsSubtype(py_type,
-            sipTypeAsPyTypeObject(sipType_QQmlPropertyValueSource));
+    bool is_value_source = qpyqml_is_subtype(py_type, sipType_QQmlPropertyValueSource);
 
 
     // Check any attached type is derived from QObject and get its meta-object.
@@ -180,7 +176,7 @@ static QQmlPrivate::RegisterType *init_type(PyTypeObject *py_type, bool ctor,
 
     if (attached)
     {
-        if (!PyType_IsSubtype(attached, qobject_type))
+        if (!qpyqml_is_subtype(attached, sipType_QObject))
         {
             PyErr_SetString(PyExc_TypeError,
                     "attached properties type must be a sub-type of QObject");
@@ -233,17 +229,11 @@ static QQmlPrivate::RegisterType *init_type(PyTypeObject *py_type, bool ctor,
 
     // Initialise the specific type.
 
-    static const sipTypeDef *model_td = 0;
+    auto model_td = sipFindType("QAbstractItemModel");
 
-    if (!model_td)
-        model_td = sipFindType("QAbstractItemModel");
+    auto validator_td = sipFindType("QValidator");
 
-    static const sipTypeDef *validator_td = 0;
-
-    if (!validator_td)
-        validator_td = sipFindType("QValidator");
-
-    if (validator_td && PyType_IsSubtype(py_type, sipTypeAsPyTypeObject(validator_td)))
+    if (validator_td && qpyqml_is_subtype(py_type, validator_td))
     {
         int type_nr = QPyQmlValidatorProxy::addType(py_type);
 
@@ -272,7 +262,7 @@ static QQmlPrivate::RegisterType *init_type(PyTypeObject *py_type, bool ctor,
             QPYQML_TYPE_INIT(Validator, 9);
         }
     }
-    else if (model_td && PyType_IsSubtype(py_type, sipTypeAsPyTypeObject(model_td)))
+    else if (model_td && qpyqml_is_subtype(py_type, model_td))
     {
         int type_nr = QPyQmlModelProxy::addType(py_type);
 

@@ -200,8 +200,10 @@ public:
         PlatformSurface,
         TabletTrackingChange,
         GraphicsSceneLeave,
+%If (- Qt_6_12_0)
         EnterEditFocus,
         LeaveEditFocus,
+%End
 %If (Qt_6_6_0 -)
         DevicePixelRatioChange,
 %End

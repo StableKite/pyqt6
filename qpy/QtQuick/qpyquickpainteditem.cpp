@@ -24,7 +24,7 @@
 
 #include "qpyquickpainteditem.h"
 
-#include "sipAPIQtQuick.h"
+#include "qpyquick_sip.h"
 
 
 // The maximum number of Python QQuickPaintedItem types.

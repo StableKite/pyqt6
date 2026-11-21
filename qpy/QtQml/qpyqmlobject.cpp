@@ -20,7 +20,7 @@
 
 #include "qpyqmlobject.h"
 
-#include "sipAPIQtQml.h"
+#include "qpyqml_sip.h"
 
 
 // Forward declarations.

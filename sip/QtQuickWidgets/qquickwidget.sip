@@ -27,7 +27,7 @@ class QQuickWidget : public QWidget
 %End
 
 %ConvertToSubClassCode
-    sipType = (sipCpp->inherits(sipName_QQuickWidget) ? sipType_QQuickWidget : 0);
+    sipType = (sipCpp->inherits("QQuickWidget") ? sipType_QQuickWidget : 0);
 %End
 
 public:

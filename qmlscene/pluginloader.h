@@ -25,7 +25,6 @@
 
 
 #include <Python.h>
-#include <sip.h>
 
 #include <QObject>
 #include <QQmlExtensionPlugin>
@@ -44,13 +43,11 @@ public:
     void registerTypes(const char *uri);
 
 private:
-    void getSipAPI();
     static bool addToSysPath(const QString &py_plugin_dir);
     bool callRegisterTypes(const QString &py_plugin, const char *uri);
     static PyObject *getModuleAttr(const char *module, const char *attr);
 
     PyObject *py_plugin_obj;
-    const sipAPIDef *sip;
 };
 
 

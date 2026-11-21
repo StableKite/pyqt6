@@ -37,7 +37,7 @@
 
 // Construct the C++ plugin.
 PyQt6QmlPlugin::PyQt6QmlPlugin(QObject *parent) : QQmlExtensionPlugin(parent),
-        py_plugin_obj(0), sip(0)
+        py_plugin_obj(0)
 {
     // Make sure the interpreter is initialised.
     if (!Py_IsInitialized())
@@ -81,8 +81,6 @@ PyQt6QmlPlugin::PyQt6QmlPlugin(QObject *parent) : QQmlExtensionPlugin(parent),
 
         PyConfig_Clear(&py_config);
 
-        getSipAPI();
-
 #ifdef WITH_THREAD
         // Make sure we don't have the GIL.
         PyEval_SaveThread();
@@ -112,51 +110,44 @@ PyQt6QmlPlugin::~PyQt6QmlPlugin()
 // Initialize the QML engine.
 void PyQt6QmlPlugin::initializeEngine(QQmlEngine *engine, const char *uri)
 {
-    if (!Py_IsInitialized() || !py_plugin_obj || !sip)
+    if (!Py_IsInitialized() || !py_plugin_obj)
         return;
 
 #ifdef WITH_THREAD
     PyGILState_STATE gil = PyGILState_Ensure();
 #endif
 
-    const sipTypeDef *td = sip->api_find_type("QQmlEngine");
+    PyObject *wrap = getModuleAttr("PyQt6.sip", "wrapinstance");
+    PyObject *engine_obj = nullptr;
 
-    if (!td)
+    if (wrap)
     {
-        PyErr_SetString(PyExc_AttributeError,
-                "unable to find type for QQmlEngine");
-    }
-    else
-    {
-        PyObject *engine_obj = sip->api_convert_from_type(engine, td, 0);
+        PyObject *type = getModuleAttr("PyQt6.QtQml", "QQmlEngine");
+        PyObject *addr = type ? PyLong_FromVoidPtr(engine) : nullptr;
 
-        if (!engine_obj)
-        {
-            td = 0;
-        }
-        else
-        {
-            PyObject *res_obj = PyObject_CallMethod(py_plugin_obj,
-                    const_cast<char *>("initializeEngine"),
-                    const_cast<char *>("Os"), engine_obj, uri);
+        if (addr)
+            engine_obj = PyObject_CallFunctionObjArgs(wrap, addr, type, nullptr);
 
-            Py_DECREF(engine_obj);
-
-            if (res_obj != Py_None)
-            {
-                if (res_obj)
-                    PyErr_Format(PyExc_TypeError,
-                            "unexpected result from initializeEngine(): %S",
-                            res_obj);
-
-                td = 0;
-            }
-
-            Py_XDECREF(res_obj);
-        }
+        Py_XDECREF(addr);
+        Py_XDECREF(type);
+        Py_DECREF(wrap);
     }
 
-    if (!td)
+    if (engine_obj)
+    {
+        PyObject *result = PyObject_CallMethod(py_plugin_obj,
+                "initializeEngine", "Os", engine_obj, uri);
+
+        Py_DECREF(engine_obj);
+
+        if (result && result != Py_None)
+            PyErr_Format(PyExc_TypeError,
+                    "unexpected result from initializeEngine(): %S", result);
+
+        Py_XDECREF(result);
+    }
+
+    if (PyErr_Occurred())
         PyErr_Print();
 
 #ifdef WITH_THREAD
@@ -368,14 +359,4 @@ PyObject *PyQt6QmlPlugin::getModuleAttr(const char *module, const char *attr)
     Py_DECREF(mod);
 
     return obj;
-}
-
-
-// Get the SIP API.
-void PyQt6QmlPlugin::getSipAPI()
-{
-    sip = (const sipAPIDef *)PyCapsule_Import("PyQt6.sip._C_API", 0);
-
-    if (!sip)
-        PyErr_Print();
 }
