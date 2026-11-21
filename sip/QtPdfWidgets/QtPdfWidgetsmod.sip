@@ -20,7 +20,7 @@
 // WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-%Module(name=PyQt6.QtPdfWidgets, keyword_arguments="Optional", use_limited_api=True)
+%Module(name=PyQt6.QtPdfWidgets, keyword_arguments="Optional", use_limited_api=False)
 
 %Import QtCore/QtCoremod.sip
 %Import QtPdf/QtPdfmod.sip

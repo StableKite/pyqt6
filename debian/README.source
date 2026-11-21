@@ -1,0 +1,4 @@
+This SBI package keeps the Stonking source identity pyqt6 6.11.0-3build1.
+It builds the bindings with SIP 6.17.3 and SIP ABI 14 and needs the matching
+SIP runtime. The Qt modules used by the SBI image declare free-threaded
+support. The remaining modules retain their upstream GIL declaration.

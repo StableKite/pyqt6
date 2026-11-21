@@ -7,6 +7,8 @@ export PYBUILD_CONFIGURE_ARGS={interpreter} /usr/bin/sip-build \
 	--verbose \
 	--no-make \
 	--confirm-license \
+	--abi-version 14.0 \
+	--concatenate 8 \
 	--pep484-pyi \
 	--target-dir /usr/lib/python3/dist-packages \
 	--build-dir {build_dir} \

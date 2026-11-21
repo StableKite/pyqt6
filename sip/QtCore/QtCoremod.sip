@@ -20,7 +20,7 @@
 // WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-%Module(name=PyQt6.QtCore, call_super_init=True, default_VirtualErrorHandler=PyQt6, keyword_arguments="Optional", use_limited_api=True, py_ssize_t_clean=True)
+%Module(name=PyQt6.QtCore, call_super_init=True, default_VirtualErrorHandler=PyQt6, keyword_arguments="Optional", use_limited_api=False, gil_use="NotUsed", py_ssize_t_clean=True)
 
 %Timeline {Qt_6_0_0 Qt_6_1_0 Qt_6_2_0 Qt_6_3_0 Qt_6_4_0 Qt_6_5_0 Qt_6_6_0 Qt_6_7_0 Qt_6_8_0 Qt_6_9_0 Qt_6_10_0 Qt_6_11_0 Qt_6_12_0}
 
@@ -66,7 +66,7 @@ WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 %Plugin PyQt6
 
-%MinimumABIVersion "13.8"
+%MinimumABIVersion "14.0"
 %DefaultEncoding "ASCII"
 
 %Include(name=pyqt-internal.sip5, optional=True)
