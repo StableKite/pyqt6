@@ -98,8 +98,8 @@
         if (*sipIsErr)
         {
             PyErr_Format(PyExc_TypeError,
-                    "a key has type '%s' but 'str' is expected",
-                    sipPyTypeName(Py_TYPE(kobj)));
+                    "a key has type '" QPYCORE_TYPENAME_FORMAT "' but 'str' is expected",
+                    QPYCORE_TYPENAME_ARGUMENT(kobj));
 
             delete jo;
 
@@ -114,8 +114,8 @@
         if (*sipIsErr)
         {
             PyErr_Format(PyExc_TypeError,
-                    "a value has type '%s' but 'QJsonValue' is expected",
-                    sipPyTypeName(Py_TYPE(vobj)));
+                    "a value has type '" QPYCORE_TYPENAME_FORMAT "' but 'QJsonValue' is expected",
+                    QPYCORE_TYPENAME_ARGUMENT(vobj));
 
             sipReleaseType(k, sipType_QString, kstate);
             delete jo;

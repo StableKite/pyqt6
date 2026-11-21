@@ -37,9 +37,9 @@ class QByteArray /TypeHintIn="Union[QByteArray, bytes, bytearray, memoryview]"/
 
 
 // Convenience function for converting a QByteArray to a Python str object.
-static PyObject *QByteArrayToPyStr(QByteArray *ba)
+static PyObject *QByteArrayToPyStr(const QByteArray *ba)
 {
-    char *data = ba->data();
+    const char *data = ba->constData();
 
     if (data)
         // QByteArrays may have embedded '\0's so set the size explicitly.    
@@ -53,8 +53,12 @@ static PyObject *QByteArrayToPyStr(QByteArray *ba)
 // Accept anything that implements the buffer protocol (including QByteArray
 // itself).
 
-if (sipIsErr == NULL)
+if (sipIsErr == nullptr)
+#if SIP_ABI_MAJOR_VERSION >= 14
+    return PyObject_CheckBuffer(sipPy);
+#else
     return sipGetBufferInfo(sipPy, NULL);
+#endif
 
 
 // If it is already a QByteArray then use it rather than make an unnecessary
@@ -69,6 +73,22 @@ if (sipCanConvertToType(sipPy, sipType_QByteArray, SIP_NO_CONVERTORS))
 }
 
 // Create a QByteArray from the data.
+#if SIP_ABI_MAJOR_VERSION >= 14
+Py_buffer buffer;
+if (PyObject_GetBuffer(sipPy, &buffer, PyBUF_FORMAT | PyBUF_C_CONTIGUOUS) == 0)
+{
+    if (!buffer.format || buffer.format[0] == 'B')
+    {
+        *sipCppPtr = new QByteArray(static_cast<const char *>(buffer.buf),
+                static_cast<qsizetype>(buffer.len));
+        PyBuffer_Release(&buffer);
+        return SIP_TEMPORARY;
+    }
+
+    PyErr_Format(PyExc_TypeError, "unsupported buffer format '%s'", buffer.format);
+    PyBuffer_Release(&buffer);
+}
+#else
 sipBufferInfoDef buffer_info;
 
 if (sipGetBufferInfo(sipPy, &buffer_info) > 0)
@@ -93,6 +113,7 @@ if (sipGetBufferInfo(sipPy, &buffer_info) > 0)
 
     sipReleaseBufferInfo(&buffer_info);
 }
+#endif
 
 *sipIsErr = 1;
 
@@ -274,7 +295,7 @@ public:
         Py_ssize_t idx = sipConvertFromSequenceIndex(a0, sipCpp->size());
         
         if (idx < 0)
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         else
             sipRes = sipCpp->operator[]((qsizetype)idx);
 %End
@@ -285,7 +306,7 @@ public:
         
         if (sipConvertFromSliceObject(a0, sipCpp->size(), &start, &stop, &step, &slicelength) < 0)
         {
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         }
         else
         {
@@ -313,13 +334,20 @@ public:
 %MethodCode
         sipRes = QByteArrayToPyStr(sipCpp);
         
-        PyObject *repr = PyObject_Repr(sipRes);
-        
-        if (repr)
+        if (!sipRes)
         {
+            sipError = sipErrorFail;
+        }
+        else
+        {
+            PyObject *repr = PyObject_Repr(sipRes);
+
             Py_DECREF(sipRes);
             sipRes = repr;
+            if (!sipRes)
+                sipError = sipErrorFail;
         }
+
 %End
 
     SIP_PYOBJECT __repr__() const /TypeHint="str"/;
@@ -357,6 +385,9 @@ public:
         
         while (a0-- > 0)
             *sipCpp += orig;
+#if SIP_ABI_MAJOR_VERSION >= 14
+        sipRes = sipCpp;
+#endif
 %End
 
     bool isEmpty() const;
@@ -370,7 +401,7 @@ public:
         if (res)
         {
             if ((sipRes = PyBytes_FromStringAndSize(res, (Py_ssize_t)len)) == NULL)
-                sipIsErr = 1;
+                sipError = sipErrorFail;
         }
         else
         {

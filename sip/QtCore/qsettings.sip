@@ -102,7 +102,8 @@ public:
         
         sipRes = pyqt6_from_qvariant_by_type(value, a2);
         
-        sipIsErr = !sipRes;
+        if (!sipRes)
+            sipError = sipErrorFail;
 %End
 
 %End
@@ -119,7 +120,8 @@ public:
         
         sipRes = pyqt6_from_qvariant_by_type(value, a2);
         
-        sipIsErr = !sipRes;
+        if (!sipRes)
+            sipError = sipErrorFail;
 %End
 
 %End

@@ -24,6 +24,7 @@ class QDataStream : public QIODeviceBase
 {
 %TypeHeaderCode
 #include <qdatastream.h>
+#include "qpycore_qiodevicebuffer.h"
 %End
 
 public:
@@ -148,7 +149,7 @@ public:
         Py_END_ALLOW_THREADS
         
         if ((sipRes = PyBytes_FromStringAndSize(s, l)) == NULL)
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         
         if (s)
             delete[] s;
@@ -166,7 +167,7 @@ public:
         Py_END_ALLOW_THREADS
         
         if ((sipRes = PyBytes_FromStringAndSize(s, l)) == NULL)
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         
         if (s)
             delete[] s;
@@ -180,7 +181,7 @@ public:
         if (a0 < 0)
         {
             PyErr_SetString(PyExc_ValueError, "maximum length of data to be read cannot be negative");
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         }
         else
         {
@@ -201,7 +202,7 @@ public:
                 sipRes = PyBytes_FromStringAndSize(s, len);
         
                 if (!sipRes)
-                    sipIsErr = 1;
+                    sipError = sipErrorFail;
             }
         
             delete[] s;
@@ -216,7 +217,7 @@ public:
         if (a0 < 0)
         {
             PyErr_SetString(PyExc_ValueError, "maximum length of data to be read cannot be negative");
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         }
         else
         {
@@ -237,7 +238,7 @@ public:
                 sipRes = PyBytes_FromStringAndSize(s, len);
         
                 if (!sipRes)
-                    sipIsErr = 1;
+                    sipError = sipErrorFail;
             }
         
             delete[] s;
@@ -248,20 +249,18 @@ public:
 %If (Qt_6_7_0 -)
     QDataStream &writeBytes(SIP_PYBUFFER) /ReleaseGIL/;
 %MethodCode
-        sipBufferInfoDef bi;
-        
-        if (sipGetBufferInfo(a0, &bi) > 0)
+        QPyIODeviceBuffer buffer(a0);
+
+        if (buffer)
         {
             Py_BEGIN_ALLOW_THREADS
-            sipRes = &sipCpp->writeBytes(reinterpret_cast<char *>(bi.bi_buf),
-                    bi.bi_len);
+            sipRes = &sipCpp->writeBytes(static_cast<const char *>(buffer.data),
+                    buffer.size);
             Py_END_ALLOW_THREADS
-        
-            sipReleaseBufferInfo(&bi);
         }
         else
         {
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         }
 %End
 
@@ -269,20 +268,18 @@ public:
 %If (- Qt_6_7_0)
     QDataStream &writeBytes(SIP_PYBUFFER) /ReleaseGIL/;
 %MethodCode
-        sipBufferInfoDef bi;
-        
-        if (sipGetBufferInfo(a0, &bi) > 0)
+        QPyIODeviceBuffer buffer(a0);
+
+        if (buffer)
         {
             Py_BEGIN_ALLOW_THREADS
-            sipRes = &sipCpp->writeBytes(reinterpret_cast<char *>(bi.bi_buf),
-                    bi.bi_len);
+            sipRes = &sipCpp->writeBytes(static_cast<const char *>(buffer.data),
+                    buffer.size);
             Py_END_ALLOW_THREADS
-        
-            sipReleaseBufferInfo(&bi);
         }
         else
         {
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         }
 %End
 
@@ -290,20 +287,18 @@ public:
 %If (Qt_6_7_0 -)
     qint64 writeRawData(SIP_PYBUFFER) /ReleaseGIL/;
 %MethodCode
-        sipBufferInfoDef bi;
-        
-        if (sipGetBufferInfo(a0, &bi) > 0)
+        QPyIODeviceBuffer buffer(a0);
+
+        if (buffer)
         {
             Py_BEGIN_ALLOW_THREADS
-            sipRes = sipCpp->writeRawData(reinterpret_cast<char *>(bi.bi_buf),
-                    bi.bi_len);
+            sipRes = sipCpp->writeRawData(static_cast<const char *>(buffer.data),
+                    buffer.size);
             Py_END_ALLOW_THREADS
-        
-            sipReleaseBufferInfo(&bi);
         }
         else
         {
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         }
 %End
 
@@ -311,20 +306,18 @@ public:
 %If (- Qt_6_7_0)
     int writeRawData(SIP_PYBUFFER) /ReleaseGIL/;
 %MethodCode
-        sipBufferInfoDef bi;
-        
-        if (sipGetBufferInfo(a0, &bi) > 0)
+        QPyIODeviceBuffer buffer(a0);
+
+        if (buffer)
         {
             Py_BEGIN_ALLOW_THREADS
-            sipRes = sipCpp->writeRawData(reinterpret_cast<char *>(bi.bi_buf),
-                    bi.bi_len);
+            sipRes = sipCpp->writeRawData(static_cast<const char *>(buffer.data),
+                    buffer.size);
             Py_END_ALLOW_THREADS
-        
-            sipReleaseBufferInfo(&bi);
         }
         else
         {
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         }
 %End
 

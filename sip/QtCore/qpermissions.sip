@@ -31,6 +31,42 @@ class QPermission /TypeHintIn="Union[QBluetoothPermission, QCalendarPermission, 
 
 %ConvertToTypeCode
 // Note that we don't allow sub-classes of the typed permissions.
+#if SIP_ABI_MAJOR_VERSION >= 14
+sipTypeID td = 0;
+const sipTypeID permission_types[] = {
+    sipType_QBluetoothPermission,
+    sipType_QCalendarPermission,
+    sipType_QCameraPermission,
+    sipType_QContactsPermission,
+    sipType_QLocationPermission,
+    sipType_QMicrophonePermission,
+};
+
+for (sipTypeID permission_type : permission_types)
+{
+    PyTypeObject *py_type = sipGetPyTypeRef(permission_type);
+    if (py_type)
+    {
+        bool matches = Py_TYPE(sipPy) == py_type;
+        Py_DECREF(py_type);
+        if (matches)
+        {
+            td = permission_type;
+            break;
+        }
+    }
+}
+
+if (!sipIsErr)
+    return td != 0;
+
+if (td == 0)
+{
+    PyErr_SetString(PyExc_TypeError, "expected a typed Qt permission");
+    *sipIsErr = 1;
+    return 0;
+}
+#else
 const sipTypeDef *td = sipTypeFromPyTypeObject(Py_TYPE(sipPy));
 
 if (!sipIsErr)
@@ -40,6 +76,7 @@ if (!sipIsErr)
             td == sipType_QContactsPermission ||
             td == sipType_QLocationPermission ||
             td == sipType_QMicrophonePermission);
+#endif
 
 void *cpp = sipConvertToType(sipPy, td, sipTransferObj, SIP_NOT_NONE, NULL, sipIsErr);
 
@@ -73,7 +110,11 @@ public:
     QMetaType type() const;
     SIP_PYOBJECT value() const;
 %MethodCode
+#if SIP_ABI_MAJOR_VERSION >= 14
+        sipTypeID td = 0;
+#else
         const sipTypeDef *td = SIP_NULLPTR;
+#endif
         void *perm = SIP_NULLPTR;
         QMetaType mt = sipCpp->type();
         

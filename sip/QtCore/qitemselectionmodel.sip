@@ -147,7 +147,7 @@ public:
         len = sipCpp->count();
         
         if ((a0 = (int)sipConvertFromSequenceIndex(a0, len)) < 0)
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         else
             (*sipCpp)[a0] = *a1;
 %End
@@ -158,7 +158,7 @@ public:
         
         if (sipConvertFromSliceObject(a0, sipCpp->count(), &start, &stop, &step, &slicelength) < 0)
         {
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         }
         else
         {
@@ -167,7 +167,7 @@ public:
             if (vlen != slicelength)
             {
                 sipBadLengthForSlice(vlen, slicelength);
-                sipIsErr = 1;
+                sipError = sipErrorFail;
             }
             else
             {
@@ -186,7 +186,7 @@ public:
     void __delitem__(int i);
 %MethodCode
         if ((a0 = (int)sipConvertFromSequenceIndex(a0, sipCpp->count())) < 0)
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         else
             sipCpp->removeAt(a0);
 %End
@@ -197,7 +197,7 @@ public:
         
         if (sipConvertFromSliceObject(a0, sipCpp->count(), &start, &stop, &step, &slicelength) < 0)
         {
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         }
         else
         {
@@ -214,7 +214,7 @@ public:
         Py_ssize_t idx = sipConvertFromSequenceIndex(a0, sipCpp->count());
         
         if (idx < 0)
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         else
             sipRes = new QItemSelectionRange(sipCpp->operator[]((int)idx));
 %End
@@ -225,7 +225,7 @@ public:
         
         if (sipConvertFromSliceObject(a0, sipCpp->count(), &start, &stop, &step, &slicelength) < 0)
         {
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         }
         else
         {
@@ -263,7 +263,19 @@ QItemSelectionRange &last();
 int indexOf(const QItemSelectionRange &value, int from = 0) const;
 int lastIndexOf(const QItemSelectionRange &value, int from = -1) const;
 QItemSelection &operator+=(const QItemSelection &other);
+%MethodCode
+*sipCpp += *a0;
+#if SIP_ABI_MAJOR_VERSION >= 14
+sipRes = sipCpp;
+#endif
+%End
 QItemSelection &operator+=(const QItemSelectionRange &value);
+%MethodCode
+*sipCpp += *a0;
+#if SIP_ABI_MAJOR_VERSION >= 14
+sipRes = sipCpp;
+#endif
+%End
 };
 
 %If (Qt_6_8_0 -)

@@ -247,9 +247,13 @@ protected:
 %End
 
 %VirtualCatcherCode
-        PyObject *result = sipCallMethod(&sipIsErr, sipMethod, "n", a1);
+        PyObject *result = sipCallMethod(nullptr, sipMethod, "n", a1);
 
-        if (result)
+        if (!result)
+        {
+            sipError = sipErrorFail;
+        }
+        else
         {
             if (result == Py_None)
                 sipRes = -1L;
@@ -260,7 +264,7 @@ protected:
                 if (!buffer)
                 {
                     sipBadCatcherResult(sipMethod);
-                    sipIsErr = 1;
+                    sipError = sipErrorFail;
                 }
                 else
                 {
@@ -314,9 +318,13 @@ protected:
 %End
 
 %VirtualCatcherCode
-        PyObject *result = sipCallMethod(&sipIsErr, sipMethod, "n", a1);
+        PyObject *result = sipCallMethod(nullptr, sipMethod, "n", a1);
 
-        if (result)
+        if (!result)
+        {
+            sipError = sipErrorFail;
+        }
+        else
         {
             if (result == Py_None)
                 sipRes = -1L;
@@ -327,7 +335,7 @@ protected:
                 if (!buffer)
                 {
                     sipBadCatcherResult(sipMethod);
-                    sipIsErr = 1;
+                    sipError = sipErrorFail;
                 }
                 else
                 {
@@ -364,9 +372,13 @@ protected:
 %End
 
 %VirtualCatcherCode
-        PyObject *result = sipCallMethod(&sipIsErr, sipMethod, "n", a1);
+        PyObject *result = sipCallMethod(nullptr, sipMethod, "n", a1);
 
-        if (result)
+        if (!result)
+        {
+            sipError = sipErrorFail;
+        }
+        else
         {
             if (result == Py_None)
                 sipRes = -1L;
@@ -377,7 +389,7 @@ protected:
                 if (!buffer)
                 {
                     sipBadCatcherResult(sipMethod);
-                    sipIsErr = 1;
+                    sipError = sipErrorFail;
                 }
                 else
                 {

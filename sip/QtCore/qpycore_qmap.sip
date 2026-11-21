@@ -100,8 +100,8 @@ template<_TYPE1_, _TYPE2_>
         if (*sipIsErr)
         {
             PyErr_Format(PyExc_TypeError,
-                    "a dict key has type '%s' but '_TYPE1_' is expected",
-                    sipPyTypeName(Py_TYPE(kobj)));
+                    "a dict key has type '" QPYCORE_TYPENAME_FORMAT "' but '_TYPE1_' is expected",
+                    QPYCORE_TYPENAME_ARGUMENT(kobj));
 
             delete qm;
 
@@ -116,8 +116,8 @@ template<_TYPE1_, _TYPE2_>
         if (*sipIsErr)
         {
             PyErr_Format(PyExc_TypeError,
-                    "a dict value has type '%s' but '_TYPE2_' is expected",
-                    sipPyTypeName(Py_TYPE(vobj)));
+                    "a dict value has type '" QPYCORE_TYPENAME_FORMAT "' but '_TYPE2_' is expected",
+                    QPYCORE_TYPENAME_ARGUMENT(vobj));
 
             sipReleaseType(k, sipType__TYPE1_, kstate);
             delete qm;
@@ -214,8 +214,8 @@ template<int, _TYPE_>
         {
             if (PyErr_ExceptionMatches(PyExc_TypeError))
                 PyErr_Format(PyExc_TypeError,
-                        "a dict key has type '%s' but 'int' is expected",
-                        sipPyTypeName(Py_TYPE(kobj)));
+                        "a dict key has type '" QPYCORE_TYPENAME_FORMAT "' but 'int' is expected",
+                        QPYCORE_TYPENAME_ARGUMENT(kobj));
 
             delete qm;
             *sipIsErr = 1;
@@ -231,8 +231,8 @@ template<int, _TYPE_>
         if (*sipIsErr)
         {
             PyErr_Format(PyExc_TypeError,
-                    "a dict value has type '%s' but '_TYPE_' is expected",
-                    sipPyTypeName(Py_TYPE(vobj)));
+                    "a dict value has type '" QPYCORE_TYPENAME_FORMAT "' but '_TYPE_' is expected",
+                    QPYCORE_TYPENAME_ARGUMENT(vobj));
 
             delete qm;
 
@@ -355,8 +355,8 @@ template<_TYPE1_, _TYPE2_>
         if (*sipIsErr)
         {
             PyErr_Format(PyExc_TypeError,
-                    "a dict key has type '%s' but '_TYPE1_' is expected",
-                    sipPyTypeName(Py_TYPE(kobj)));
+                    "a dict key has type '" QPYCORE_TYPENAME_FORMAT "' but '_TYPE1_' is expected",
+                    QPYCORE_TYPENAME_ARGUMENT(kobj));
 
             delete qm;
 
@@ -368,8 +368,8 @@ template<_TYPE1_, _TYPE2_>
         if (vi < 0)
         {
             PyErr_Format(PyExc_TypeError,
-                    "a dict value has type '%s' but a sequence is expected",
-                    sipPyTypeName(Py_TYPE(vobj)));
+                    "a dict value has type '" QPYCORE_TYPENAME_FORMAT "' but a sequence is expected",
+                    QPYCORE_TYPENAME_ARGUMENT(vobj));
 
             *sipIsErr = 1;
             sipReleaseType(k, sipType__TYPE1_, kstate);
@@ -402,8 +402,8 @@ template<_TYPE1_, _TYPE2_>
             if (*sipIsErr)
             {
                 PyErr_Format(PyExc_TypeError,
-                        "a sequence element has type '%s' but '_TYPE2_' is expected",
-                        sipPyTypeName(Py_TYPE(itm_obj)));
+                        "a sequence element has type '" QPYCORE_TYPENAME_FORMAT "' but '_TYPE2_' is expected",
+                        QPYCORE_TYPENAME_ARGUMENT(itm_obj));
 
                 sipReleaseType(k, sipType__TYPE1_, kstate);
                 delete qm;

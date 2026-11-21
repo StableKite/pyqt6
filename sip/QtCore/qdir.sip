@@ -106,7 +106,7 @@ public:
         Py_ssize_t idx = sipConvertFromSequenceIndex(a0, sipCpp->count());
         
         if (idx < 0)
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         else
             sipRes = new QString(sipCpp->operator[]((qsizetype)idx));
 %End
@@ -118,7 +118,7 @@ public:
         Py_ssize_t idx = sipConvertFromSequenceIndex(a0, sipCpp->count());
         
         if (idx < 0)
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         else
             sipRes = new QString(sipCpp->operator[]((int)idx));
 %End
@@ -130,7 +130,7 @@ public:
         
         if (sipConvertFromSliceObject(a0, sipCpp->count(), &start, &stop, &step, &slicelength) < 0)
         {
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         }
         else
         {

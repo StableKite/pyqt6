@@ -26,6 +26,26 @@ template<ENUM>
 %End
 
 %ConvertToTypeCode
+#if SIP_ABI_MAJOR_VERSION >= 14
+ENUM enm{};
+const bool is_enm = sipConvertToEnum(sipPy, &enm, sipType_ENUM) >= 0;
+
+if (sipIsErr == nullptr)
+{
+    if (!is_enm)
+        PyErr_Clear();
+
+    return is_enm;
+}
+
+if (!is_enm)
+{
+    *sipIsErr = 1;
+    return 0;
+}
+
+*sipCppPtr = new QFlags<ENUM>(enm);
+#else
 bool is_enm = true;
 unsigned enm = (unsigned)sipConvertToEnum(sipPy, sipType_ENUM);
 
@@ -39,11 +59,17 @@ if (sipIsErr == NULL)
     return is_enm;
 
 *sipCppPtr = new QFlags<ENUM>(static_cast<ENUM>(enm));
+#endif
 
 return sipGetState(sipTransferObj);
 %End
 
 %ConvertFromTypeCode
+#if SIP_ABI_MAJOR_VERSION >= 14
+ENUM enm = static_cast<ENUM>(sipCpp->operator::QFlags<ENUM>::Int());
+return sipConvertFromEnum(&enm, sipType_ENUM);
+#else
 return sipConvertFromEnum(sipCpp->operator::QFlags<ENUM>::Int(), sipType_ENUM);
+#endif
 %End
 };

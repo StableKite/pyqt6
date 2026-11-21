@@ -110,21 +110,28 @@ public:
     QTextStream &operator<<(double f /Constrained/);
     QTextStream &operator<<(SIP_PYOBJECT i /TypeHint="int"/);
 %MethodCode
-        qlonglong val = sipLong_AsLongLong(a1);
+#if SIP_ABI_MAJOR_VERSION >= 14
+        auto *stream = sipCpp;
+        auto *number = a0;
+#else
+        auto *stream = a0;
+        auto *number = a1;
+#endif
+        qlonglong val = sipLong_AsLongLong(number);
         
         if (!PyErr_Occurred())
         {
-            sipRes = &(*a0 << val);
+            sipRes = &(*stream << val);
         }
         else
         {
             // If it is positive then it might fit an unsigned long long.
         
-            qulonglong uval = sipLong_AsUnsignedLongLong(a1);
+            qulonglong uval = sipLong_AsUnsignedLongLong(number);
         
             if (!PyErr_Occurred())
             {
-                sipRes = &(*a0 << uval);
+                sipRes = &(*stream << uval);
             }
             else
             {

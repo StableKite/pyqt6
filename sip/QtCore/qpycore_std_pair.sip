@@ -80,8 +80,8 @@ template<_TYPE1_, _TYPE2_>
     if (*sipIsErr)
     {
         PyErr_Format(PyExc_TypeError,
-                "the first element has type '%s' but '_TYPE1_' is expected",
-                sipPyTypeName(Py_TYPE(firstobj)));
+                "the first element has type '" QPYCORE_TYPENAME_FORMAT "' but '_TYPE1_' is expected",
+                QPYCORE_TYPENAME_ARGUMENT(firstobj));
 
         return 0;
     }
@@ -105,8 +105,8 @@ template<_TYPE1_, _TYPE2_>
     if (*sipIsErr)
     {
         PyErr_Format(PyExc_TypeError,
-                "the second element has type '%s' but '_TYPE2_' is expected",
-                sipPyTypeName(Py_TYPE(secondobj)));
+                "the second element has type '" QPYCORE_TYPENAME_FORMAT "' but '_TYPE2_' is expected",
+                QPYCORE_TYPENAME_ARGUMENT(secondobj));
 
         Py_DECREF(secondobj);
         sipReleaseType(first, sipType__TYPE1_, firststate);
@@ -187,8 +187,8 @@ template<_TYPE_>
     if (*sipIsErr)
     {
         PyErr_Format(PyExc_TypeError,
-                "the first element has type '%s' but '_TYPE_' is expected",
-                sipPyTypeName(Py_TYPE(firstobj)));
+                "the first element has type '" QPYCORE_TYPENAME_FORMAT "' but '_TYPE_' is expected",
+                QPYCORE_TYPENAME_ARGUMENT(firstobj));
 
         return 0;
     }
@@ -210,8 +210,8 @@ template<_TYPE_>
     {
         if (PyErr_ExceptionMatches(PyExc_TypeError))
             PyErr_Format(PyExc_TypeError,
-                    "the second element has type '%s' but 'int' is expected",
-                    sipPyTypeName(Py_TYPE(secondobj)));
+                    "the second element has type '" QPYCORE_TYPENAME_FORMAT "' but 'int' is expected",
+                    QPYCORE_TYPENAME_ARGUMENT(secondobj));
 
         Py_DECREF(secondobj);
         sipReleaseType(first, sipType__TYPE_, firststate);
@@ -277,8 +277,8 @@ template<_TYPE_>
     {
         if (PyErr_ExceptionMatches(PyExc_TypeError))
             PyErr_Format(PyExc_TypeError,
-                    "the first element has type '%s' but 'int' is expected",
-                    sipPyTypeName(Py_TYPE(firstobj)));
+                    "the first element has type '" QPYCORE_TYPENAME_FORMAT "' but 'int' is expected",
+                    QPYCORE_TYPENAME_ARGUMENT(firstobj));
 
         *sipIsErr = 1;
 
@@ -301,8 +301,8 @@ template<_TYPE_>
     {
         if (PyErr_ExceptionMatches(PyExc_TypeError))
             PyErr_Format(PyExc_TypeError,
-                    "the second element has type '%s' but 'int' is expected",
-                    sipPyTypeName(Py_TYPE(secondobj)));
+                    "the second element has type '" QPYCORE_TYPENAME_FORMAT "' but 'int' is expected",
+                    QPYCORE_TYPENAME_ARGUMENT(secondobj));
 
         Py_DECREF(secondobj);
         Py_DECREF(firstobj);
@@ -366,8 +366,8 @@ template<_TYPE_>
     if (PyErr_Occurred())
     {
         PyErr_Format(PyExc_TypeError,
-                "the first element has type '%s' but 'float' is expected",
-                sipPyTypeName(Py_TYPE(firstobj)));
+                "the first element has type '" QPYCORE_TYPENAME_FORMAT "' but 'float' is expected",
+                QPYCORE_TYPENAME_ARGUMENT(firstobj));
 
         *sipIsErr = 1;
 
@@ -390,8 +390,8 @@ template<_TYPE_>
     if (PyErr_Occurred())
     {
         PyErr_Format(PyExc_TypeError,
-                "the second element has type '%s' but 'float' is expected",
-                sipPyTypeName(Py_TYPE(secondobj)));
+                "the second element has type '" QPYCORE_TYPENAME_FORMAT "' but 'float' is expected",
+                QPYCORE_TYPENAME_ARGUMENT(secondobj));
 
         Py_DECREF(secondobj);
         Py_DECREF(firstobj);
@@ -457,8 +457,8 @@ template<_TYPE_>
     if (PyErr_Occurred())
     {
         PyErr_Format(PyExc_TypeError,
-                "the first element has type '%s' but 'float' is expected",
-                sipPyTypeName(Py_TYPE(firstobj)));
+                "the first element has type '" QPYCORE_TYPENAME_FORMAT "' but 'float' is expected",
+                QPYCORE_TYPENAME_ARGUMENT(firstobj));
 
         *sipIsErr = 1;
 
@@ -481,8 +481,8 @@ template<_TYPE_>
     if (PyErr_Occurred())
     {
         PyErr_Format(PyExc_TypeError,
-                "the second element has type '%s' but 'float' is expected",
-                sipPyTypeName(Py_TYPE(secondobj)));
+                "the second element has type '" QPYCORE_TYPENAME_FORMAT "' but 'float' is expected",
+                QPYCORE_TYPENAME_ARGUMENT(secondobj));
 
         Py_DECREF(secondobj);
         Py_DECREF(firstobj);

@@ -101,8 +101,8 @@ template<_TYPE_>
         if (*sipIsErr)
         {
             PyErr_Format(PyExc_TypeError,
-                    "index %zd has type '%s' but '_TYPE_' is expected", i,
-                    sipPyTypeName(Py_TYPE(itm)));
+                    "index %zd has type '" QPYCORE_TYPENAME_FORMAT "' but '_TYPE_' is expected", i,
+                    QPYCORE_TYPENAME_ARGUMENT(itm));
 
             Py_DECREF(itm);
             delete ql;
@@ -212,8 +212,8 @@ template<_TYPE_>
         if (*sipIsErr)
         {
             PyErr_Format(PyExc_TypeError,
-                    "index %zd has type '%s' but '_TYPE_' is expected", i,
-                    sipPyTypeName(Py_TYPE(itm)));
+                    "index %zd has type '" QPYCORE_TYPENAME_FORMAT "' but '_TYPE_' is expected", i,
+                    QPYCORE_TYPENAME_ARGUMENT(itm));
 
             Py_DECREF(itm);
             delete ql;
@@ -325,8 +325,8 @@ template<_TYPE1_, _TYPE2_>
         {
             if (sub_len < 0)
                 PyErr_Format(PyExc_TypeError,
-                        "index %zd has type '%s' but a 2 element non-string sequence is expected",
-                        i, sipPyTypeName(Py_TYPE(seq)));
+                        "index %zd has type '" QPYCORE_TYPENAME_FORMAT "' but a 2 element non-string sequence is expected",
+                        i, QPYCORE_TYPENAME_ARGUMENT(seq));
             else
                 PyErr_Format(PyExc_TypeError,
                         "index %zd is a sequence of %zd sub-elements but 2 sub-elements are expected",
@@ -360,8 +360,8 @@ template<_TYPE1_, _TYPE2_>
         if (*sipIsErr)
         {
             PyErr_Format(PyExc_TypeError,
-                    "the first sub-element of index %zd has type '%s' but '_TYPE1_' is expected",
-                    i, sipPyTypeName(Py_TYPE(itm1)));
+                    "the first sub-element of index %zd has type '" QPYCORE_TYPENAME_FORMAT "' but '_TYPE1_' is expected",
+                    i, QPYCORE_TYPENAME_ARGUMENT(itm1));
 
             Py_DECREF(itm1);
             Py_DECREF(seq);
@@ -393,8 +393,8 @@ template<_TYPE1_, _TYPE2_>
         if (*sipIsErr)
         {
             PyErr_Format(PyExc_TypeError,
-                    "the second sub-element of index %zd has type '%s' but '_TYPE2_' is expected",
-                    i, sipPyTypeName(Py_TYPE(itm2)));
+                    "the second sub-element of index %zd has type '" QPYCORE_TYPENAME_FORMAT "' but '_TYPE2_' is expected",
+                    i, QPYCORE_TYPENAME_ARGUMENT(itm2));
 
             Py_DECREF(itm2);
             sipReleaseType(s1, sipType__TYPE1_, state1);
@@ -510,8 +510,8 @@ template<qreal, _TYPE_>
         {
             if (sub_len < 0)
                 PyErr_Format(PyExc_TypeError,
-                        "index %zd has type '%s' but a 2 element non-string sequence is expected",
-                        i, sipPyTypeName(Py_TYPE(seq)));
+                        "index %zd has type '" QPYCORE_TYPENAME_FORMAT "' but a 2 element non-string sequence is expected",
+                        i, QPYCORE_TYPENAME_ARGUMENT(seq));
             else
                 PyErr_Format(PyExc_TypeError,
                         "index %zd is a sequence of %zd sub-elements but 2 sub-elements are expected",
@@ -543,8 +543,8 @@ template<qreal, _TYPE_>
         if (PyErr_Occurred())
         {
             PyErr_Format(PyExc_TypeError,
-                    "the first sub-element of index %zd has type '%s' but 'float' is expected",
-                    i, sipPyTypeName(Py_TYPE(itm1)));
+                    "the first sub-element of index %zd has type '" QPYCORE_TYPENAME_FORMAT "' but 'float' is expected",
+                    i, QPYCORE_TYPENAME_ARGUMENT(itm1));
 
             Py_DECREF(itm1);
             Py_DECREF(seq);
@@ -576,8 +576,8 @@ template<qreal, _TYPE_>
         if (*sipIsErr)
         {
             PyErr_Format(PyExc_TypeError,
-                    "the second sub-element of index %zd has type '%s' but '_TYPE_' is expected",
-                    i, sipPyTypeName(Py_TYPE(itm2)));
+                    "the second sub-element of index %zd has type '" QPYCORE_TYPENAME_FORMAT "' but '_TYPE_' is expected",
+                    i, QPYCORE_TYPENAME_ARGUMENT(itm2));
 
             Py_DECREF(itm2);
             Py_DECREF(itm1);
@@ -688,8 +688,8 @@ template<qreal, _TYPE_>
         {
             if (sub_len < 0)
                 PyErr_Format(PyExc_TypeError,
-                        "index %zd has type '%s' but a 2 element non-string sequence is expected",
-                        i, sipPyTypeName(Py_TYPE(seq)));
+                        "index %zd has type '" QPYCORE_TYPENAME_FORMAT "' but a 2 element non-string sequence is expected",
+                        i, QPYCORE_TYPENAME_ARGUMENT(seq));
             else
                 PyErr_Format(PyExc_TypeError,
                         "index %zd is a sequence of %zd sub-elements but 2 sub-elements are expected",
@@ -721,8 +721,8 @@ template<qreal, _TYPE_>
         {
             if (PyErr_ExceptionMatches(PyExc_TypeError))
                 PyErr_Format(PyExc_TypeError,
-                        "the first sub-element of index %zd has type '%s' but 'int' is expected",
-                        i, sipPyTypeName(Py_TYPE(itm1)));
+                        "the first sub-element of index %zd has type '" QPYCORE_TYPENAME_FORMAT "' but 'int' is expected",
+                        i, QPYCORE_TYPENAME_ARGUMENT(itm1));
 
             Py_DECREF(itm1);
             Py_DECREF(seq);
@@ -752,8 +752,8 @@ template<qreal, _TYPE_>
         {
             if (PyErr_ExceptionMatches(PyExc_TypeError))
                 PyErr_Format(PyExc_TypeError,
-                        "the second sub-element of index %zd has type '%s' but 'int' is expected",
-                        i, sipPyTypeName(Py_TYPE(itm2)));
+                        "the second sub-element of index %zd has type '" QPYCORE_TYPENAME_FORMAT "' but 'int' is expected",
+                        i, QPYCORE_TYPENAME_ARGUMENT(itm2));
 
             Py_DECREF(itm2);
             Py_DECREF(itm1);
@@ -857,8 +857,8 @@ template<qreal, _TYPE_>
         {
             if (PyErr_ExceptionMatches(PyExc_TypeError))
                 PyErr_Format(PyExc_TypeError,
-                        "index %zd has type '%s' but 'int' is expected", i,
-                        sipPyTypeName(Py_TYPE(itm)));
+                        "index %zd has type '" QPYCORE_TYPENAME_FORMAT "' but 'int' is expected", i,
+                        QPYCORE_TYPENAME_ARGUMENT(itm));
 
             Py_DECREF(itm);
             delete ql;
@@ -1162,8 +1162,8 @@ template<qreal, _TYPE_>
         if (PyErr_Occurred())
         {
             PyErr_Format(PyExc_TypeError,
-                    "index %zd has type '%s' but 'int' is expected", i,
-                    sipPyTypeName(Py_TYPE(itm)));
+                    "index %zd has type '" QPYCORE_TYPENAME_FORMAT "' but 'int' is expected", i,
+                    QPYCORE_TYPENAME_ARGUMENT(itm));
 
             Py_DECREF(itm);
             delete ql;
@@ -1265,8 +1265,8 @@ template<qreal, _TYPE_>
         if (PyErr_Occurred())
         {
             PyErr_Format(PyExc_TypeError,
-                    "index %zd has type '%s' but 'float' is expected", i,
-                    sipPyTypeName(Py_TYPE(itm)));
+                    "index %zd has type '" QPYCORE_TYPENAME_FORMAT "' but 'float' is expected", i,
+                    QPYCORE_TYPENAME_ARGUMENT(itm));
 
             Py_DECREF(itm);
             delete ql;
@@ -1366,8 +1366,8 @@ template<qreal, _TYPE_>
         if (PyErr_Occurred())
         {
             PyErr_Format(PyExc_TypeError,
-                    "index %zd has type '%s' but 'float' is expected", i,
-                    sipPyTypeName(Py_TYPE(itm)));
+                    "index %zd has type '" QPYCORE_TYPENAME_FORMAT "' but 'float' is expected", i,
+                    QPYCORE_TYPENAME_ARGUMENT(itm));
 
             Py_DECREF(itm);
             delete ql;
@@ -1407,8 +1407,13 @@ template<qreal, _TYPE_>
 
     for (int i = 0; i < sipCpp->size(); ++i)
     {
+#if SIP_ABI_MAJOR_VERSION >= 14
+        Qt::DayOfWeek day = sipCpp->at(i);
+        PyObject *eobj = sipConvertFromEnum(&day, sipType_Qt_DayOfWeek);
+#else
         PyObject *eobj = sipConvertFromEnum(sipCpp->at(i),
                 sipType_Qt_DayOfWeek);
+#endif
 
         if (!eobj)
         {
@@ -1462,13 +1467,17 @@ template<qreal, _TYPE_>
             break;
         }
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+        Qt::DayOfWeek v{};
+        if (sipConvertToEnum(itm, &v, sipType_Qt_DayOfWeek) < 0)
+#else
         int v = sipConvertToEnum(itm, sipType_Qt_DayOfWeek);
-
         if (PyErr_Occurred())
+#endif
         {
             PyErr_Format(PyExc_TypeError,
-                    "index %zd has type '%s' but 'Qt.DayOfWeek' is expected",
-                    i, sipPyTypeName(Py_TYPE(itm)));
+                    "index %zd has type '" QPYCORE_TYPENAME_FORMAT "' but 'Qt.DayOfWeek' is expected",
+                    i, QPYCORE_TYPENAME_ARGUMENT(itm));
 
             Py_DECREF(itm);
             delete ql;
@@ -1579,8 +1588,8 @@ template<qreal, _TYPE_>
         if (*sipIsErr)
         {
             PyErr_Format(PyExc_TypeError,
-                    "index %zd has type '%s' but 'QModelRoleData' is expected",
-                    i, sipPyTypeName(Py_TYPE(itm)));
+                    "index %zd has type '" QPYCORE_TYPENAME_FORMAT "' but 'QModelRoleData' is expected",
+                    i, QPYCORE_TYPENAME_ARGUMENT(itm));
 
             Py_DECREF(itm);
             delete ql;

@@ -25,6 +25,30 @@
 %End
 
 %ConvertToTypeCode
+#if SIP_ABI_MAJOR_VERSION >= 14
+if (sipIsErr == nullptr)
+    return PyObject_CheckBuffer(sipPy);
+
+auto *buffer = static_cast<Py_buffer *>(PyMem_Malloc(sizeof(Py_buffer)));
+if (buffer == nullptr)
+{
+    PyErr_NoMemory();
+}
+else
+{
+    if (PyObject_GetBuffer(sipPy, buffer, PyBUF_SIMPLE) == 0)
+    {
+        *sipCppPtr = new QByteArrayView(
+                static_cast<const unsigned char *>(buffer->buf),
+                static_cast<qsizetype>(buffer->len));
+        *sipUserStatePtr = buffer;
+
+        return SIP_TEMPORARY;
+    }
+
+    PyMem_Free(buffer);
+}
+#else
 if (sipIsErr == NULL)
 {
     // Note that we choose to use QByteArray's implementation of the buffer
@@ -52,6 +76,8 @@ if (buffer_info)
     sipFree(buffer_info);
 }
 
+#endif
+
 *sipIsErr = 1;
 
 return 0;
@@ -60,8 +86,14 @@ return 0;
 %ReleaseCode
 delete sipCpp;
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+auto *buffer = static_cast<Py_buffer *>(sipUserState);
+PyBuffer_Release(buffer);
+PyMem_Free(buffer);
+#else
 sipBufferInfoDef *buffer_info = reinterpret_cast<sipBufferInfoDef *>(sipUserState);
 sipReleaseBufferInfo(buffer_info);
 sipFree(buffer_info);
+#endif
 %End
 };

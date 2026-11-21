@@ -37,7 +37,7 @@ public:
         if (sipCpp->data())
         {
             if ((sipRes = PyBytes_FromStringAndSize((char *)sipCpp->data(), sipCpp->size())) == NULL)
-                sipIsErr = 1;
+                sipError = sipErrorFail;
         }
         else
         {

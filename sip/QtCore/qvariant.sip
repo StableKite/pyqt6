@@ -32,7 +32,19 @@ if (sipIsErr == NULL)
     return 1;
 
 // If it is already a QVariant then just return it.
+#if SIP_ABI_MAJOR_VERSION >= 14
+PyTypeObject *variant_type = sipGetPyTypeRef(sipType_QVariant);
+if (variant_type == nullptr)
+{
+    *sipIsErr = 1;
+    return 0;
+}
+const bool is_variant = Py_TYPE(sipPy) == variant_type;
+Py_DECREF(variant_type);
+if (is_variant)
+#else
 if (Py_TYPE(sipPy) == sipTypeAsPyTypeObject(sipType_QVariant))
+#endif
 {
     *sipCppPtr = reinterpret_cast<QVariant *>(sipConvertToType(sipPy,
             sipType_QVariant, sipTransferObj, SIP_NO_CONVERTORS, 0, sipIsErr));

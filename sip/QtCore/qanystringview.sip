@@ -29,7 +29,12 @@
 %TypeCode
 struct PyQtAnyStringState
 {
-    const sipTypeDef *instance_type;    // The instance's generated type.
+#if SIP_ABI_MAJOR_VERSION >= 14
+    sipModuleState *module_state;
+    sipTypeID instance_type;
+#else
+    const sipTypeDef *instance_type;
+#endif
     void *instance;                     // Either the QByteArray or QString.
     int instance_state;                 // The state of the instance conversion.
 };
@@ -41,6 +46,9 @@ if (sipIsErr == NULL)
            sipCanConvertToType(sipPy, sipType_QByteArray, SIP_NOT_NONE);
 
 PyQtAnyStringState *state = new PyQtAnyStringState;
+#if SIP_ABI_MAJOR_VERSION >= 14
+state->module_state = sipMS;
+#endif
 
 if (sipCanConvertToType(sipPy, sipType_QString, 0))
 {
@@ -49,7 +57,10 @@ if (sipCanConvertToType(sipPy, sipType_QString, 0))
                     &state->instance_state, sipIsErr));
 
     if (*sipIsErr)
+    {
+        delete state;
         return 0;
+    }
 
     *sipCppPtr = new QAnyStringView(*qs);
     state->instance_type = sipType_QString;
@@ -62,7 +73,10 @@ else
                     SIP_NOT_NONE, &state->instance_state, sipIsErr));
 
     if (*sipIsErr)
+    {
+        delete state;
         return 0;
+    }
 
     *sipCppPtr = new QAnyStringView(*qba);
     state->instance_type = sipType_QByteArray;
@@ -83,6 +97,10 @@ delete sipCpp;
 
 PyQtAnyStringState *state = reinterpret_cast<PyQtAnyStringState *>(sipUserState);
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+// The release callback does not receive the conversion's module state.
+sipModuleState *sipMS = state->module_state;
+#endif
 sipReleaseType(state->instance, state->instance_type, state->instance_state);
 
 delete state;
