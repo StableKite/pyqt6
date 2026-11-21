@@ -23,7 +23,13 @@
 
 
 // Initialisation.
+#include "sipAPIQtWidgets.h"
+
+#if SIP_ABI_MAJOR_VERSION >= 14
+void qpywidgets_post_init(sipModuleState *sipMS);
+#else
 void qpywidgets_post_init();
+#endif
 
 
 #endif

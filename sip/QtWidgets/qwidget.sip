@@ -20,7 +20,12 @@
 // WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 
-const int QWIDGETSIZE_MAX;
+%ModuleCode
+#include <qwidget.h>
+static const int qpywidget_size_max = QWIDGETSIZE_MAX;
+%End
+
+const int qpywidget_size_max /PyName=QWIDGETSIZE_MAX/;
 
 class QWidget : public QObject, public QPaintDevice
 {
@@ -30,17 +35,21 @@ class QWidget : public QObject, public QPaintDevice
 
 %TypeCode
 // Transfer the ownership of a single widget to a parent.
-static void qtgui_TransferWidget(QWidget *w, PyObject *py_parent)
+static void qtgui_TransferWidget([[maybe_unused]] QtWidgetsModuleState *sipMS,
+        QWidget *w, PyObject *py_parent)
 {
-    PyObject *py_w = sipGetPyObject(w, sipType_QWidget);
-
+    PyObject *py_w = QPYWIDGETS_WRAPPER_REF(w, sipType_QWidget);
     if (py_w)
+    {
         sipTransferTo(py_w, py_parent);
+        Py_DECREF(py_w);
+    }
 }
 
 
 // Transfer ownership of all widgets in a layout to their new parent.
-static void qtwidgets_TransferLayoutWidgets(QLayout *lay, PyObject *pw)
+static void qtwidgets_TransferLayoutWidgets(QtWidgetsModuleState *sipMS,
+        QLayout *lay, PyObject *pw)
 {
     int n = lay->count();
 
@@ -51,21 +60,21 @@ static void qtwidgets_TransferLayoutWidgets(QLayout *lay, PyObject *pw)
 
         if (w)
         {
-            qtgui_TransferWidget(w, pw);
+            qtgui_TransferWidget(sipMS, w, pw);
         }
         else
         {
             QLayout *l = item->layout();
 
             if (l)
-                qtwidgets_TransferLayoutWidgets(l, pw);
+                qtwidgets_TransferLayoutWidgets(sipMS, l, pw);
         }
     }
 
     QWidget *mb = lay->menuBar();
 
     if (mb)
-        qtgui_TransferWidget(mb, pw);
+        qtgui_TransferWidget(sipMS, mb, pw);
 }
 %End
 
@@ -251,7 +260,10 @@ public:
         
         // Internally Qt has reparented all of the widgets in the layout, so we need
         // to update the ownership hierachy.
-        qtwidgets_TransferLayoutWidgets(a0, sipSelf);
+#if SIP_ABI_MAJOR_VERSION < 14
+        QtWidgetsModuleState *sipMS = nullptr;
+#endif
+        qtwidgets_TransferLayoutWidgets(sipMS, a0, sipSelf);
 %End
 
     void updateGeometry();

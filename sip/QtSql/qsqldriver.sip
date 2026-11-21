@@ -27,29 +27,33 @@ class QSqlDriver : public QObject
 %End
 
 %ConvertToSubClassCode
-    static struct class_graph {
+    using SubclassType = decltype(sipType);
+    static const struct class_graph {
         const char *name;
-        sipTypeDef **type;
+        SubclassType (*type)();
         int yes, no;
     } graph[] = {
-        {sipName_QSqlQueryModel, &sipType_QSqlQueryModel, 3, 1},
-        {sipName_QSqlRelationalDelegate, &sipType_QSqlRelationalDelegate, -1, 2},
-        {sipName_QSqlDriver, &sipType_QSqlDriver, -1, -1},
-        {sipName_QSqlTableModel, &sipType_QSqlTableModel, 4, -1},
-        {sipName_QSqlRelationalTableModel, &sipType_QSqlRelationalTableModel, -1, -1},
+#define QT_CLASS_ENTRY(name, yes, no) \
+        {#name, []() -> SubclassType { return sipType_##name; }, yes, no}
+        QT_CLASS_ENTRY(QSqlQueryModel, 3, 1),
+        QT_CLASS_ENTRY(QSqlRelationalDelegate, -1, 2),
+        QT_CLASS_ENTRY(QSqlDriver, -1, -1),
+        QT_CLASS_ENTRY(QSqlTableModel, 4, -1),
+        QT_CLASS_ENTRY(QSqlRelationalTableModel, -1, -1),
+#undef QT_CLASS_ENTRY
     };
     
     int i = 0;
     
-    sipType = NULL;
+    sipType = 0;
     
     do
     {
-        struct class_graph *cg = &graph[i];
+        const struct class_graph *cg = &graph[i];
     
         if (cg->name != NULL && sipCpp->inherits(cg->name))
         {
-            sipType = *cg->type;
+            sipType = cg->type();
             i = cg->yes;
         }
         else

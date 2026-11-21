@@ -31,7 +31,7 @@
 
 
 // Forward declarations.
-static qpyopengl_dataCache *get_cache(PyObject *bindings);
+static QPyOpenGLObjectRef get_cache(PyObject *bindings);
 static void *convert_values(Array *cache, PyObject *values,
         GLenum gl_type, sipErrorState *estate);
 static void convert_byte(PyObject *itm, void *array, Py_ssize_t i);
@@ -57,7 +57,8 @@ const GLvoid *qpyopengl_value_array(sipErrorState *estate, PyObject *values,
     if (values == Py_None)
         return 0;
 
-    qpyopengl_dataCache *data_cache = get_cache(bindings);
+    const auto cache_ref = get_cache(bindings);
+    auto *data_cache = reinterpret_cast<qpyopengl_dataCache *>(cache_ref.get());
 
     if (!data_cache)
     {
@@ -92,7 +93,8 @@ const GLvoid *qpyopengl_value_array_cached(sipErrorState *estate,
 
     PyErr_Clear();
 
-    qpyopengl_dataCache *data_cache = get_cache(bindings);
+    const auto cache_ref = get_cache(bindings);
+    auto *data_cache = reinterpret_cast<qpyopengl_dataCache *>(cache_ref.get());
 
     if (!data_cache)
     {
@@ -139,21 +141,22 @@ const GLvoid *qpyopengl_value_array_cached(sipErrorState *estate,
 
 
 // Get the cache for a set of bindings.
-static qpyopengl_dataCache *get_cache(PyObject *bindings)
+static QPyOpenGLObjectRef get_cache(PyObject *bindings)
 {
-    // Create the cache if it doesn't already exist.
-    qpyopengl_dataCache *data_cache = (qpyopengl_dataCache *)sipGetUserObject((sipSimpleWrapper *)bindings);
-
-    if (!data_cache)
+    QPyOpenGLObjectRef ref(qpyopengl_user_object_ref(bindings), Py_DecRef);
+    if (!ref)
     {
-        data_cache = qpyopengl_dataCache_New();
-
-        if (data_cache)
-            sipSetUserObject((sipSimpleWrapper *)bindings,
-                    (PyObject *)data_cache);
+        ref.reset(reinterpret_cast<PyObject *>(qpyopengl_dataCache_New()));
+        if (ref)
+        {
+#if SIP_ABI_MAJOR_VERSION >= 14
+            sipSetUserObject(reinterpret_cast<sipSimpleWrapper *>(bindings), ref.get());
+#else
+            sipSetUserObject(reinterpret_cast<sipSimpleWrapper *>(bindings), Py_NewRef(ref.get()));
+#endif
+        }
     }
-
-    return data_cache;
+    return ref;
 }
 
 
@@ -161,6 +164,17 @@ static qpyopengl_dataCache *get_cache(PyObject *bindings)
 static void *convert_values(Array *array, PyObject *values, GLenum gl_type,
         sipErrorState *estate)
 {
+#if SIP_ABI_MAJOR_VERSION >= 14
+    if (PyObject_CheckBuffer(values))
+    {
+        if (PyObject_GetBuffer(values, &array->buffer, PyBUF_SIMPLE) < 0)
+        {
+            *estate = sipErrorFail;
+            return nullptr;
+        }
+        return array->buffer.buf;
+    }
+#else
     int rc = sipGetBufferInfo(values, &array->buffer);
 
     if (rc < 0)
@@ -173,8 +187,9 @@ static void *convert_values(Array *array, PyObject *values, GLenum gl_type,
     // in the correct format (typically created with struct.pack()).
     if (rc > 0)
         return array->buffer.bi_buf;
+#endif
 
-    PyObject *seq = PySequence_Fast(values,
+    PyObject *seq = qpyopengl_sequence(values,
             "array must be a sequence or a buffer");
 
     if (!seq)

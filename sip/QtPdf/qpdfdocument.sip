@@ -27,34 +27,38 @@ class QPdfDocument : public QObject
 %End
 
 %ConvertToSubClassCode
-    static struct class_graph {
+    using SubclassType = decltype(sipType);
+    static const struct class_graph {
         const char *name;
-        sipTypeDef **type;
+        SubclassType (*type)();
         int yes, no;
     } graph[] = {
-        {sipName_QPdfBookmarkModel, &sipType_QPdfBookmarkModel, -1, 1},
-        {sipName_QPdfDocument, &sipType_QPdfDocument, -1, 2},
+#define QT_CLASS_ENTRY(name, yes, no) \
+        {#name, []() -> SubclassType { return sipType_##name; }, yes, no}
+        QT_CLASS_ENTRY(QPdfBookmarkModel, -1, 1),
+        QT_CLASS_ENTRY(QPdfDocument, -1, 2),
     #if QT_VERSION >= 0x060600
-        {sipName_QPdfLinkModel, &sipType_QPdfLinkModel, -1, 3},
+        QT_CLASS_ENTRY(QPdfLinkModel, -1, 3),
     #else
         {0, 0, -1, 3},
     #endif
-        {sipName_QPdfPageNavigator, &sipType_QPdfPageNavigator, -1, 4},
-        {sipName_QPdfPageRenderer, &sipType_QPdfPageRenderer, -1, 5},
-        {sipName_QPdfSearchModel, &sipType_QPdfSearchModel, -1, -1},
+        QT_CLASS_ENTRY(QPdfPageNavigator, -1, 4),
+        QT_CLASS_ENTRY(QPdfPageRenderer, -1, 5),
+        QT_CLASS_ENTRY(QPdfSearchModel, -1, -1),
+#undef QT_CLASS_ENTRY
     };
     
     int i = 0;
     
-    sipType = NULL;
+    sipType = 0;
     
     do
     {
-        struct class_graph *cg = &graph[i];
+        const struct class_graph *cg = &graph[i];
     
         if (cg->name != NULL && sipCpp->inherits(cg->name))
         {
-            sipType = *cg->type;
+            sipType = cg->type();
             i = cg->yes;
         }
         else

@@ -31,7 +31,11 @@
 
 
 // Perform any required initialisation.
+#if SIP_ABI_MAJOR_VERSION >= 14
+void qpydbus_post_init(sipModuleState *sipMS)
+#else
 void qpydbus_post_init()
+#endif
 {
     // Make sure these are registered.
     qMetaTypeId<QDBusObjectPath>();

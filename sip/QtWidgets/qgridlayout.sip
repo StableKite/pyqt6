@@ -59,10 +59,12 @@ public:
         
         if (parent)
         {
-            PyObject *py_parent = sipGetPyObject(parent, sipType_QWidget);
-        
+            PyObject *py_parent = QPYWIDGETS_WRAPPER_REF(parent, sipType_QWidget);
             if (py_parent)
+            {
                 sipTransferTo(a0Wrapper, py_parent);
+                Py_DECREF(py_parent);
+            }
         }
         else
         {
@@ -83,10 +85,12 @@ public:
         
         if (parent)
         {
-            PyObject *py_parent = sipGetPyObject(parent, sipType_QWidget);
-        
+            PyObject *py_parent = QPYWIDGETS_WRAPPER_REF(parent, sipType_QWidget);
             if (py_parent)
+            {
                 sipTransferTo(a0Wrapper, py_parent);
+                Py_DECREF(py_parent);
+            }
         }
         else
         {
@@ -107,10 +111,12 @@ public:
         
         if (parent)
         {
-            PyObject *py_parent = sipGetPyObject(parent, sipType_QWidget);
-        
+            PyObject *py_parent = QPYWIDGETS_WRAPPER_REF(parent, sipType_QWidget);
             if (py_parent)
+            {
                 sipTransferTo(a0Wrapper, py_parent);
+                Py_DECREF(py_parent);
+            }
         }
         else
         {

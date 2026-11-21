@@ -25,14 +25,18 @@
 #include <Python.h>
 
 #include <QByteArray>
+#include <QUrl>
+#include <QVariant>
 #include <functional>
 
 #include "sipAPIQtCore.h"
 
 
 QByteArray qpycore_convert_ASCII(PyObject *str_obj);
+qint64 qpycore_copy_io_buffer(PyObject *object, const char *data, qint64 size, bool writable);
 std::function<void()> qpycore_thread_function(PyObject *callable);
 #if SIP_ABI_MAJOR_VERSION >= 14
+std::function<QVariant(const QUrl &)> qpycore_resource_provider(PyObject *callable);
 PyObject *qpycore_qtcore_module_ref(sipModuleState *expected = nullptr);
 PyTypeObject *qpycore_aux_type_ref(sipModuleState *sipMS, const char *name);
 bool qpycore_is_aux_type(PyObject *obj, const char *name);

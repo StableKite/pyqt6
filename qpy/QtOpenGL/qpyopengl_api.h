@@ -28,22 +28,34 @@
 
 #include "sipAPIQtOpenGL.h"
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+using QPyOpenGLModuleState = sipModuleState;
+using QPyOpenGLTypeRef = sipTypeID;
+#define QPYOPENGL_STATE sipMS
+#else
+using QPyOpenGLModuleState = void;
+using QPyOpenGLTypeRef = const sipTypeDef *;
+#define QPYOPENGL_STATE nullptr
+#endif
+
 
 // Initialisation.
 void qpyopengl_init();
 
 // Support for shader arrays.
-const GLfloat *qpyopengl_attribute_array(PyObject *values, PyObject *shader,
+const GLfloat *qpyopengl_attribute_array(QPyOpenGLModuleState *sipMS,
+        PyObject *values, PyObject *shader,
         PyObject *key, int *tsize, sipErrorState *estate);
-const void *qpyopengl_uniform_value_array(PyObject *values, PyObject *shader,
-        PyObject *key, const sipTypeDef **array_type, int *array_len,
+const void *qpyopengl_uniform_value_array(QPyOpenGLModuleState *sipMS,
+        PyObject *values, PyObject *shader,
+        PyObject *key, QPyOpenGLTypeRef *array_type, int *array_len,
         int *tsize, sipErrorState *estate);
 
 // Support for QOpenGLVersionFunctionsFactory.get().
 class QOpenGLContext;
 class QOpenGLVersionProfile;
 
-PyObject *qpyopengl_version_functions(
+PyObject *qpyopengl_version_functions(QPyOpenGLModuleState *sipMS,
         const QOpenGLVersionProfile &version_profile, QOpenGLContext *context,
         PyObject *py_context);
 

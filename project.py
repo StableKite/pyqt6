@@ -21,6 +21,7 @@
 import glob
 import os
 import sys
+import sysconfig
 
 from pyqtbuild import PyQtBindings, PyQtProject, QmakeTargetInstallable
 from sipbuild import (Buildable, BuildableModule, Installable, Option,
@@ -278,7 +279,7 @@ del find_qt
         sources_dir = os.path.join(self.root_dir, 'dbus')
 
         buildable = BuildableModule(self, 'dbus', 'dbus.mainloop.pyqt6',
-                uses_limited_api=True)
+                uses_limited_api=not sysconfig.get_config_var('Py_GIL_DISABLED'))
         buildable.builder_settings.append('QT -= gui')
         buildable.sources.extend(glob.glob(os.path.join(sources_dir, '*.cpp')))
         buildable.headers.extend(glob.glob(os.path.join(sources_dir, '*.h')))
@@ -648,6 +649,7 @@ class QtNetwork(PyQtBindings):
         """ Initialise the bindings. """
 
         super().__init__(project, 'QtNetwork', qmake_QT=['network', '-gui'])
+        self.include_dirs = [os.path.join(project.root_dir, 'qpy', 'QtCore')]
 
 
 class QtNfc(PyQtBindings):

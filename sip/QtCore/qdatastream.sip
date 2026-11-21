@@ -24,6 +24,9 @@ class QDataStream : public QIODeviceBase
 {
 %TypeHeaderCode
 #include <qdatastream.h>
+%End
+
+%TypeCode
 #include "qpycore_qiodevicebuffer.h"
 %End
 

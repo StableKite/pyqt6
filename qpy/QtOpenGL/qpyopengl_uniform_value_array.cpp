@@ -19,6 +19,7 @@
 
 
 #include <Python.h>
+#include <cstdint>
 
 #include <QOpenGLShaderProgram>
 #include <QMatrix2x2>
@@ -39,7 +40,7 @@
 
 
 // Forward declaratations.
-static void delete_array(void *array, const sipTypeDef *td);
+static void delete_array(void *array, QPyOpenGLTypeRef td);
 static void array_dtor(PyObject *capsule);
 
 
@@ -48,8 +49,9 @@ static void array_dtor(PyObject *capsule);
 // an array that can be passed to QOpenGLShaderProgram::setUniformValueArray().
 // The array is destroyed only when the shader is garbage collected or when
 // replaced by another array.
-const void *qpyopengl_uniform_value_array(PyObject *values, PyObject *shader,
-        PyObject *key, const sipTypeDef **array_type, int *array_len,
+const void *qpyopengl_uniform_value_array([[maybe_unused]] QPyOpenGLModuleState *sipMS,
+        PyObject *values, PyObject *shader,
+        PyObject *key, QPyOpenGLTypeRef *array_type, int *array_len,
         int *tsize, sipErrorState *estate)
 {
     // Check the key was created correctly.
@@ -59,26 +61,16 @@ const void *qpyopengl_uniform_value_array(PyObject *values, PyObject *shader,
         return 0;
     }
 
-    // Get the dict that holds the converted arrays.
-    PyObject *dict = sipGetUserObject((sipSimpleWrapper *)shader);
-
+    const auto dict = qpyopengl_shader_arrays(shader);
     if (!dict)
     {
-        dict = PyDict_New();
-
-        if (!dict)
-        {
-            Py_DECREF(key);
-
-            *estate = sipErrorFail;
-            return 0;
-        }
-
-        sipSetUserObject((sipSimpleWrapper *)shader, dict);
+        Py_DECREF(key);
+        *estate = sipErrorFail;
+        return nullptr;
     }
 
     // Check that values is a non-empty sequence.
-    values = PySequence_Fast(values,
+    values = qpyopengl_sequence(values,
             "a uniform value array must be a sequence");
 
     if (!values)
@@ -106,7 +98,7 @@ const void *qpyopengl_uniform_value_array(PyObject *values, PyObject *shader,
     // The first element determines the type expected.
     PyObject *itm = Sequence_Fast_GetItem(values, 0);
 
-    const sipTypeDef *td;
+    QPyOpenGLTypeRef td;
     Py_ssize_t nr_dim = 0;
     void *array;
 
@@ -209,7 +201,11 @@ const void *qpyopengl_uniform_value_array(PyObject *values, PyObject *shader,
                 PyErr_Format(PyExc_TypeError,
                         "uniform value array elements should all be '%s', not "
                         "'%s'",
+#if SIP_ABI_MAJOR_VERSION >= 14
+                        sipTypeName(td),
+#else
                         sipPyTypeName(sipTypeAsPyTypeObject(td)),
+#endif
                         sipPyTypeName(Py_TYPE(itm)));
             }
             else if (td == sipType_QVector2D)
@@ -287,7 +283,7 @@ const void *qpyopengl_uniform_value_array(PyObject *values, PyObject *shader,
         }
         else
         {
-            itm = PySequence_Fast(itm,
+            itm = qpyopengl_sequence(itm,
                     "uniform value array elements should all be sequences");
 
             if (itm)
@@ -345,10 +341,17 @@ const void *qpyopengl_uniform_value_array(PyObject *values, PyObject *shader,
     // Wrap the array in a Python object so that it won't leak.
     PyObject *array_obj = PyCapsule_New(array, 0, array_dtor);
 
-    if (array_obj && PyCapsule_SetContext(array_obj, const_cast<sipTypeDef *>(td)) != 0)
+#if SIP_ABI_MAJOR_VERSION >= 14
+    auto *context = reinterpret_cast<void *>(static_cast<uintptr_t>(td));
+#else
+    auto *context = const_cast<sipTypeDef *>(td);
+#endif
+
+    if (array_obj && PyCapsule_SetContext(array_obj, context) != 0)
     {
+        PyCapsule_SetDestructor(array_obj, nullptr);
         Py_DECREF(array_obj);
-        array_obj = 0;
+        array_obj = nullptr;
     }
 
     if (!array_obj)
@@ -360,7 +363,7 @@ const void *qpyopengl_uniform_value_array(PyObject *values, PyObject *shader,
         return 0;
     }
 
-    int rc = PyDict_SetItem(dict, key, array_obj);
+    int rc = PyDict_SetItem(dict.get(), key, array_obj);
 
     Py_DECREF(key);
     Py_DECREF(array_obj);
@@ -380,7 +383,7 @@ const void *qpyopengl_uniform_value_array(PyObject *values, PyObject *shader,
 
 
 // Do the actual work of deleting the array.
-static void delete_array(void *array, const sipTypeDef *td)
+static void delete_array(void *array, QPyOpenGLTypeRef td)
 {
     if (td == sipType_QVector2D)
         delete[] reinterpret_cast<QVector2D *>(array);
@@ -414,7 +417,11 @@ static void delete_array(void *array, const sipTypeDef *td)
 // The dtor for the saved array.
 static void array_dtor(PyObject *capsule)
 {
-    delete_array(PyCapsule_GetPointer(capsule, 0),
-            reinterpret_cast<const sipTypeDef *>(
-                    PyCapsule_GetContext(capsule)));
+    auto *context = PyCapsule_GetContext(capsule);
+#if SIP_ABI_MAJOR_VERSION >= 14
+    const auto type = static_cast<QPyOpenGLTypeRef>(reinterpret_cast<uintptr_t>(context));
+#else
+    const auto type = static_cast<QPyOpenGLTypeRef>(context);
+#endif
+    delete_array(PyCapsule_GetPointer(capsule, nullptr), type);
 }

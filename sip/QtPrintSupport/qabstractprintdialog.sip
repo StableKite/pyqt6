@@ -29,49 +29,53 @@ class QAbstractPrintDialog : public QDialog
 %End
 
 %ConvertToSubClassCode
-    static struct class_graph {
+    using SubclassType = decltype(sipType);
+    static const struct class_graph {
         const char *name;
-        sipTypeDef **type;
+        SubclassType (*type)();
         int yes, no;
     } graph[] = {
+#define QT_CLASS_ENTRY(name, yes, no) \
+        {#name, []() -> SubclassType { return sipType_##name; }, yes, no}
     #if defined(SIP_FEATURE_PyQt_PrintDialog)
-        {sipName_QPageSetupDialog, &sipType_QPageSetupDialog, -1, 1},
+        QT_CLASS_ENTRY(QPageSetupDialog, -1, 1),
     #else
         {0, 0, -1, 1},
     #endif
     #if defined(SIP_FEATURE_PyQt_PrintPreviewWidget)
-        {sipName_QPrintPreviewWidget, &sipType_QPrintPreviewWidget, -1, 2},
+        QT_CLASS_ENTRY(QPrintPreviewWidget, -1, 2),
     #else
         {0, 0, -1, 2},
     #endif
     #if defined(SIP_FEATURE_PyQt_PrintPreviewDialog)
-        {sipName_QPrintPreviewDialog, &sipType_QPrintPreviewDialog, -1, 3},
+        QT_CLASS_ENTRY(QPrintPreviewDialog, -1, 3),
     #else
         {0, 0, -1, 3},
     #endif
     #if defined(SIP_FEATURE_PyQt_Printer)
-        {sipName_QAbstractPrintDialog, &sipType_QAbstractPrintDialog, 4, -1},
+        QT_CLASS_ENTRY(QAbstractPrintDialog, 4, -1),
     #else
         {0, 0, 4, -1},
     #endif
     #if defined(SIP_FEATURE_PyQt_PrintDialog)
-        {sipName_QPrintDialog, &sipType_QPrintDialog, -1, -1},
+        QT_CLASS_ENTRY(QPrintDialog, -1, -1),
     #else
         {0, 0, -1, -1},
     #endif
+#undef QT_CLASS_ENTRY
     };
     
     int i = 0;
     
-    sipType = NULL;
+    sipType = 0;
     
     do
     {
-        struct class_graph *cg = &graph[i];
+        const struct class_graph *cg = &graph[i];
     
         if (cg->name != NULL && sipCpp->inherits(cg->name))
         {
-            sipType = *cg->type;
+            sipType = cg->type();
             i = cg->yes;
         }
         else

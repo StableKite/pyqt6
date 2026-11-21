@@ -91,39 +91,43 @@ class QOpenGLDebugLogger : public QObject
 %End
 
 %ConvertToSubClassCode
-    static struct class_graph {
+    using SubclassType = decltype(sipType);
+    static const struct class_graph {
         const char *name;
-        sipTypeDef **type;
+        SubclassType (*type)();
         int yes, no;
     } graph[] = {
-        {sipName_QOpenGLDebugLogger, &sipType_QOpenGLDebugLogger, -1, 1},
-        {sipName_QOpenGLShader, &sipType_QOpenGLShader, -1, 2},
-        {sipName_QOpenGLShaderProgram, &sipType_QOpenGLShaderProgram, -1, 3},
+#define QT_CLASS_ENTRY(name, yes, no) \
+        {#name, []() -> SubclassType { return sipType_##name; }, yes, no}
+        QT_CLASS_ENTRY(QOpenGLDebugLogger, -1, 1),
+        QT_CLASS_ENTRY(QOpenGLShader, -1, 2),
+        QT_CLASS_ENTRY(QOpenGLShaderProgram, -1, 3),
     #if !defined(SIP_FEATURE_PyQt_OpenGL_ES2)
-        {sipName_QOpenGLTimeMonitor, &sipType_QOpenGLTimeMonitor, -1, 4},
+        QT_CLASS_ENTRY(QOpenGLTimeMonitor, -1, 4),
     #else
         {0, 0, -1, 4},
     #endif
     #if !defined(SIP_FEATURE_PyQt_OpenGL_ES2)
-        {sipName_QOpenGLTimerQuery, &sipType_QOpenGLTimerQuery, -1, 5},
+        QT_CLASS_ENTRY(QOpenGLTimerQuery, -1, 5),
     #else
         {0, 0, -1, 5},
     #endif
-        {sipName_QOpenGLVertexArrayObject, &sipType_QOpenGLVertexArrayObject, -1, 6},
-        {sipName_QOpenGLWindow, &sipType_QOpenGLWindow, -1, -1},
+        QT_CLASS_ENTRY(QOpenGLVertexArrayObject, -1, 6),
+        QT_CLASS_ENTRY(QOpenGLWindow, -1, -1),
+#undef QT_CLASS_ENTRY
     };
     
     int i = 0;
     
-    sipType = NULL;
+    sipType = 0;
     
     do
     {
-        struct class_graph *cg = &graph[i];
+        const struct class_graph *cg = &graph[i];
     
         if (cg->name != NULL && sipCpp->inherits(cg->name))
         {
-            sipType = *cg->type;
+            sipType = cg->type();
             i = cg->yes;
         }
         else

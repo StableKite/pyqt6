@@ -27,39 +27,43 @@ class QExtensionManager : public QObject, public QAbstractExtensionManager
 %End
 
 %ConvertToSubClassCode
-    static struct class_graph {
+    using SubclassType = decltype(sipType);
+    static const struct class_graph {
         const char *name;
-        sipTypeDef **type;
+        SubclassType (*type)();
         int yes, no;
     } graph[] = {
-        {sipName_QPyDesignerCustomWidgetPlugin, &sipType_QPyDesignerCustomWidgetPlugin, -1, 1},
-        {sipName_QExtensionFactory, &sipType_QExtensionFactory, -1, 2},
-        {sipName_QPyDesignerMemberSheetExtension, &sipType_QPyDesignerMemberSheetExtension, -1, 3},
-        {sipName_QDesignerFormEditorInterface, &sipType_QDesignerFormEditorInterface, -1, 4},
-        {sipName_QDesignerWidgetBoxInterface, &sipType_QDesignerWidgetBoxInterface, -1, 5},
-        {sipName_QDesignerFormWindowInterface, &sipType_QDesignerFormWindowInterface, -1, 6},
-        {sipName_QDesignerActionEditorInterface, &sipType_QDesignerActionEditorInterface, -1, 7},
-        {sipName_QPyDesignerContainerExtension, &sipType_QPyDesignerContainerExtension, -1, 8},
-        {sipName_QDesignerPropertyEditorInterface, &sipType_QDesignerPropertyEditorInterface, -1, 9},
-        {sipName_QDesignerFormWindowManagerInterface, &sipType_QDesignerFormWindowManagerInterface, -1, 10},
-        {sipName_QPyDesignerTaskMenuExtension, &sipType_QPyDesignerTaskMenuExtension, -1, 11},
-        {sipName_QPyDesignerPropertySheetExtension, &sipType_QPyDesignerPropertySheetExtension, -1, 12},
-        {sipName_QDesignerObjectInspectorInterface, &sipType_QDesignerObjectInspectorInterface, -1, 13},
-        {sipName_QPyDesignerCustomWidgetCollectionPlugin, &sipType_QPyDesignerCustomWidgetCollectionPlugin, -1, 14},
-        {sipName_QExtensionManager, &sipType_QExtensionManager, -1, -1},
+#define QT_CLASS_ENTRY(name, yes, no) \
+        {#name, []() -> SubclassType { return sipType_##name; }, yes, no}
+        QT_CLASS_ENTRY(QPyDesignerCustomWidgetPlugin, -1, 1),
+        QT_CLASS_ENTRY(QExtensionFactory, -1, 2),
+        QT_CLASS_ENTRY(QPyDesignerMemberSheetExtension, -1, 3),
+        QT_CLASS_ENTRY(QDesignerFormEditorInterface, -1, 4),
+        QT_CLASS_ENTRY(QDesignerWidgetBoxInterface, -1, 5),
+        QT_CLASS_ENTRY(QDesignerFormWindowInterface, -1, 6),
+        QT_CLASS_ENTRY(QDesignerActionEditorInterface, -1, 7),
+        QT_CLASS_ENTRY(QPyDesignerContainerExtension, -1, 8),
+        QT_CLASS_ENTRY(QDesignerPropertyEditorInterface, -1, 9),
+        QT_CLASS_ENTRY(QDesignerFormWindowManagerInterface, -1, 10),
+        QT_CLASS_ENTRY(QPyDesignerTaskMenuExtension, -1, 11),
+        QT_CLASS_ENTRY(QPyDesignerPropertySheetExtension, -1, 12),
+        QT_CLASS_ENTRY(QDesignerObjectInspectorInterface, -1, 13),
+        QT_CLASS_ENTRY(QPyDesignerCustomWidgetCollectionPlugin, -1, 14),
+        QT_CLASS_ENTRY(QExtensionManager, -1, -1),
+#undef QT_CLASS_ENTRY
     };
     
     int i = 0;
     
-    sipType = NULL;
+    sipType = 0;
     
     do
     {
-        struct class_graph *cg = &graph[i];
+        const struct class_graph *cg = &graph[i];
     
         if (cg->name != NULL && sipCpp->inherits(cg->name))
         {
-            sipType = *cg->type;
+            sipType = cg->type();
             i = cg->yes;
         }
         else

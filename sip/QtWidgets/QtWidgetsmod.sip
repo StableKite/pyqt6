@@ -46,6 +46,16 @@ WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
 %DefaultSupertype PyQt6.sip.simplewrapper
 
+%ModuleHeaderCode
+#if SIP_ABI_MAJOR_VERSION >= 14
+using QtWidgetsModuleState = sipModuleState;
+#define QPYWIDGETS_WRAPPER_REF(address, type) sipGetPyObjectRef((address), (type))
+#else
+using QtWidgetsModuleState = void;
+#define QPYWIDGETS_WRAPPER_REF(address, type) Py_XNewRef(sipGetPyObject((address), (type)))
+#endif
+%End
+
 %Include qabstractbutton.sip
 %Include qabstractitemdelegate.sip
 %Include qabstractitemview.sip

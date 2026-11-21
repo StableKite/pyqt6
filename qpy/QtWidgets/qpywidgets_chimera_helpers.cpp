@@ -21,6 +21,7 @@
 #include <Python.h>
 
 #include <QGraphicsItem>
+#include <memory>
 
 #include "qpywidgets_chimera_helpers.h"
 
@@ -35,6 +36,23 @@ bool qpywidgets_to_qvariant_convertor(PyObject *obj, QVariant &var, bool *okp)
     // default convertion code.  This would cause problems for Python
     // reimplementations of QGraphicsItem::itemChange().
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyObject *name = PyUnicode_FromString("PyQt6.QtWidgets");
+    if (!name)
+    {
+        *okp = false;
+        return true;
+    }
+    std::unique_ptr<PyObject, decltype(&Py_DecRef)> module(
+            PyImport_GetModule(name), Py_DecRef);
+    Py_DECREF(name);
+    if (!module)
+    {
+        *okp = false;
+        return PyErr_Occurred() != nullptr;
+    }
+    auto *sipMS = static_cast<sipModuleState *>(PyModule_GetState(module.get()));
+#endif
     if (!sipCanConvertToType(obj, sipType_QGraphicsItem, SIP_NO_CONVERTORS))
         return false;
 

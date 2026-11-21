@@ -30,7 +30,14 @@ class QDBusArgument
 #include <QStringList>
 
 
-static PyObject *qdbusargument_add(QDBusArgument *arg, PyObject *obj, int mtype)
+#if SIP_ABI_MAJOR_VERSION >= 14
+using DBusArgumentModuleState = sipModuleState;
+#else
+using DBusArgumentModuleState = void;
+#endif
+
+static PyObject *qdbusargument_add([[maybe_unused]] DBusArgumentModuleState *sipMS,
+        QDBusArgument *arg, PyObject *obj, int mtype)
 {
     int iserr = 0;
 
@@ -141,8 +148,11 @@ public:
     QDBusArgument(const QDBusArgument &other);
     QDBusArgument(SIP_PYOBJECT arg, int id = QMetaType::Int);
 %MethodCode
+#if SIP_ABI_MAJOR_VERSION < 14
+        DBusArgumentModuleState *sipMS = nullptr;
+#endif
         sipCpp = new QDBusArgument();
-        PyObject *res = qdbusargument_add(sipCpp, a0, a1);
+        PyObject *res = qdbusargument_add(sipMS, sipCpp, a0, a1);
         
         if (res)
         {
@@ -152,13 +162,19 @@ public:
         {
             delete sipCpp;
             sipCpp = 0;
+            sipError = sipErrorFail;
         }
 %End
 
     ~QDBusArgument();
     SIP_PYOBJECT add(SIP_PYOBJECT arg, int id = QMetaType::Int) /TypeHint=""/;
 %MethodCode
-        sipRes = qdbusargument_add(sipCpp, a0, a1);
+#if SIP_ABI_MAJOR_VERSION < 14
+        DBusArgumentModuleState *sipMS = nullptr;
+#endif
+        sipRes = qdbusargument_add(sipMS, sipCpp, a0, a1);
+        if (!sipRes)
+            sipError = sipErrorFail;
 %End
 
     void beginStructure();

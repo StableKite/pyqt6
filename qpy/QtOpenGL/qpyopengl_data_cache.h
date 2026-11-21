@@ -47,7 +47,11 @@ struct Array
 
     // The buffer information.  The obj element is a reference to the object
     // that implements the buffer protocol.
+#if SIP_ABI_MAJOR_VERSION >= 14
+    Py_buffer buffer;
+#else
     sipBufferInfoDef buffer;
+#endif
 };
 
 typedef QHash<unsigned, Array *> SecondaryCache;

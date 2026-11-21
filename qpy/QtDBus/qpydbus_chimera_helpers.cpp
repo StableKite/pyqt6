@@ -19,6 +19,7 @@
 
 
 #include <Python.h>
+#include <memory>
 
 #include <QDBusArgument>
 #include <QDBusObjectPath>
@@ -234,6 +235,21 @@ static PyObject *from_map_type(const QDBusArgument &arg)
 // Convert a QString to a Python object.
 static PyObject *from_qstring(const QString &arg)
 {
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyObject *name = PyUnicode_FromString("PyQt6.QtDBus");
+    if (!name)
+        return nullptr;
+    std::unique_ptr<PyObject, decltype(&Py_DecRef)> module(
+            PyImport_GetModule(name), Py_DecRef);
+    Py_DECREF(name);
+    if (!module)
+    {
+        if (!PyErr_Occurred())
+            PyErr_SetString(PyExc_RuntimeError, "QtDBus module state is unavailable");
+        return nullptr;
+    }
+    auto *sipMS = static_cast<sipModuleState *>(PyModule_GetState(module.get()));
+#endif
     QString *heap = new QString(arg);
     PyObject *obj = sipConvertFromNewType(heap, sipType_QString, 0);
 
@@ -247,6 +263,21 @@ static PyObject *from_qstring(const QString &arg)
 // Convert a QVariant to a Python object.
 static PyObject *from_qvariant(const QVariant &arg)
 {
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyObject *name = PyUnicode_FromString("PyQt6.QtDBus");
+    if (!name)
+        return nullptr;
+    std::unique_ptr<PyObject, decltype(&Py_DecRef)> module(
+            PyImport_GetModule(name), Py_DecRef);
+    Py_DECREF(name);
+    if (!module)
+    {
+        if (!PyErr_Occurred())
+            PyErr_SetString(PyExc_RuntimeError, "QtDBus module state is unavailable");
+        return nullptr;
+    }
+    auto *sipMS = static_cast<sipModuleState *>(PyModule_GetState(module.get()));
+#endif
     QVariant *heap = new QVariant(arg);
     PyObject *obj = sipConvertFromNewType(heap, sipType_QVariant, 0);
 

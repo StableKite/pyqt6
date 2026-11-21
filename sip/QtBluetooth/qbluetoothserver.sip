@@ -29,31 +29,35 @@ class QBluetoothServer : public QObject
 %End
 
 %ConvertToSubClassCode
-    static struct class_graph {
+    using SubclassType = decltype(sipType);
+    static const struct class_graph {
         const char *name;
-        sipTypeDef **type;
+        SubclassType (*type)();
         int yes, no;
     } graph[] = {
-        {sipName_QBluetoothDeviceDiscoveryAgent, &sipType_QBluetoothDeviceDiscoveryAgent, -1, 1},
-        {sipName_QBluetoothLocalDevice, &sipType_QBluetoothLocalDevice, -1, 2},
-        {sipName_QBluetoothServer, &sipType_QBluetoothServer, -1, 3},
-        {sipName_QBluetoothServiceDiscoveryAgent, &sipType_QBluetoothServiceDiscoveryAgent, -1, 4},
-        {sipName_QBluetoothSocket, &sipType_QBluetoothSocket, -1, 5},
-        {sipName_QLowEnergyController, &sipType_QLowEnergyController, -1, 6},
-        {sipName_QLowEnergyService, &sipType_QLowEnergyService, -1, -1},
+#define QT_CLASS_ENTRY(name, yes, no) \
+        {#name, []() -> SubclassType { return sipType_##name; }, yes, no}
+        QT_CLASS_ENTRY(QBluetoothDeviceDiscoveryAgent, -1, 1),
+        QT_CLASS_ENTRY(QBluetoothLocalDevice, -1, 2),
+        QT_CLASS_ENTRY(QBluetoothServer, -1, 3),
+        QT_CLASS_ENTRY(QBluetoothServiceDiscoveryAgent, -1, 4),
+        QT_CLASS_ENTRY(QBluetoothSocket, -1, 5),
+        QT_CLASS_ENTRY(QLowEnergyController, -1, 6),
+        QT_CLASS_ENTRY(QLowEnergyService, -1, -1),
+#undef QT_CLASS_ENTRY
     };
     
     int i = 0;
     
-    sipType = NULL;
+    sipType = 0;
     
     do
     {
-        struct class_graph *cg = &graph[i];
+        const struct class_graph *cg = &graph[i];
     
         if (cg->name != NULL && sipCpp->inherits(cg->name))
         {
-            sipType = *cg->type;
+            sipType = cg->type();
             i = cg->yes;
         }
         else

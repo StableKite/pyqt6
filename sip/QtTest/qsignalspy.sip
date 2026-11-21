@@ -55,7 +55,7 @@ public:
         Py_ssize_t idx = sipConvertFromSequenceIndex(a0, sipCpp->count());
         
         if (idx < 0)
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         else
             sipRes = new QList<QVariant>(sipCpp->at((int)idx));
 %End
@@ -65,7 +65,7 @@ public:
         int len = sipCpp->count();
         
         if ((a0 = (int)sipConvertFromSequenceIndex(a0, len)) < 0)
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         else
             (*sipCpp)[a0] = *a1;
 %End
@@ -73,7 +73,7 @@ public:
     void __delitem__(int i);
 %MethodCode
         if ((a0 = (int)sipConvertFromSequenceIndex(a0, sipCpp->count())) < 0)
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         else
             sipCpp->removeAt(a0);
 %End
@@ -117,7 +117,7 @@ public:
         Py_ssize_t idx = sipConvertFromSequenceIndex(a0, sipCpp->count());
         
         if (idx < 0)
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         else
             sipRes = new QList<QVariant>(sipCpp->at((int)idx));
 %End
@@ -127,7 +127,7 @@ public:
         int len = sipCpp->count();
         
         if ((a0 = (int)sipConvertFromSequenceIndex(a0, len)) < 0)
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         else
             (*sipCpp)[a0] = *a1;
 %End
@@ -135,7 +135,7 @@ public:
     void __delitem__(int i);
 %MethodCode
         if ((a0 = (int)sipConvertFromSequenceIndex(a0, sipCpp->count())) < 0)
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         else
             sipCpp->removeAt(a0);
 %End

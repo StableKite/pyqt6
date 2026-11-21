@@ -31,35 +31,39 @@ class QJSEngine : public QObject
 %End
 
 %ConvertToSubClassCode
-    static struct class_graph {
+    using SubclassType = decltype(sipType);
+    static const struct class_graph {
         const char *name;
-        sipTypeDef **type;
+        SubclassType (*type)();
         int yes, no;
     } graph[] = {
-        {sipName_QJSEngine, &sipType_QJSEngine, 9, 1},
-        {sipName_QQmlComponent, &sipType_QQmlComponent, -1, 2},
-        {sipName_QQmlContext, &sipType_QQmlContext, -1, 3},
-        {sipName_QQmlEngineExtensionPlugin, &sipType_QQmlEngineExtensionPlugin, -1, 4},
-        {sipName_QQmlExpression, &sipType_QQmlExpression, -1, 5},
-        {sipName_QQmlExtensionPlugin, &sipType_QQmlExtensionPlugin, -1, 6},
-        {sipName_QQmlFileSelector, &sipType_QQmlFileSelector, -1, 7},
-        {sipName_QQmlImageProviderBase, &sipType_QQmlImageProviderBase, -1, 8},
-        {sipName_QQmlPropertyMap, &sipType_QQmlPropertyMap, -1, -1},
-        {sipName_QQmlEngine, &sipType_QQmlEngine, 10, -1},
-        {sipName_QQmlApplicationEngine, &sipType_QQmlApplicationEngine, -1, -1},
+#define QT_CLASS_ENTRY(name, yes, no) \
+        {#name, []() -> SubclassType { return sipType_##name; }, yes, no}
+        QT_CLASS_ENTRY(QJSEngine, 9, 1),
+        QT_CLASS_ENTRY(QQmlComponent, -1, 2),
+        QT_CLASS_ENTRY(QQmlContext, -1, 3),
+        QT_CLASS_ENTRY(QQmlEngineExtensionPlugin, -1, 4),
+        QT_CLASS_ENTRY(QQmlExpression, -1, 5),
+        QT_CLASS_ENTRY(QQmlExtensionPlugin, -1, 6),
+        QT_CLASS_ENTRY(QQmlFileSelector, -1, 7),
+        QT_CLASS_ENTRY(QQmlImageProviderBase, -1, 8),
+        QT_CLASS_ENTRY(QQmlPropertyMap, -1, -1),
+        QT_CLASS_ENTRY(QQmlEngine, 10, -1),
+        QT_CLASS_ENTRY(QQmlApplicationEngine, -1, -1),
+#undef QT_CLASS_ENTRY
     };
     
     int i = 0;
     
-    sipType = NULL;
+    sipType = 0;
     
     do
     {
-        struct class_graph *cg = &graph[i];
+        const struct class_graph *cg = &graph[i];
     
         if (cg->name != NULL && sipCpp->inherits(cg->name))
         {
-            sipType = *cg->type;
+            sipType = cg->type();
             i = cg->yes;
         }
         else

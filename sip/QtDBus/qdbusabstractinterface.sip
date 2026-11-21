@@ -27,8 +27,15 @@ class QDBusAbstractInterface : QObject
 %End
 
 %TypeCode
-// Convert a Python tuple to a list of QVarients.
-static QList<QVariant> QtDBus_marshal(PyObject *py_args, int *is_err)
+// Convert a Python tuple to a list of QVariants.
+#if SIP_ABI_MAJOR_VERSION >= 14
+using QtDBusModuleState = sipModuleState;
+#else
+using QtDBusModuleState = void;
+#endif
+
+static QList<QVariant> QtDBus_marshal([[maybe_unused]] QtDBusModuleState *sipMS,
+        PyObject *py_args, int *is_err)
 {
     QList<QVariant> cpp_args;
     Py_ssize_t nr_args = PyTuple_Size(py_args);
@@ -53,30 +60,34 @@ static QList<QVariant> QtDBus_marshal(PyObject *py_args, int *is_err)
 %End
 
 %ConvertToSubClassCode
-    static struct class_graph {
+    using SubclassType = decltype(sipType);
+    static const struct class_graph {
         const char *name;
-        sipTypeDef **type;
+        SubclassType (*type)();
         int yes, no;
     } graph[] = {
-        {sipName_QDBusPendingCallWatcher, &sipType_QDBusPendingCallWatcher, -1, 1},
-        {sipName_QDBusAbstractAdaptor, &sipType_QDBusAbstractAdaptor, -1, 2},
-        {sipName_QDBusAbstractInterface, &sipType_QDBusAbstractInterface, 4, 3},
-        {sipName_QDBusServiceWatcher, &sipType_QDBusServiceWatcher, -1, -1},
-        {sipName_QDBusConnectionInterface, &sipType_QDBusConnectionInterface, -1, 5},
-        {sipName_QDBusInterface, &sipType_QDBusInterface, -1, -1},
+#define QT_CLASS_ENTRY(name, yes, no) \
+        {#name, []() -> SubclassType { return sipType_##name; }, yes, no}
+        QT_CLASS_ENTRY(QDBusPendingCallWatcher, -1, 1),
+        QT_CLASS_ENTRY(QDBusAbstractAdaptor, -1, 2),
+        QT_CLASS_ENTRY(QDBusAbstractInterface, 4, 3),
+        QT_CLASS_ENTRY(QDBusServiceWatcher, -1, -1),
+        QT_CLASS_ENTRY(QDBusConnectionInterface, -1, 5),
+        QT_CLASS_ENTRY(QDBusInterface, -1, -1),
+#undef QT_CLASS_ENTRY
     };
     
     int i = 0;
     
-    sipType = NULL;
+    sipType = 0;
     
     do
     {
-        struct class_graph *cg = &graph[i];
+        const struct class_graph *cg = &graph[i];
     
         if (cg->name != NULL && sipCpp->inherits(cg->name))
         {
-            sipType = *cg->type;
+            sipType = cg->type();
             i = cg->yes;
         }
         else
@@ -97,11 +108,14 @@ public:
     int timeout() const;
     QDBusMessage call(const QString &method, ...);
 %MethodCode
-        QList<QVariant> args;
-        
-        args = QtDBus_marshal(a1, &sipIsErr);
-        
-        if (!sipIsErr)
+#if SIP_ABI_MAJOR_VERSION < 14
+        QtDBusModuleState *sipMS = nullptr;
+#endif
+        int is_err = 0;
+        const auto args = QtDBus_marshal(sipMS, a1, &is_err);
+        if (is_err)
+            sipError = sipErrorFail;
+        else
         {
             Py_BEGIN_ALLOW_THREADS
             sipRes = new QDBusMessage(sipCpp->callWithArgumentList(QDBus::AutoDetect, *a0, args));
@@ -111,11 +125,14 @@ public:
 
     QDBusMessage call(QDBus::CallMode mode, const QString &method, ...);
 %MethodCode
-        QList<QVariant> args;
-        
-        args = QtDBus_marshal(a2, &sipIsErr);
-        
-        if (!sipIsErr)
+#if SIP_ABI_MAJOR_VERSION < 14
+        QtDBusModuleState *sipMS = nullptr;
+#endif
+        int is_err = 0;
+        const auto args = QtDBus_marshal(sipMS, a2, &is_err);
+        if (is_err)
+            sipError = sipErrorFail;
+        else
         {
             Py_BEGIN_ALLOW_THREADS
             sipRes = new QDBusMessage(sipCpp->callWithArgumentList(a0, *a1, args));
@@ -175,11 +192,14 @@ public:
 
     QDBusPendingCall asyncCall(const QString &method, ...);
 %MethodCode
-        QList<QVariant> args;
-        
-        args = QtDBus_marshal(a1, &sipIsErr);
-        
-        if (!sipIsErr)
+#if SIP_ABI_MAJOR_VERSION < 14
+        QtDBusModuleState *sipMS = nullptr;
+#endif
+        int is_err = 0;
+        const auto args = QtDBus_marshal(sipMS, a1, &is_err);
+        if (is_err)
+            sipError = sipErrorFail;
+        else
         {
             Py_BEGIN_ALLOW_THREADS
             sipRes = new QDBusPendingCall(sipCpp->asyncCallWithArgumentList(*a0, args));
@@ -221,7 +241,11 @@ pyqt6_qtdbus_get_pyqtslot_parts_t pyqt6_qtdbus_get_pyqtslot_parts;
 %End
 
 %PostInitialisationCode
+#if SIP_ABI_MAJOR_VERSION >= 14
+qpydbus_post_init(sipMS);
+#else
 qpydbus_post_init();
+#endif
 
 // Imports from QtCore.
 pyqt6_qtdbus_from_qvariant_by_type = (pyqt6_qtdbus_from_qvariant_by_type_t)sipImportSymbol("pyqt6_from_qvariant_by_type");

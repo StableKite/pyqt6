@@ -80,58 +80,62 @@ class QSensor : public QObject
 %End
 
 %ConvertToSubClassCode
-    static struct class_graph {
+    using SubclassType = decltype(sipType);
+    static const struct class_graph {
         const char *name;
-        sipTypeDef **type;
+        SubclassType (*type)();
         int yes, no;
     } graph[] = {
-        {sipName_QSensor, &sipType_QSensor, 2, 1},
-        {sipName_QSensorReading, &sipType_QSensorReading, 18, -1},
-        {sipName_QAccelerometer, &sipType_QAccelerometer, -1, 3},
-        {sipName_QAmbientLightSensor, &sipType_QAmbientLightSensor, -1, 4},
-        {sipName_QAmbientTemperatureSensor, &sipType_QAmbientTemperatureSensor, -1, 5},
-        {sipName_QCompass, &sipType_QCompass, -1, 6},
-        {sipName_QGyroscope, &sipType_QGyroscope, -1, 7},
-        {sipName_QHumiditySensor, &sipType_QHumiditySensor, -1, 8},
-        {sipName_QIRProximitySensor, &sipType_QIRProximitySensor, -1, 9},
-        {sipName_QLidSensor, &sipType_QLidSensor, -1, 10},
-        {sipName_QLightSensor, &sipType_QLightSensor, -1, 11},
-        {sipName_QMagnetometer, &sipType_QMagnetometer, -1, 12},
-        {sipName_QOrientationSensor, &sipType_QOrientationSensor, -1, 13},
-        {sipName_QPressureSensor, &sipType_QPressureSensor, -1, 14},
-        {sipName_QProximitySensor, &sipType_QProximitySensor, -1, 15},
-        {sipName_QRotationSensor, &sipType_QRotationSensor, -1, 16},
-        {sipName_QTapSensor, &sipType_QTapSensor, -1, 17},
-        {sipName_QTiltSensor, &sipType_QTiltSensor, -1, -1},
-        {sipName_QAccelerometerReading, &sipType_QAccelerometerReading, -1, 19},
-        {sipName_QAmbientLightReading, &sipType_QAmbientLightReading, -1, 20},
-        {sipName_QAmbientTemperatureReading, &sipType_QAmbientTemperatureReading, -1, 21},
-        {sipName_QCompassReading, &sipType_QCompassReading, -1, 22},
-        {sipName_QGyroscopeReading, &sipType_QGyroscopeReading, -1, 23},
-        {sipName_QHumidityReading, &sipType_QHumidityReading, -1, 24},
-        {sipName_QIRProximityReading, &sipType_QIRProximityReading, -1, 25},
-        {sipName_QLidReading, &sipType_QLidReading, -1, 26},
-        {sipName_QLightReading, &sipType_QLightReading, -1, 27},
-        {sipName_QMagnetometerReading, &sipType_QMagnetometerReading, -1, 28},
-        {sipName_QOrientationReading, &sipType_QOrientationReading, -1, 29},
-        {sipName_QPressureReading, &sipType_QPressureReading, -1, 30},
-        {sipName_QProximityReading, &sipType_QProximityReading, -1, 31},
-        {sipName_QRotationReading, &sipType_QRotationReading, -1, 32},
-        {sipName_QTapReading, &sipType_QTapReading, -1, 33},
-        {sipName_QTiltReading, &sipType_QTiltReading, -1, -1},
+#define QT_CLASS_ENTRY(name, yes, no) \
+        {#name, []() -> SubclassType { return sipType_##name; }, yes, no}
+        QT_CLASS_ENTRY(QSensor, 2, 1),
+        QT_CLASS_ENTRY(QSensorReading, 18, -1),
+        QT_CLASS_ENTRY(QAccelerometer, -1, 3),
+        QT_CLASS_ENTRY(QAmbientLightSensor, -1, 4),
+        QT_CLASS_ENTRY(QAmbientTemperatureSensor, -1, 5),
+        QT_CLASS_ENTRY(QCompass, -1, 6),
+        QT_CLASS_ENTRY(QGyroscope, -1, 7),
+        QT_CLASS_ENTRY(QHumiditySensor, -1, 8),
+        QT_CLASS_ENTRY(QIRProximitySensor, -1, 9),
+        QT_CLASS_ENTRY(QLidSensor, -1, 10),
+        QT_CLASS_ENTRY(QLightSensor, -1, 11),
+        QT_CLASS_ENTRY(QMagnetometer, -1, 12),
+        QT_CLASS_ENTRY(QOrientationSensor, -1, 13),
+        QT_CLASS_ENTRY(QPressureSensor, -1, 14),
+        QT_CLASS_ENTRY(QProximitySensor, -1, 15),
+        QT_CLASS_ENTRY(QRotationSensor, -1, 16),
+        QT_CLASS_ENTRY(QTapSensor, -1, 17),
+        QT_CLASS_ENTRY(QTiltSensor, -1, -1),
+        QT_CLASS_ENTRY(QAccelerometerReading, -1, 19),
+        QT_CLASS_ENTRY(QAmbientLightReading, -1, 20),
+        QT_CLASS_ENTRY(QAmbientTemperatureReading, -1, 21),
+        QT_CLASS_ENTRY(QCompassReading, -1, 22),
+        QT_CLASS_ENTRY(QGyroscopeReading, -1, 23),
+        QT_CLASS_ENTRY(QHumidityReading, -1, 24),
+        QT_CLASS_ENTRY(QIRProximityReading, -1, 25),
+        QT_CLASS_ENTRY(QLidReading, -1, 26),
+        QT_CLASS_ENTRY(QLightReading, -1, 27),
+        QT_CLASS_ENTRY(QMagnetometerReading, -1, 28),
+        QT_CLASS_ENTRY(QOrientationReading, -1, 29),
+        QT_CLASS_ENTRY(QPressureReading, -1, 30),
+        QT_CLASS_ENTRY(QProximityReading, -1, 31),
+        QT_CLASS_ENTRY(QRotationReading, -1, 32),
+        QT_CLASS_ENTRY(QTapReading, -1, 33),
+        QT_CLASS_ENTRY(QTiltReading, -1, -1),
+#undef QT_CLASS_ENTRY
     };
     
     int i = 0;
     
-    sipType = NULL;
+    sipType = 0;
     
     do
     {
-        struct class_graph *cg = &graph[i];
+        const struct class_graph *cg = &graph[i];
     
         if (cg->name != NULL && sipCpp->inherits(cg->name))
         {
-            sipType = *cg->type;
+            sipType = cg->type();
             i = cg->yes;
         }
         else

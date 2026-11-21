@@ -228,10 +228,11 @@ public:
     quint32 nativeVirtualKey() const;
     QKeyCombination keyCombination() const;
     virtual QKeyEvent *clone() const /Factory/;
+    bool operator==(QKeySequence::StandardKey key) const;
+%MethodCode
+        sipRes = sipCpp->matches(a0);
+%End
 };
-
-bool operator==(QKeyEvent *e, QKeySequence::StandardKey key);
-bool operator==(QKeySequence::StandardKey key, QKeyEvent *e);
 
 class QFocusEvent : public QEvent /NoDefaultCtors/
 {

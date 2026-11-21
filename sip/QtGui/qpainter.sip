@@ -30,7 +30,8 @@ class QPainter
 // Return an array on the heap of class instances extracted from a set of
 // Python arguments.
 template<class TYPE>
-static TYPE *qtgui_inst_array(const TYPE *first, PyObject *t, sipTypeDef *td)
+static TYPE *qtgui_inst_array([[maybe_unused]] QtGuiModuleState *sipMS,
+        const TYPE *first, PyObject *t, QtGuiTypeRef td)
 {
     TYPE *arr = new TYPE[1 + PyTuple_Size(t)];
 
@@ -38,16 +39,19 @@ static TYPE *qtgui_inst_array(const TYPE *first, PyObject *t, sipTypeDef *td)
 
     for (Py_ssize_t i = 0; i < PyTuple_Size(t); ++i)
     {
-        int iserr = 0, state;
+        int iserr = 0, state = 0;
         TYPE *itm;
 
         itm  = reinterpret_cast<TYPE *>(sipForceConvertToType(PyTuple_GetItem(t, i), td, 0, SIP_NOT_NONE, &state, &iserr));
 
         if (iserr)
         {
-            sipReleaseType(itm, td, state);
-
-            PyErr_Format(PyExc_TypeError, "each argument must be an instance of %s", sipPyTypeName(sipTypeAsPyTypeObject(td)));
+            if (!PyErr_Occurred())
+#if SIP_ABI_MAJOR_VERSION >= 14
+                PyErr_Format(PyExc_TypeError, "each argument must be an instance of %s", sipTypeName(td));
+#else
+                PyErr_Format(PyExc_TypeError, "each argument must be an instance of %s", sipPyTypeName(sipTypeAsPyTypeObject(td)));
+#endif
 
             delete[] arr;
             return 0;
@@ -195,7 +199,10 @@ public:
     void drawPoints(const QPointF *points /Array/, int pointCount /ArraySize/);
     void drawPoints(const QPointF *point, ... /TypeHint="QPointF"/);
 %MethodCode
-        QPointF *points = qtgui_inst_array<QPointF>(a0, a1, sipType_QPointF);
+#if SIP_ABI_MAJOR_VERSION < 14
+        QtGuiModuleState *sipMS = nullptr;
+#endif
+        QPointF *points = qtgui_inst_array<QPointF>(sipMS, a0, a1, sipType_QPointF);
         
         if (points)
         {
@@ -203,13 +210,16 @@ public:
             delete[] points;
         }
         else
-            sipIsErr = 1;
+            sipError = sipErrorFail;
 %End
 
     void drawPoints(const QPoint *points /Array/, int pointCount /ArraySize/);
     void drawPoints(const QPoint *point, ... /TypeHint="QPoint"/);
 %MethodCode
-        QPoint *points = qtgui_inst_array<QPoint>(a0, a1, sipType_QPoint);
+#if SIP_ABI_MAJOR_VERSION < 14
+        QtGuiModuleState *sipMS = nullptr;
+#endif
+        QPoint *points = qtgui_inst_array<QPoint>(sipMS, a0, a1, sipType_QPoint);
         
         if (points)
         {
@@ -217,13 +227,16 @@ public:
             delete[] points;
         }
         else
-            sipIsErr = 1;
+            sipError = sipErrorFail;
 %End
 
     void drawLines(const QLineF *lines /Array/, int lineCount /ArraySize/);
     void drawLines(const QLineF *line, ... /TypeHint="QLineF"/);
 %MethodCode
-        QLineF *lines = qtgui_inst_array<QLineF>(a0, a1, sipType_QLineF);
+#if SIP_ABI_MAJOR_VERSION < 14
+        QtGuiModuleState *sipMS = nullptr;
+#endif
+        QLineF *lines = qtgui_inst_array<QLineF>(sipMS, a0, a1, sipType_QLineF);
         
         if (lines)
         {
@@ -231,7 +244,7 @@ public:
             delete[] lines;
         }
         else
-            sipIsErr = 1;
+            sipError = sipErrorFail;
 %End
 
     void drawLines(const QPointF *pointPairs /Array/, int lineCount /ArraySize/);
@@ -241,7 +254,10 @@ public:
 
     void drawLines(const QPointF *pointPair, ... /TypeHint="QPointF"/);
 %MethodCode
-        QPointF *pairs = qtgui_inst_array<QPointF>(a0, a1, sipType_QPointF);
+#if SIP_ABI_MAJOR_VERSION < 14
+        QtGuiModuleState *sipMS = nullptr;
+#endif
+        QPointF *pairs = qtgui_inst_array<QPointF>(sipMS, a0, a1, sipType_QPointF);
         
         if (pairs)
         {
@@ -249,13 +265,16 @@ public:
             delete[] pairs;
         }
         else
-            sipIsErr = 1;
+            sipError = sipErrorFail;
 %End
 
     void drawLines(const QLine *lines /Array/, int lineCount /ArraySize/);
     void drawLines(const QLine *line, ... /TypeHint="QLine"/);
 %MethodCode
-        QLine *lines = qtgui_inst_array<QLine>(a0, a1, sipType_QLine);
+#if SIP_ABI_MAJOR_VERSION < 14
+        QtGuiModuleState *sipMS = nullptr;
+#endif
+        QLine *lines = qtgui_inst_array<QLine>(sipMS, a0, a1, sipType_QLine);
         
         if (lines)
         {
@@ -263,7 +282,7 @@ public:
             delete[] lines;
         }
         else
-            sipIsErr = 1;
+            sipError = sipErrorFail;
 %End
 
     void drawLines(const QPoint *pointPairs /Array/, int lineCount /ArraySize/);
@@ -273,7 +292,10 @@ public:
 
     void drawLines(const QPoint *pointPair, ... /TypeHint="QPoint"/);
 %MethodCode
-        QPoint *pairs = qtgui_inst_array<QPoint>(a0, a1, sipType_QPoint);
+#if SIP_ABI_MAJOR_VERSION < 14
+        QtGuiModuleState *sipMS = nullptr;
+#endif
+        QPoint *pairs = qtgui_inst_array<QPoint>(sipMS, a0, a1, sipType_QPoint);
         
         if (pairs)
         {
@@ -281,13 +303,16 @@ public:
             delete[] pairs;
         }
         else
-            sipIsErr = 1;
+            sipError = sipErrorFail;
 %End
 
     void drawRects(const QRectF *rects /Array/, int rectCount /ArraySize/);
     void drawRects(const QRectF *rect, ... /TypeHint="QRectF"/);
 %MethodCode
-        QRectF *rects = qtgui_inst_array<QRectF>(a0, a1, sipType_QRectF);
+#if SIP_ABI_MAJOR_VERSION < 14
+        QtGuiModuleState *sipMS = nullptr;
+#endif
+        QRectF *rects = qtgui_inst_array<QRectF>(sipMS, a0, a1, sipType_QRectF);
         
         if (rects)
         {
@@ -295,13 +320,16 @@ public:
             delete[] rects;
         }
         else
-            sipIsErr = 1;
+            sipError = sipErrorFail;
 %End
 
     void drawRects(const QRect *rects /Array/, int rectCount /ArraySize/);
     void drawRects(const QRect *rect, ... /TypeHint="QRect"/);
 %MethodCode
-        QRect *rects = qtgui_inst_array<QRect>(a0, a1, sipType_QRect);
+#if SIP_ABI_MAJOR_VERSION < 14
+        QtGuiModuleState *sipMS = nullptr;
+#endif
+        QRect *rects = qtgui_inst_array<QRect>(sipMS, a0, a1, sipType_QRect);
         
         if (rects)
         {
@@ -309,7 +337,7 @@ public:
             delete[] rects;
         }
         else
-            sipIsErr = 1;
+            sipError = sipErrorFail;
 %End
 
     void drawEllipse(const QRectF &r);
@@ -319,7 +347,10 @@ public:
     void drawPolyline(const QPointF *points /Array/, int pointCount /ArraySize/);
     void drawPolyline(const QPointF *point, ... /TypeHint="QPointF"/);
 %MethodCode
-        QPointF *points = qtgui_inst_array<QPointF>(a0, a1, sipType_QPointF);
+#if SIP_ABI_MAJOR_VERSION < 14
+        QtGuiModuleState *sipMS = nullptr;
+#endif
+        QPointF *points = qtgui_inst_array<QPointF>(sipMS, a0, a1, sipType_QPointF);
         
         if (points)
         {
@@ -327,13 +358,16 @@ public:
             delete[] points;
         }
         else
-            sipIsErr = 1;
+            sipError = sipErrorFail;
 %End
 
     void drawPolyline(const QPoint *points /Array/, int pointCount /ArraySize/);
     void drawPolyline(const QPoint *point, ... /TypeHint="QPoint"/);
 %MethodCode
-        QPoint *points = qtgui_inst_array<QPoint>(a0, a1, sipType_QPoint);
+#if SIP_ABI_MAJOR_VERSION < 14
+        QtGuiModuleState *sipMS = nullptr;
+#endif
+        QPoint *points = qtgui_inst_array<QPoint>(sipMS, a0, a1, sipType_QPoint);
         
         if (points)
         {
@@ -341,7 +375,7 @@ public:
             delete[] points;
         }
         else
-            sipIsErr = 1;
+            sipError = sipErrorFail;
 %End
 
     void drawPolygon(const QPolygonF &points, Qt::FillRule fillRule = Qt::OddEvenFill);
@@ -349,7 +383,10 @@ public:
     void drawPolygon(const QPointF *points /Array/, int pointCount /ArraySize/, Qt::FillRule fillRule = Qt::OddEvenFill);
     void drawPolygon(const QPointF *point, ... /TypeHint="QPointF"/);
 %MethodCode
-        QPointF *points = qtgui_inst_array<QPointF>(a0, a1, sipType_QPointF);
+#if SIP_ABI_MAJOR_VERSION < 14
+        QtGuiModuleState *sipMS = nullptr;
+#endif
+        QPointF *points = qtgui_inst_array<QPointF>(sipMS, a0, a1, sipType_QPointF);
         
         if (points)
         {
@@ -357,13 +394,16 @@ public:
             delete[] points;
         }
         else
-            sipIsErr = 1;
+            sipError = sipErrorFail;
 %End
 
     void drawPolygon(const QPoint *points /Array/, int pointCount /ArraySize/, Qt::FillRule fillRule = Qt::OddEvenFill);
     void drawPolygon(const QPoint *point, ... /TypeHint="QPoint"/);
 %MethodCode
-        QPoint *points = qtgui_inst_array<QPoint>(a0, a1, sipType_QPoint);
+#if SIP_ABI_MAJOR_VERSION < 14
+        QtGuiModuleState *sipMS = nullptr;
+#endif
+        QPoint *points = qtgui_inst_array<QPoint>(sipMS, a0, a1, sipType_QPoint);
         
         if (points)
         {
@@ -371,7 +411,7 @@ public:
             delete[] points;
         }
         else
-            sipIsErr = 1;
+            sipError = sipErrorFail;
 %End
 
     void drawConvexPolygon(const QPolygonF &poly);
@@ -379,7 +419,10 @@ public:
     void drawConvexPolygon(const QPointF *points /Array/, int pointCount /ArraySize/);
     void drawConvexPolygon(const QPointF *point, ... /TypeHint="QPointF"/);
 %MethodCode
-        QPointF *points = qtgui_inst_array<QPointF>(a0, a1, sipType_QPointF);
+#if SIP_ABI_MAJOR_VERSION < 14
+        QtGuiModuleState *sipMS = nullptr;
+#endif
+        QPointF *points = qtgui_inst_array<QPointF>(sipMS, a0, a1, sipType_QPointF);
         
         if (points)
         {
@@ -387,13 +430,16 @@ public:
             delete[] points;
         }
         else
-            sipIsErr = 1;
+            sipError = sipErrorFail;
 %End
 
     void drawConvexPolygon(const QPoint *points /Array/, int pointCount /ArraySize/);
     void drawConvexPolygon(const QPoint *point, ... /TypeHint="QPoint"/);
 %MethodCode
-        QPoint *points = qtgui_inst_array<QPoint>(a0, a1, sipType_QPoint);
+#if SIP_ABI_MAJOR_VERSION < 14
+        QtGuiModuleState *sipMS = nullptr;
+#endif
+        QPoint *points = qtgui_inst_array<QPoint>(sipMS, a0, a1, sipType_QPoint);
         
         if (points)
         {
@@ -401,7 +447,7 @@ public:
             delete[] points;
         }
         else
-            sipIsErr = 1;
+            sipError = sipErrorFail;
 %End
 
     void drawArc(const QRectF &rect, int a, int alen);

@@ -46,7 +46,7 @@ static PyType_Slot qpyopengl_dataCache_Slots[] = {
 
 // Define the type.
 static PyType_Spec qpyopengl_dataCache_Spec = {
-    "PyQt6.QtGui.dataCache",
+    "PyQt6.QtOpenGL.dataCache",
     sizeof (qpyopengl_dataCache),
     0,
     Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC,
@@ -97,13 +97,22 @@ static void dataCache_dealloc(PyObject *self)
 
     dataCache_clear(self);
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyTypeObject *type = Py_TYPE(self);
     PyObject_GC_Del(self);
+    Py_DECREF(type);
+#else
+    PyObject_GC_Del(self);
+#endif
 }
 
 
 // The dataCache traverse function.
 static int dataCache_traverse(PyObject *self, visitproc visit, void *arg)
 {
+#if SIP_ABI_MAJOR_VERSION >= 14
+    Py_VISIT(Py_TYPE(self));
+#endif
     qpyopengl_dataCache *data_cache = (qpyopengl_dataCache *)self;
     int vret;
 
@@ -204,7 +213,11 @@ PrimaryCacheEntry::~PrimaryCacheEntry()
 // Array ctor.
 Array::Array() : data(0)
 {
+#if SIP_ABI_MAJOR_VERSION >= 14
+    buffer = {};
+#else
     buffer.bi_obj = 0;
+#endif
 }
 
 
@@ -223,17 +236,28 @@ void Array::clear()
         sipFree(data);
         data = 0;
     }
+#if SIP_ABI_MAJOR_VERSION >= 14
+    else if (buffer.obj)
+    {
+        PyBuffer_Release(&buffer);
+    }
+#else
     else if (buffer.bi_obj)
     {
         sipReleaseBufferInfo(&buffer);
     }
+#endif
 }
 
 
 // Traverse the array.
 int Array::traverse(visitproc visit, void *arg)
 {
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyObject *obj = buffer.obj;
+#else
     PyObject *obj = buffer.bi_obj;
+#endif
 
     return obj ? visit(obj, arg) : 0;
 }

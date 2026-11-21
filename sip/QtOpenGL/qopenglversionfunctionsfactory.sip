@@ -29,6 +29,6 @@ class QOpenGLVersionFunctionsFactory
 public:
     static SIP_PYOBJECT get(const QOpenGLVersionProfile &versionProfile = QOpenGLVersionProfile(), QOpenGLContext *context /GetWrapper/ = 0) /TypeHint="QAbstractOpenGLFunctions"/;
 %MethodCode
-        sipRes = qpyopengl_version_functions(*a0, a1, a1Wrapper);
+        sipRes = qpyopengl_version_functions(QPYOPENGL_STATE, *a0, a1, a1Wrapper);
 %End
 };

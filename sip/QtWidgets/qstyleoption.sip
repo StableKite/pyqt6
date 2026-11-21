@@ -367,8 +367,32 @@ public:
 
     QStyleOptionHeaderV2();
     QStyleOptionHeaderV2(const QStyleOptionHeaderV2 &other);
-    Qt::TextElideMode textElideMode;
-    bool isSectionDragTarget;
+    Qt::TextElideMode textElideMode
+    {
+%GetCode
+        sipPy = sipConvertFromEnum(sipCpp->textElideMode, sipType_Qt_TextElideMode);
+%End
+%SetCode
+        int value = sipConvertToEnum(sipPy, sipType_Qt_TextElideMode);
+        if (PyErr_Occurred())
+            sipErr = 1;
+        else
+            sipCpp->textElideMode = static_cast<Qt::TextElideMode>(value);
+%End
+    };
+    bool isSectionDragTarget
+    {
+%GetCode
+        sipPy = PyBool_FromLong(sipCpp->isSectionDragTarget);
+%End
+%SetCode
+        int value = PyObject_IsTrue(sipPy);
+        if (value < 0)
+            sipErr = 1;
+        else
+            sipCpp->isSectionDragTarget = value != 0;
+%End
+    };
 };
 
 %End
@@ -575,7 +599,19 @@ public:
 
     QStyleOptionMenuItemV2();
     QStyleOptionMenuItemV2(const QStyleOptionMenuItemV2 &other);
-    bool mouseDown;
+    bool mouseDown
+    {
+%GetCode
+        sipPy = PyBool_FromLong(sipCpp->mouseDown);
+%End
+%SetCode
+        int value = PyObject_IsTrue(sipPy);
+        if (value < 0)
+            sipErr = 1;
+        else
+            sipCpp->mouseDown = value != 0;
+%End
+    };
 };
 
 %End

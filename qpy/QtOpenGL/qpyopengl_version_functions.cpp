@@ -33,7 +33,7 @@ int qpyopengl_add_constants(PyObject *obj);
 
 
 // Create the Python object that wraps the requested OpenGL functions.
-PyObject *qpyopengl_version_functions(
+PyObject *qpyopengl_version_functions([[maybe_unused]] QPyOpenGLModuleState *sipMS,
         const QOpenGLVersionProfile &version_profile, QOpenGLContext *context,
         PyObject *py_context)
 {
@@ -55,7 +55,7 @@ PyObject *qpyopengl_version_functions(
 
     // Qt doesn't allow us to introspect the functions to find which set we
     // have, so work out what it should be based on the version profile.
-    const sipTypeDef *td;
+    QPyOpenGLTypeRef td;
 
 #if !defined(SIP_FEATURE_PyQt_OpenGL_ES2)
     QByteArray name("QOpenGLFunctions_");

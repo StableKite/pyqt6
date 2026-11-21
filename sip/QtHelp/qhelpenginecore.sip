@@ -27,40 +27,44 @@ class QHelpEngineCore : public QObject
 %End
 
 %ConvertToSubClassCode
-    static struct class_graph {
+    using SubclassType = decltype(sipType);
+    static const struct class_graph {
         const char *name;
-        sipTypeDef **type;
+        SubclassType (*type)();
         int yes, no;
     } graph[] = {
-        {sipName_QHelpContentModel, &sipType_QHelpContentModel, -1, 1},
-        {sipName_QHelpContentWidget, &sipType_QHelpContentWidget, -1, 2},
-        {sipName_QHelpEngineCore, &sipType_QHelpEngineCore, 11, 3},
-        {sipName_QHelpFilterEngine, &sipType_QHelpFilterEngine, -1, 4},
-        {sipName_QHelpFilterSettingsWidget, &sipType_QHelpFilterSettingsWidget, -1, 5},
-        {sipName_QHelpIndexModel, &sipType_QHelpIndexModel, -1, 6},
-        {sipName_QHelpIndexWidget, &sipType_QHelpIndexWidget, -1, 7},
-        {sipName_QHelpSearchEngine, &sipType_QHelpSearchEngine, -1, 8},
+#define QT_CLASS_ENTRY(name, yes, no) \
+        {#name, []() -> SubclassType { return sipType_##name; }, yes, no}
+        QT_CLASS_ENTRY(QHelpContentModel, -1, 1),
+        QT_CLASS_ENTRY(QHelpContentWidget, -1, 2),
+        QT_CLASS_ENTRY(QHelpEngineCore, 11, 3),
+        QT_CLASS_ENTRY(QHelpFilterEngine, -1, 4),
+        QT_CLASS_ENTRY(QHelpFilterSettingsWidget, -1, 5),
+        QT_CLASS_ENTRY(QHelpIndexModel, -1, 6),
+        QT_CLASS_ENTRY(QHelpIndexWidget, -1, 7),
+        QT_CLASS_ENTRY(QHelpSearchEngine, -1, 8),
     #if QT_VERSION >= 0x060800
-        {sipName_QHelpSearchEngineCore, &sipType_QHelpSearchEngineCore, -1, 9},
+        QT_CLASS_ENTRY(QHelpSearchEngineCore, -1, 9),
     #else
         {0, 0, -1, 9},
     #endif
-        {sipName_QHelpSearchQueryWidget, &sipType_QHelpSearchQueryWidget, -1, 10},
-        {sipName_QHelpSearchResultWidget, &sipType_QHelpSearchResultWidget, -1, -1},
-        {sipName_QHelpEngine, &sipType_QHelpEngine, -1, -1},
+        QT_CLASS_ENTRY(QHelpSearchQueryWidget, -1, 10),
+        QT_CLASS_ENTRY(QHelpSearchResultWidget, -1, -1),
+        QT_CLASS_ENTRY(QHelpEngine, -1, -1),
+#undef QT_CLASS_ENTRY
     };
     
     int i = 0;
     
-    sipType = NULL;
+    sipType = 0;
     
     do
     {
-        struct class_graph *cg = &graph[i];
+        const struct class_graph *cg = &graph[i];
     
         if (cg->name != NULL && sipCpp->inherits(cg->name))
         {
-            sipType = *cg->type;
+            sipType = cg->type();
             i = cg->yes;
         }
         else

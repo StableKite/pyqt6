@@ -60,22 +60,18 @@ public:
         // We need to implement /TransferBack/ on the argument, but it might be the
         // QMdiSubWindow that wraps the widget we are really after.
         QMdiSubWindow *swin = qobject_cast<QMdiSubWindow *>(a0);
-        
-        if (swin)
-        {
-            QWidget *w = swin->widget();
-        
-            a0Wrapper = (w ? sipGetPyObject(w, sipType_QWidget) : 0);
-        }
-        else
-            a0Wrapper = 0;
-        
+        QWidget *widget = swin ? swin->widget() : nullptr;
+        PyObject *wrapper = widget ? QPYWIDGETS_WRAPPER_REF(widget, sipType_QWidget) : nullptr;
+
         Py_BEGIN_ALLOW_THREADS
         sipCpp->removeSubWindow(a0);
         Py_END_ALLOW_THREADS
-        
-        if (a0Wrapper)
-            sipTransferBack(a0Wrapper);
+
+        if (wrapper)
+        {
+            sipTransferBack(wrapper);
+            Py_DECREF(wrapper);
+        }
 %End
 
     QBrush background() const;

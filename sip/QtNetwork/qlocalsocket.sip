@@ -26,6 +26,10 @@ class QLocalSocket : public QIODevice
 #include <qlocalsocket.h>
 %End
 
+%TypeCode
+#include "qpycore_qiodevicebuffer.h"
+%End
+
 public:
     enum LocalSocketError
     {
@@ -91,7 +95,7 @@ protected:
         if (a0 < 0)
         {
             PyErr_SetString(PyExc_ValueError, "maximum length of data to be read cannot be negative");
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         }
         else
         {
@@ -116,7 +120,7 @@ protected:
                 sipRes = PyBytes_FromStringAndSize(s, len);
         
                 if (!sipRes)
-                    sipIsErr = 1;
+                    sipError = sipErrorFail;
             }
         
             delete[] s;
@@ -125,26 +129,24 @@ protected:
 
     virtual qint64 writeData(SIP_PYBUFFER) /ReleaseGIL/ [qint64 (const char *, qint64)];
 %MethodCode
-        sipBufferInfoDef bi;
+        QPyIODeviceBuffer buffer(a0);
         
-        if (sipGetBufferInfo(a0, &bi) > 0)
+        if (buffer)
         {
             Py_BEGIN_ALLOW_THREADS
         #if defined(SIP_PROTECTED_IS_PUBLIC)
             sipRes = sipSelfWasArg ?
-                    sipCpp->QLocalSocket::writeData(reinterpret_cast<char *>(bi.bi_buf), bi.bi_len) :
-                    sipCpp->writeData(reinterpret_cast<char *>(bi.bi_buf), bi.bi_len);
+                    sipCpp->QLocalSocket::writeData(reinterpret_cast<char *>(buffer.data), buffer.size) :
+                    sipCpp->writeData(reinterpret_cast<char *>(buffer.data), buffer.size);
         #else
-            sipRes = sipCpp->sipProtectVirt_writeData(sipSelfWasArg, reinterpret_cast<char *>(bi.bi_buf),
-                    bi.bi_len);
+            sipRes = sipCpp->sipProtectVirt_writeData(sipSelfWasArg, reinterpret_cast<char *>(buffer.data),
+                    buffer.size);
         #endif
             Py_END_ALLOW_THREADS
-        
-            sipReleaseBufferInfo(&bi);
         }
         else
         {
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         }
 %End
 
@@ -178,7 +180,7 @@ protected:
         if (a0 < 0)
         {
             PyErr_SetString(PyExc_ValueError, "maximum length of data to be read cannot be negative");
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         }
         else
         {
@@ -203,7 +205,7 @@ protected:
                 sipRes = PyBytes_FromStringAndSize(s, len);
         
                 if (!sipRes)
-                    sipIsErr = 1;
+                    sipError = sipErrorFail;
             }
         
             delete[] s;

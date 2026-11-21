@@ -24,6 +24,9 @@ class QBuffer : public QIODevice
 {
 %TypeHeaderCode
 #include <qbuffer.h>
+%End
+
+%TypeCode
 #include "qpycore_qiodevicebuffer.h"
 %End
 

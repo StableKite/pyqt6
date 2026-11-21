@@ -69,16 +69,6 @@ WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 %MinimumABIVersion "13.8"
 %DefaultEncoding "ASCII"
 
-%ModuleHeaderCode
-#if SIP_ABI_MAJOR_VERSION >= 14
-#define QPYCORE_TYPENAME_FORMAT "%T"
-#define QPYCORE_TYPENAME_ARGUMENT(object) (object)
-#else
-#define QPYCORE_TYPENAME_FORMAT "%s"
-#define QPYCORE_TYPENAME_ARGUMENT(object) sipPyTypeName(Py_TYPE(object))
-#endif
-%End
-
 %Include(name=pyqt-internal.sip5, optional=True)
 %Include(name=pyqt-gpl.sip5, optional=True)
 %Include(name=pyqt-commercial.sip5, optional=True)

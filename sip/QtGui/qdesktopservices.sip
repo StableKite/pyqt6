@@ -47,16 +47,13 @@ public:
         
                 if (f_name_obj)
                 {
-                    // We only want a borrowed reference.
+                    PyObject *ascii = PyUnicode_AsASCIIString(f_name_obj);
                     Py_DECREF(f_name_obj);
-        
-                    const char *f_name = sipString_AsASCIIString(&f_name_obj);
-        
-                    if (f_name)
+                    if (ascii)
                     {
-                        QDesktopServices::setUrlHandler(*a0, receiver, f_name);
-        
-                        Py_DECREF(f_name_obj);
+                        QDesktopServices::setUrlHandler(*a0, receiver,
+                                PyBytes_AsString(ascii));
+                        Py_DECREF(ascii);
                     }
                 }
             }

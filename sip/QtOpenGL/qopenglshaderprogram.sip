@@ -98,7 +98,7 @@ public:
         const GLfloat *values;
         int tsize;
         
-        values = qpyopengl_attribute_array(a1, sipSelf, PyLong_FromLong(a0), &tsize,
+        values = qpyopengl_attribute_array(QPYOPENGL_STATE, a1, sipSelf, PyLong_FromLong(a0), &tsize,
                 &sipError);
         
         if (values)
@@ -110,7 +110,7 @@ public:
         const GLfloat *values;
         int tsize;
         
-        values = qpyopengl_attribute_array(a1, sipSelf, PyBytes_FromString(a0),
+        values = qpyopengl_attribute_array(QPYOPENGL_STATE, a1, sipSelf, PyBytes_FromString(a0),
                 &tsize, &sipError);
         
         if (values)
@@ -174,10 +174,10 @@ public:
     void setUniformValueArray(int location, SIP_PYOBJECT values /TypeHint="PYQT_SHADER_UNIFORM_VALUE_ARRAY"/);
 %MethodCode
         const void *values;
-        const sipTypeDef *array_type;
+        QPyOpenGLTypeRef array_type;
         int array_len, tsize;
         
-        values = qpyopengl_uniform_value_array(a1, sipSelf, PyLong_FromLong(a0),
+        values = qpyopengl_uniform_value_array(QPYOPENGL_STATE, a1, sipSelf, PyLong_FromLong(a0),
                     &array_type, &array_len, &tsize, &sipError);
         
         if (values)
@@ -227,10 +227,10 @@ public:
     void setUniformValueArray(const char *name, SIP_PYOBJECT values /TypeHint="PYQT_SHADER_UNIFORM_VALUE_ARRAY"/);
 %MethodCode
         const void *values;
-        const sipTypeDef *array_type;
+        QPyOpenGLTypeRef array_type;
         int array_len, tsize;
         
-        values = qpyopengl_uniform_value_array(a1, sipSelf, PyBytes_FromString(a0),
+        values = qpyopengl_uniform_value_array(QPYOPENGL_STATE, a1, sipSelf, PyBytes_FromString(a0),
                     &array_type, &array_len, &tsize, &sipError);
         
         if (values)

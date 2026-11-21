@@ -56,10 +56,12 @@ public:
         // back to the caller.
         if (itm && !itm->parentLayoutItem())
         {
-            PyObject *itmo = sipGetPyObject(itm, sipType_QGraphicsLayoutItem);
-        
+            PyObject *itmo = QPYWIDGETS_WRAPPER_REF(itm, sipType_QGraphicsLayoutItem);
             if (itmo)
+            {
                 sipTransferBack(itmo);
+                Py_DECREF(itmo);
+            }
         }
 %End
 

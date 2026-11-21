@@ -182,12 +182,15 @@ public:
         
         if (td)
         {
-            PyObject *py_td = qtgui_wrap_ancestors(const_cast<QTextDocument *>(td),
+#if SIP_ABI_MAJOR_VERSION < 14
+            QtGuiModuleState *sipMS = nullptr;
+#endif
+            PyObject *py_td = qtgui_wrap_ancestors(sipMS, const_cast<QTextDocument *>(td),
                     sipType_QTextDocument);
         
             if (!py_td)
             {
-                sipIsErr = 1;
+                sipError = sipErrorFail;
             }
             else
             {
@@ -249,13 +252,20 @@ public:
 };
 
 %ModuleHeaderCode
-PyObject *qtgui_wrap_ancestors(QObject *obj, const sipTypeDef *td);
+#if SIP_ABI_MAJOR_VERSION >= 14
+using QtGuiModuleState = sipModuleState;
+#else
+using QtGuiModuleState = void;
+#endif
+using QtGuiTypeRef = decltype(sipType_QObject);
+
+PyObject *qtgui_wrap_ancestors(QtGuiModuleState *sipMS, QObject *obj, QtGuiTypeRef td);
 %End
 
 %ModuleCode
 // Wrap a QObject and ensure that it's ancestors are all wrapped with the
 // correct ownerships.
-static PyObject *qtgui_wrap_ancestors_worker(QObject *obj)
+static PyObject *qtgui_wrap_ancestors_worker([[maybe_unused]] QtGuiModuleState *sipMS, QObject *obj)
 {
     if (!obj)
     {
@@ -263,7 +273,7 @@ static PyObject *qtgui_wrap_ancestors_worker(QObject *obj)
         return Py_None;
     }
 
-    PyObject *py_parent = qtgui_wrap_ancestors_worker(obj->parent());
+    PyObject *py_parent = qtgui_wrap_ancestors_worker(sipMS, obj->parent());
 
     if (!py_parent)
         return 0;
@@ -275,9 +285,9 @@ static PyObject *qtgui_wrap_ancestors_worker(QObject *obj)
     return py_obj;
 }
 
-PyObject *qtgui_wrap_ancestors(QObject *obj, const sipTypeDef *td)
+PyObject *qtgui_wrap_ancestors(QtGuiModuleState *sipMS, QObject *obj, QtGuiTypeRef td)
 {
-    PyObject *py_parent = qtgui_wrap_ancestors_worker(obj->parent());
+    PyObject *py_parent = qtgui_wrap_ancestors_worker(sipMS, obj->parent());
 
     if (!py_parent)
         return 0;

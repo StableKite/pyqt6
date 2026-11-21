@@ -27,77 +27,81 @@ class QGuiApplication : public QCoreApplication
 %End
 
 %ConvertToSubClassCode
-    static struct class_graph {
+    using SubclassType = decltype(sipType);
+    static const struct class_graph {
         const char *name;
-        sipTypeDef **type;
+        SubclassType (*type)();
         int yes, no;
     } graph[] = {
-        {sipName_QAbstractTextDocumentLayout, &sipType_QAbstractTextDocumentLayout, -1, 1},
+#define QT_CLASS_ENTRY(name, yes, no) \
+        {#name, []() -> SubclassType { return sipType_##name; }, yes, no}
+        QT_CLASS_ENTRY(QAbstractTextDocumentLayout, -1, 1),
     #if QT_VERSION >= 0x060a00
-        {sipName_QAccessibilityHints, &sipType_QAccessibilityHints, -1, 2},
+        QT_CLASS_ENTRY(QAccessibilityHints, -1, 2),
     #else
         {0, 0, -1, 2},
     #endif
-        {sipName_QAction, &sipType_QAction, -1, 3},
-        {sipName_QActionGroup, &sipType_QActionGroup, -1, 4},
-        {sipName_QClipboard, &sipType_QClipboard, -1, 5},
-        {sipName_QValidator, &sipType_QValidator, 27, 6},
-        {sipName_QDrag, &sipType_QDrag, -1, 7},
-        {sipName_QFileSystemModel, &sipType_QFileSystemModel, -1, 8},
-        {sipName_QGuiApplication, &sipType_QGuiApplication, -1, 9},
-        {sipName_QInputDevice, &sipType_QInputDevice, 30, 10},
-        {sipName_QInputMethod, &sipType_QInputMethod, -1, 11},
-        {sipName_QMovie, &sipType_QMovie, -1, 12},
-        {sipName_QOffscreenSurface, &sipType_QOffscreenSurface, -1, 13},
+        QT_CLASS_ENTRY(QAction, -1, 3),
+        QT_CLASS_ENTRY(QActionGroup, -1, 4),
+        QT_CLASS_ENTRY(QClipboard, -1, 5),
+        QT_CLASS_ENTRY(QValidator, 27, 6),
+        QT_CLASS_ENTRY(QDrag, -1, 7),
+        QT_CLASS_ENTRY(QFileSystemModel, -1, 8),
+        QT_CLASS_ENTRY(QGuiApplication, -1, 9),
+        QT_CLASS_ENTRY(QInputDevice, 30, 10),
+        QT_CLASS_ENTRY(QInputMethod, -1, 11),
+        QT_CLASS_ENTRY(QMovie, -1, 12),
+        QT_CLASS_ENTRY(QOffscreenSurface, -1, 13),
     #if defined(SIP_FEATURE_PyQt_OpenGL)
-        {sipName_QOpenGLContext, &sipType_QOpenGLContext, -1, 14},
+        QT_CLASS_ENTRY(QOpenGLContext, -1, 14),
     #else
         {0, 0, -1, 14},
     #endif
     #if defined(SIP_FEATURE_PyQt_OpenGL)
-        {sipName_QOpenGLContextGroup, &sipType_QOpenGLContextGroup, -1, 15},
+        QT_CLASS_ENTRY(QOpenGLContextGroup, -1, 15),
     #else
         {0, 0, -1, 15},
     #endif
-        {sipName_QWindow, &sipType_QWindow, 31, 16},
-        {sipName_QPdfWriter, &sipType_QPdfWriter, -1, 17},
-        {sipName_QScreen, &sipType_QScreen, -1, 18},
+        QT_CLASS_ENTRY(QWindow, 31, 16),
+        QT_CLASS_ENTRY(QPdfWriter, -1, 17),
+        QT_CLASS_ENTRY(QScreen, -1, 18),
     #if defined(SIP_FEATURE_PyQt_SessionManager)
-        {sipName_QSessionManager, &sipType_QSessionManager, -1, 19},
+        QT_CLASS_ENTRY(QSessionManager, -1, 19),
     #else
         {0, 0, -1, 19},
     #endif
-        {sipName_QShortcut, &sipType_QShortcut, -1, 20},
-        {sipName_QStandardItemModel, &sipType_QStandardItemModel, -1, 21},
-        {sipName_QStyleHints, &sipType_QStyleHints, -1, 22},
-        {sipName_QSyntaxHighlighter, &sipType_QSyntaxHighlighter, -1, 23},
-        {sipName_QTextObject, &sipType_QTextObject, 33, 24},
-        {sipName_QTextDocument, &sipType_QTextDocument, -1, 25},
-        {sipName_QUndoGroup, &sipType_QUndoGroup, -1, 26},
-        {sipName_QUndoStack, &sipType_QUndoStack, -1, -1},
-        {sipName_QDoubleValidator, &sipType_QDoubleValidator, -1, 28},
-        {sipName_QIntValidator, &sipType_QIntValidator, -1, 29},
-        {sipName_QRegularExpressionValidator, &sipType_QRegularExpressionValidator, -1, -1},
-        {sipName_QPointingDevice, &sipType_QPointingDevice, -1, -1},
-        {sipName_QPaintDeviceWindow, &sipType_QPaintDeviceWindow, 32, -1},
-        {sipName_QRasterWindow, &sipType_QRasterWindow, -1, -1},
-        {sipName_QTextBlockGroup, &sipType_QTextBlockGroup, 35, 34},
-        {sipName_QTextFrame, &sipType_QTextFrame, 36, -1},
-        {sipName_QTextList, &sipType_QTextList, -1, -1},
-        {sipName_QTextTable, &sipType_QTextTable, -1, -1},
+        QT_CLASS_ENTRY(QShortcut, -1, 20),
+        QT_CLASS_ENTRY(QStandardItemModel, -1, 21),
+        QT_CLASS_ENTRY(QStyleHints, -1, 22),
+        QT_CLASS_ENTRY(QSyntaxHighlighter, -1, 23),
+        QT_CLASS_ENTRY(QTextObject, 33, 24),
+        QT_CLASS_ENTRY(QTextDocument, -1, 25),
+        QT_CLASS_ENTRY(QUndoGroup, -1, 26),
+        QT_CLASS_ENTRY(QUndoStack, -1, -1),
+        QT_CLASS_ENTRY(QDoubleValidator, -1, 28),
+        QT_CLASS_ENTRY(QIntValidator, -1, 29),
+        QT_CLASS_ENTRY(QRegularExpressionValidator, -1, -1),
+        QT_CLASS_ENTRY(QPointingDevice, -1, -1),
+        QT_CLASS_ENTRY(QPaintDeviceWindow, 32, -1),
+        QT_CLASS_ENTRY(QRasterWindow, -1, -1),
+        QT_CLASS_ENTRY(QTextBlockGroup, 35, 34),
+        QT_CLASS_ENTRY(QTextFrame, 36, -1),
+        QT_CLASS_ENTRY(QTextList, -1, -1),
+        QT_CLASS_ENTRY(QTextTable, -1, -1),
+#undef QT_CLASS_ENTRY
     };
     
     int i = 0;
     
-    sipType = NULL;
+    sipType = 0;
     
     do
     {
-        struct class_graph *cg = &graph[i];
+        const struct class_graph *cg = &graph[i];
     
         if (cg->name != NULL && sipCpp->inherits(cg->name))
         {
-            sipType = *cg->type;
+            sipType = cg->type();
             i = cg->yes;
         }
         else
@@ -116,7 +120,7 @@ public:
         
         // Convert the list.
         if ((argv = pyqt6_qtgui_from_argv_list(a0, argc)) == NULL)
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         else
         {
             // Create it now the arguments are right.
@@ -226,7 +230,19 @@ public:
         bool handled = false;
         
         #if defined(SIP_FEATURE_PyQt_Wayland)
+#if SIP_ABI_MAJOR_VERSION >= 14
+        auto *type_QWaylandApplication = sipGetPyTypeRef(sipType_QNativeInterface_QWaylandApplication);
+        if (!type_QWaylandApplication)
+        {
+            sipError = sipErrorFail;
+            return NULL;
+        }
+        const bool is_QWaylandApplication = a0 == reinterpret_cast<PyObject *>(type_QWaylandApplication);
+        Py_DECREF(type_QWaylandApplication);
+        if (is_QWaylandApplication)
+#else
         if (a0 == (PyObject *)sipTypeAsPyTypeObject(sipType_QNativeInterface_QWaylandApplication))
+#endif
         {
             auto *iface = sipCpp->nativeInterface<QNativeInterface::QWaylandApplication>();
         
@@ -239,7 +255,19 @@ public:
         #endif
         
         #if defined(SIP_FEATURE_PyQt_XCB)
+#if SIP_ABI_MAJOR_VERSION >= 14
+        auto *type_QX11Application = sipGetPyTypeRef(sipType_QNativeInterface_QX11Application);
+        if (!type_QX11Application)
+        {
+            sipError = sipErrorFail;
+            return NULL;
+        }
+        const bool is_QX11Application = a0 == reinterpret_cast<PyObject *>(type_QX11Application);
+        Py_DECREF(type_QX11Application);
+        if (is_QX11Application)
+#else
         if (a0 == (PyObject *)sipTypeAsPyTypeObject(sipType_QNativeInterface_QX11Application))
+#endif
         {
             auto *iface = sipCpp->nativeInterface<QNativeInterface::QX11Application>();
         
@@ -282,11 +310,6 @@ pyqt6_qtgui_update_argv_list_t pyqt6_qtgui_update_argv_list;
 
 // Forward declarations not in any header files but are part of the API.
 void qt_set_sequence_auto_mnemonic(bool enable);
-%End
-
-%InitialisationCode
-// Export our own helpers.
-sipExportSymbol("qtgui_wrap_ancestors", (void *)qtgui_wrap_ancestors);
 %End
 
 %PostInitialisationCode

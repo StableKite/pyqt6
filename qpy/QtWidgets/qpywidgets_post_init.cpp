@@ -26,7 +26,11 @@
 
 
 // Perform any required initialisation.
+#if SIP_ABI_MAJOR_VERSION >= 14
+void qpywidgets_post_init(sipModuleState *sipMS)
+#else
 void qpywidgets_post_init()
+#endif
 {
     // Import the Chimera helper registration functions.
     void (*register_to_qvariant_convertor)(ToQVariantConvertorFn);
@@ -35,7 +39,16 @@ void qpywidgets_post_init()
     register_to_qvariant_convertor(qpywidgets_to_qvariant_convertor);
 
     // Export the QAction helpers.
+#if SIP_ABI_MAJOR_VERSION >= 14
+    static const sipSymbolSpec exports[] = {
+        {"pyqt6_qaction_menu", reinterpret_cast<void *>(qpywidgets_qaction_menu)},
+        {"pyqt6_qaction_set_menu", reinterpret_cast<void *>(qpywidgets_qaction_set_menu)},
+        {nullptr, nullptr},
+    };
+    sipExportSymbols(exports);
+#else
     sipExportSymbol("pyqt6_qaction_menu", (void *)qpywidgets_qaction_menu);
     sipExportSymbol("pyqt6_qaction_set_menu",
             (void *)qpywidgets_qaction_set_menu);
+#endif
 }

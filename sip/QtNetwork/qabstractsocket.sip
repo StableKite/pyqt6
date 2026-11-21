@@ -26,53 +26,61 @@ class QAbstractSocket : public QIODevice
 #include <qabstractsocket.h>
 %End
 
+%TypeCode
+#include "qpycore_qiodevicebuffer.h"
+%End
+
 %ConvertToSubClassCode
-    static struct class_graph {
+    using SubclassType = decltype(sipType);
+    static const struct class_graph {
         const char *name;
-        sipTypeDef **type;
+        SubclassType (*type)();
         int yes, no;
     } graph[] = {
-        {sipName_QAbstractNetworkCache, &sipType_QAbstractNetworkCache, 11, 1},
-        {sipName_QAbstractSocket, &sipType_QAbstractSocket, 12, 2},
-        {sipName_QDnsLookup, &sipType_QDnsLookup, -1, 3},
-        {sipName_QHttpMultiPart, &sipType_QHttpMultiPart, -1, 4},
-        {sipName_QLocalServer, &sipType_QLocalServer, -1, 5},
-        {sipName_QLocalSocket, &sipType_QLocalSocket, -1, 6},
-        {sipName_QNetworkAccessManager, &sipType_QNetworkAccessManager, -1, 7},
-        {sipName_QNetworkCookieJar, &sipType_QNetworkCookieJar, -1, 8},
+#define QT_CLASS_ENTRY(name, yes, no) \
+        {#name, []() -> SubclassType { return sipType_##name; }, yes, no}
+        QT_CLASS_ENTRY(QAbstractNetworkCache, 11, 1),
+        QT_CLASS_ENTRY(QAbstractSocket, 12, 2),
+        QT_CLASS_ENTRY(QDnsLookup, -1, 3),
+        QT_CLASS_ENTRY(QHttpMultiPart, -1, 4),
+        QT_CLASS_ENTRY(QLocalServer, -1, 5),
+        QT_CLASS_ENTRY(QLocalSocket, -1, 6),
+        QT_CLASS_ENTRY(QNetworkAccessManager, -1, 7),
+        QT_CLASS_ENTRY(QNetworkCookieJar, -1, 8),
     #if QT_VERSION >= 0x060100
-        {sipName_QNetworkInformation, &sipType_QNetworkInformation, -1, 9},
+        QT_CLASS_ENTRY(QNetworkInformation, -1, 9),
     #else
         {0, 0, -1, 9},
     #endif
-        {sipName_QNetworkReply, &sipType_QNetworkReply, -1, 10},
-        {sipName_QTcpServer, &sipType_QTcpServer, 15, -1},
-        {sipName_QNetworkDiskCache, &sipType_QNetworkDiskCache, -1, -1},
-        {sipName_QTcpSocket, &sipType_QTcpSocket, 14, 13},
-        {sipName_QUdpSocket, &sipType_QUdpSocket, -1, -1},
+        QT_CLASS_ENTRY(QNetworkReply, -1, 10),
+        QT_CLASS_ENTRY(QTcpServer, 15, -1),
+        QT_CLASS_ENTRY(QNetworkDiskCache, -1, -1),
+        QT_CLASS_ENTRY(QTcpSocket, 14, 13),
+        QT_CLASS_ENTRY(QUdpSocket, -1, -1),
     #if defined(SIP_FEATURE_PyQt_SSL)
-        {sipName_QSslSocket, &sipType_QSslSocket, -1, -1},
+        QT_CLASS_ENTRY(QSslSocket, -1, -1),
     #else
         {0, 0, -1, -1},
     #endif
     #if QT_VERSION >= 0x060400 && defined(SIP_FEATURE_PyQt_SSL)
-        {sipName_QSslServer, &sipType_QSslServer, -1, -1},
+        QT_CLASS_ENTRY(QSslServer, -1, -1),
     #else
         {0, 0, -1, -1},
     #endif
+#undef QT_CLASS_ENTRY
     };
     
     int i = 0;
     
-    sipType = NULL;
+    sipType = 0;
     
     do
     {
-        struct class_graph *cg = &graph[i];
+        const struct class_graph *cg = &graph[i];
     
         if (cg->name != NULL && sipCpp->inherits(cg->name))
         {
-            sipType = *cg->type;
+            sipType = cg->type();
             i = cg->yes;
         }
         else
@@ -183,7 +191,7 @@ protected:
         if (a0 < 0)
         {
             PyErr_SetString(PyExc_ValueError, "maximum length of data to be read cannot be negative");
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         }
         else
         {
@@ -208,7 +216,7 @@ protected:
                 sipRes = PyBytes_FromStringAndSize(s, len);
         
                 if (!sipRes)
-                    sipIsErr = 1;
+                    sipError = sipErrorFail;
             }
         
             delete[] s;
@@ -221,7 +229,7 @@ protected:
         if (a0 < 0)
         {
             PyErr_SetString(PyExc_ValueError, "maximum length of data to be read cannot be negative");
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         }
         else
         {
@@ -246,7 +254,7 @@ protected:
                 sipRes = PyBytes_FromStringAndSize(s, len);
         
                 if (!sipRes)
-                    sipIsErr = 1;
+                    sipError = sipErrorFail;
             }
         
             delete[] s;
@@ -255,26 +263,24 @@ protected:
 
     virtual qint64 writeData(SIP_PYBUFFER) /ReleaseGIL/ [qint64 (const char *data, qint64 len)];
 %MethodCode
-        sipBufferInfoDef bi;
+        QPyIODeviceBuffer buffer(a0);
         
-        if (sipGetBufferInfo(a0, &bi) > 0)
+        if (buffer)
         {
             Py_BEGIN_ALLOW_THREADS
         #if defined(SIP_PROTECTED_IS_PUBLIC)
             sipRes = sipSelfWasArg ?
-                    sipCpp->QAbstractSocket::writeData(reinterpret_cast<char *>(bi.bi_buf), bi.bi_len) :
-                    sipCpp->writeData(reinterpret_cast<char *>(bi.bi_buf), bi.bi_len);
+                    sipCpp->QAbstractSocket::writeData(reinterpret_cast<char *>(buffer.data), buffer.size) :
+                    sipCpp->writeData(reinterpret_cast<char *>(buffer.data), buffer.size);
         #else
-            sipRes = sipCpp->sipProtectVirt_writeData(sipSelfWasArg, reinterpret_cast<char *>(bi.bi_buf),
-                    bi.bi_len);
+            sipRes = sipCpp->sipProtectVirt_writeData(sipSelfWasArg, reinterpret_cast<char *>(buffer.data),
+                    buffer.size);
         #endif
             Py_END_ALLOW_THREADS
-        
-            sipReleaseBufferInfo(&bi);
         }
         else
         {
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         }
 %End
 

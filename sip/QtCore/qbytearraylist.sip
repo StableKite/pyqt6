@@ -99,8 +99,8 @@
         if (*sipIsErr)
         {
             PyErr_Format(PyExc_TypeError,
-                    "index %zd has type '" QPYCORE_TYPENAME_FORMAT "' but 'str' is expected", i,
-                    QPYCORE_TYPENAME_ARGUMENT(itm));
+                    "index %zd has type '%s' but 'str' is expected", i,
+                    sipPyTypeName(Py_TYPE(itm)));
 
             Py_DECREF(itm);
             delete ql;

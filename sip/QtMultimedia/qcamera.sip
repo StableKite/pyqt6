@@ -29,62 +29,66 @@ class QCamera : public QObject
 %End
 
 %ConvertToSubClassCode
-    static struct class_graph {
+    using SubclassType = decltype(sipType);
+    static const struct class_graph {
         const char *name;
-        sipTypeDef **type;
+        SubclassType (*type)();
         int yes, no;
     } graph[] = {
+#define QT_CLASS_ENTRY(name, yes, no) \
+        {#name, []() -> SubclassType { return sipType_##name; }, yes, no}
     #if QT_VERSION >= 0x060800
-        {sipName_QAudioBufferInput, &sipType_QAudioBufferInput, -1, 1},
+        QT_CLASS_ENTRY(QAudioBufferInput, -1, 1),
     #else
         {0, 0, -1, 1},
     #endif
     #if QT_VERSION >= 0x060800
-        {sipName_QAudioBufferOutput, &sipType_QAudioBufferOutput, -1, 2},
+        QT_CLASS_ENTRY(QAudioBufferOutput, -1, 2),
     #else
         {0, 0, -1, 2},
     #endif
-        {sipName_QAudioDecoder, &sipType_QAudioDecoder, -1, 3},
-        {sipName_QAudioInput, &sipType_QAudioInput, -1, 4},
-        {sipName_QAudioOutput, &sipType_QAudioOutput, -1, 5},
-        {sipName_QAudioSink, &sipType_QAudioSink, -1, 6},
-        {sipName_QAudioSource, &sipType_QAudioSource, -1, 7},
-        {sipName_QCamera, &sipType_QCamera, -1, 8},
-        {sipName_QImageCapture, &sipType_QImageCapture, -1, 9},
-        {sipName_QMediaCaptureSession, &sipType_QMediaCaptureSession, -1, 10},
-        {sipName_QMediaDevices, &sipType_QMediaDevices, -1, 11},
-        {sipName_QMediaPlayer, &sipType_QMediaPlayer, -1, 12},
-        {sipName_QMediaRecorder, &sipType_QMediaRecorder, -1, 13},
+        QT_CLASS_ENTRY(QAudioDecoder, -1, 3),
+        QT_CLASS_ENTRY(QAudioInput, -1, 4),
+        QT_CLASS_ENTRY(QAudioOutput, -1, 5),
+        QT_CLASS_ENTRY(QAudioSink, -1, 6),
+        QT_CLASS_ENTRY(QAudioSource, -1, 7),
+        QT_CLASS_ENTRY(QCamera, -1, 8),
+        QT_CLASS_ENTRY(QImageCapture, -1, 9),
+        QT_CLASS_ENTRY(QMediaCaptureSession, -1, 10),
+        QT_CLASS_ENTRY(QMediaDevices, -1, 11),
+        QT_CLASS_ENTRY(QMediaPlayer, -1, 12),
+        QT_CLASS_ENTRY(QMediaRecorder, -1, 13),
     #if QT_VERSION >= 0x060500
-        {sipName_QScreenCapture, &sipType_QScreenCapture, -1, 14},
+        QT_CLASS_ENTRY(QScreenCapture, -1, 14),
     #else
         {0, 0, -1, 14},
     #endif
-        {sipName_QSoundEffect, &sipType_QSoundEffect, -1, 15},
+        QT_CLASS_ENTRY(QSoundEffect, -1, 15),
     #if QT_VERSION >= 0x060800
-        {sipName_QVideoFrameInput, &sipType_QVideoFrameInput, -1, 16},
+        QT_CLASS_ENTRY(QVideoFrameInput, -1, 16),
     #else
         {0, 0, -1, 16},
     #endif
-        {sipName_QVideoSink, &sipType_QVideoSink, -1, 17},
+        QT_CLASS_ENTRY(QVideoSink, -1, 17),
     #if QT_VERSION >= 0x060600
-        {sipName_QWindowCapture, &sipType_QWindowCapture, -1, -1},
+        QT_CLASS_ENTRY(QWindowCapture, -1, -1),
     #else
         {0, 0, -1, -1},
     #endif
+#undef QT_CLASS_ENTRY
     };
     
     int i = 0;
     
-    sipType = NULL;
+    sipType = 0;
     
     do
     {
-        struct class_graph *cg = &graph[i];
+        const struct class_graph *cg = &graph[i];
     
         if (cg->name != NULL && sipCpp->inherits(cg->name))
         {
-            sipType = *cg->type;
+            sipType = cg->type();
             i = cg->yes;
         }
         else

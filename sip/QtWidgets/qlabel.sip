@@ -23,6 +23,8 @@
 class QLabel : public QFrame
 {
 %TypeHeaderCode
+#include <functional>
+#include <utility>
 #include <qlabel.h>
 %End
 
@@ -90,6 +92,11 @@ public:
 %If (Qt_6_1_0 -)
     SIP_PYCALLABLE resourceProvider() const /TypeHint="Callable[[QUrl], QVariant]"/;
 %MethodCode
+#if SIP_ABI_MAJOR_VERSION >= 14
+        sipRes = sipGetUserObjectRef(reinterpret_cast<sipSimpleWrapper *>(sipSelf));
+        if (!sipRes)
+            sipRes = Py_NewRef(Py_None);
+#else
         if (sipCpp->resourceProvider())
             sipRes = sipGetUserObject((sipSimpleWrapper *)sipSelf);
         else
@@ -99,12 +106,37 @@ public:
             sipRes = Py_None;
         
         Py_INCREF(sipRes);
+#endif
 %End
 
 %End
 %If (Qt_6_1_0 -)
     void setResourceProvider(SIP_PYCALLABLE provider /TypeHint="Callable[[QUrl], QVariant]"/);
 %MethodCode
+#if SIP_ABI_MAJOR_VERSION >= 14
+        using Provider = std::function<QVariant(const QUrl &)>;
+        Provider provider;
+        if (a0 != Py_None)
+        {
+            auto make = reinterpret_cast<Provider (*)(PyObject *)>(
+                    sipImportSymbol("pyqt6_resource_provider"));
+            if (!make)
+            {
+                PyErr_SetString(PyExc_RuntimeError, "QtCore resource provider helper is unavailable");
+                sipError = sipErrorFail;
+                return NULL;
+            }
+            provider = make(a0);
+            if (!provider)
+            {
+                sipError = sipErrorFail;
+                return NULL;
+            }
+        }
+        sipSetUserObject(reinterpret_cast<sipSimpleWrapper *>(sipSelf),
+                a0 == Py_None ? nullptr : a0);
+        sipCpp->setResourceProvider(std::move(provider));
+#else
         // Remove any existing callable.
         Py_XDECREF(sipGetUserObject((sipSimpleWrapper *)sipSelf));
         
@@ -168,6 +200,7 @@ public:
         
             Py_END_ALLOW_THREADS
         }
+#endif
 %End
 
 %End

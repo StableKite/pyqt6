@@ -49,10 +49,12 @@ public:
         
         if (w)
         {
-            PyObject *wo = sipGetPyObject(w, sipType_QWidget);
-        
+            PyObject *wo = QPYWIDGETS_WRAPPER_REF(w, sipType_QWidget);
             if (wo)
+            {
                 sipTransferBack(wo);
+                Py_DECREF(wo);
+            }
         }
 %End
 
@@ -71,10 +73,12 @@ public:
         
         if (w)
         {
-            PyObject *wo = sipGetPyObject(w, sipType_QMenu);
-        
+            PyObject *wo = QPYWIDGETS_WRAPPER_REF(w, sipType_QMenu);
             if (wo)
+            {
                 sipTransferTo(wo, 0);
+                Py_DECREF(wo);
+            }
         }
         
         Py_BEGIN_ALLOW_THREADS

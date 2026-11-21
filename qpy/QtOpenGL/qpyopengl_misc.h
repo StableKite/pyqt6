@@ -23,6 +23,52 @@
 
 
 #include <Python.h>
+#include <memory>
+
+#include "sipAPIQtOpenGL.h"
+
+
+using QPyOpenGLObjectRef = std::unique_ptr<PyObject, decltype(&Py_DecRef)>;
+
+inline PyObject *qpyopengl_user_object_ref(PyObject *wrapper)
+{
+    auto *sw = reinterpret_cast<sipSimpleWrapper *>(wrapper);
+#if SIP_ABI_MAJOR_VERSION >= 14
+    return sipGetUserObjectRef(sw);
+#else
+    return Py_XNewRef(sipGetUserObject(sw));
+#endif
+}
+
+inline QPyOpenGLObjectRef qpyopengl_shader_arrays(PyObject *shader)
+{
+    QPyOpenGLObjectRef dict(qpyopengl_user_object_ref(shader), Py_DecRef);
+    if (!dict)
+    {
+        dict.reset(PyDict_New());
+        if (dict)
+        {
+#if SIP_ABI_MAJOR_VERSION >= 14
+            sipSetUserObject(reinterpret_cast<sipSimpleWrapper *>(shader), dict.get());
+#else
+            sipSetUserObject(reinterpret_cast<sipSimpleWrapper *>(shader), Py_NewRef(dict.get()));
+#endif
+        }
+    }
+    return dict;
+}
+
+inline PyObject *qpyopengl_sequence(PyObject *values, const char *message)
+{
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyObject *tuple = PySequence_Tuple(values);
+    if (!tuple && PyErr_ExceptionMatches(PyExc_TypeError))
+        PyErr_SetString(PyExc_TypeError, message);
+    return tuple;
+#else
+    return PySequence_Fast(values, message);
+#endif
+}
 
 
 // Replacements for the corresponding Python macros that use the limited API.

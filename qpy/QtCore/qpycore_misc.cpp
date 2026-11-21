@@ -21,6 +21,7 @@
 #include <Python.h>
 
 #include <QByteArray>
+#include <cstring>
 #include <memory>
 #include <utility>
 
@@ -28,6 +29,7 @@
 #include "qpycore_misc.h"
 
 #include "sipAPIQtCore.h"
+#include "qpycore_qiodevicebuffer.h"
 
 
 // Convert a borrowed ASCII string object to a QByteArray.
@@ -212,3 +214,73 @@ std::function<void()> qpycore_thread_function(PyObject *callable)
 #endif
     return [call] { call->run(); };
 }
+
+
+qint64 qpycore_copy_io_buffer(PyObject *object, const char *data, qint64 size, bool writable)
+{
+    QPyIODeviceBuffer buffer(object, writable);
+    if (!buffer)
+        return -1;
+
+    const qint64 length = qMin(size, static_cast<qint64>(buffer.size));
+    if (length > 0)
+    {
+        if (writable)
+            std::memcpy(buffer.data, data, static_cast<size_t>(length));
+        else
+            std::memcpy(const_cast<char *>(data), buffer.data, static_cast<size_t>(length));
+    }
+    return length;
+}
+
+
+#if SIP_ABI_MAJOR_VERSION >= 14
+std::function<QVariant(const QUrl &)> qpycore_resource_provider(PyObject *callable)
+{
+    auto *view = PyInterpreterView_FromCurrent();
+    if (!view)
+        return {};
+
+    auto handler = std::shared_ptr<PyObject>(Py_NewRef(callable),
+            [view](PyObject *object) {
+        if (auto *token = PyThreadState_EnsureFromView(view))
+        {
+            Py_DECREF(object);
+            PyThreadState_Release(token);
+        }
+        PyInterpreterView_Close(view);
+    });
+
+    return [handler, view](const QUrl &url) {
+        QVariant result;
+        auto *token = PyThreadState_EnsureFromView(view);
+        if (!token)
+            return result;
+
+        PyObject *saved_error = PyErr_GetRaisedException();
+        PyObject *module = qpycore_qtcore_module_ref();
+        if (module)
+        {
+            auto *sipMS = static_cast<sipModuleState *>(PyModule_GetState(module));
+            auto *arg = sipConvertFromNewType(new QUrl(url), sipType_QUrl, nullptr);
+            if (arg)
+            {
+                PyObject *object = PyObject_CallOneArg(handler.get(), arg);
+                Py_DECREF(arg);
+                if (object)
+                {
+                    int is_error = 0;
+                    result = qpycore_PyObject_AsQVariant(object, &is_error, sipMS);
+                    Py_DECREF(object);
+                }
+            }
+            Py_DECREF(module);
+        }
+        if (PyErr_Occurred())
+            pyqt6_err_print();
+        PyErr_SetRaisedException(saved_error);
+        PyThreadState_Release(token);
+        return result;
+    };
+}
+#endif

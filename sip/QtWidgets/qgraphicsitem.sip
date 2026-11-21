@@ -151,8 +151,18 @@ public:
     };
 
     typedef QFlags<QGraphicsItem::GraphicsItemFlag> GraphicsItemFlags;
-    static const int Type;
-    static const int UserType;
+    static const int Type
+    {
+%GetCode
+        sipPy = PyLong_FromLong(QGraphicsItem::Type);
+%End
+    };
+    static const int UserType
+    {
+%GetCode
+        sipPy = PyLong_FromLong(QGraphicsItem::UserType);
+%End
+    };
     explicit QGraphicsItem(QGraphicsItem *parent /TransferThis/ = 0);
     virtual ~QGraphicsItem();
     QGraphicsScene *scene() const;
@@ -583,8 +593,12 @@ public:
         
         // The item will be passed to the group's parent if there is one.  If not,
         // transfer ownership back to Python.
-        if (sipCpp->parentItem())
-            sipTransferTo(a0Wrapper, sipGetPyObject(sipCpp->parentItem(), sipType_QGraphicsItem));
+        if (auto *item = sipCpp->parentItem())
+        {
+            PyObject *parent = QPYWIDGETS_WRAPPER_REF(item, sipType_QGraphicsItem);
+            sipTransferTo(a0Wrapper, parent);
+            Py_XDECREF(parent);
+        }
         else
             sipTransferBack(a0Wrapper);
 %End

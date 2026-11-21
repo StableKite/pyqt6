@@ -45,33 +45,37 @@ class QRemoteObjectNode : public QObject
 %End
 
 %ConvertToSubClassCode
-    static struct class_graph {
+    using SubclassType = decltype(sipType);
+    static const struct class_graph {
         const char *name;
-        sipTypeDef **type;
+        SubclassType (*type)();
         int yes, no;
     } graph[] = {
-        {sipName_QAbstractItemModelReplica, &sipType_QAbstractItemModelReplica, -1, 1},
-        {sipName_QRemoteObjectAbstractPersistedStore, &sipType_QRemoteObjectAbstractPersistedStore, -1, 2},
-        {sipName_QRemoteObjectReplica, &sipType_QRemoteObjectReplica, 4, 3},
-        {sipName_QRemoteObjectNode, &sipType_QRemoteObjectNode, 6, -1},
-        {sipName_QRemoteObjectDynamicReplica, &sipType_QRemoteObjectDynamicReplica, -1, 5},
-        {sipName_QRemoteObjectRegistry, &sipType_QRemoteObjectRegistry, -1, -1},
-        {sipName_QRemoteObjectHostBase, &sipType_QRemoteObjectHostBase, 7, -1},
-        {sipName_QRemoteObjectHost, &sipType_QRemoteObjectHost, -1, 8},
-        {sipName_QRemoteObjectRegistryHost, &sipType_QRemoteObjectRegistryHost, -1, -1},
+#define QT_CLASS_ENTRY(name, yes, no) \
+        {#name, []() -> SubclassType { return sipType_##name; }, yes, no}
+        QT_CLASS_ENTRY(QAbstractItemModelReplica, -1, 1),
+        QT_CLASS_ENTRY(QRemoteObjectAbstractPersistedStore, -1, 2),
+        QT_CLASS_ENTRY(QRemoteObjectReplica, 4, 3),
+        QT_CLASS_ENTRY(QRemoteObjectNode, 6, -1),
+        QT_CLASS_ENTRY(QRemoteObjectDynamicReplica, -1, 5),
+        QT_CLASS_ENTRY(QRemoteObjectRegistry, -1, -1),
+        QT_CLASS_ENTRY(QRemoteObjectHostBase, 7, -1),
+        QT_CLASS_ENTRY(QRemoteObjectHost, -1, 8),
+        QT_CLASS_ENTRY(QRemoteObjectRegistryHost, -1, -1),
+#undef QT_CLASS_ENTRY
     };
     
     int i = 0;
     
-    sipType = NULL;
+    sipType = 0;
     
     do
     {
-        struct class_graph *cg = &graph[i];
+        const struct class_graph *cg = &graph[i];
     
         if (cg->name != NULL && sipCpp->inherits(cg->name))
         {
-            sipType = *cg->type;
+            sipType = cg->type();
             i = cg->yes;
         }
         else

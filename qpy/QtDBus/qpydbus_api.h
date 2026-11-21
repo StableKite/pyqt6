@@ -23,7 +23,12 @@
 
 
 // Initialisation.
+#include "sipAPIQtDBus.h"
+#if SIP_ABI_MAJOR_VERSION >= 14
+void qpydbus_post_init(sipModuleState *sipMS);
+#else
 void qpydbus_post_init();
+#endif
 
 
 #endif

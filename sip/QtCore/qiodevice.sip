@@ -28,6 +28,9 @@ class QIODevice : public QObject, public QIODeviceBase
 {
 %TypeHeaderCode
 #include <qiodevice.h>
+%End
+
+%TypeCode
 #include "qpycore_qiodevicebuffer.h"
 %End
 
@@ -259,19 +262,14 @@ protected:
                 sipRes = -1L;
             else
             {
-                QPyIODeviceBuffer buffer(result);
-
-                if (!buffer)
+                using CopyBuffer = qint64 (*)(PyObject *, const char *, qint64, bool);
+                auto copy = reinterpret_cast<CopyBuffer>(
+                        sipImportSymbol("pyqt6_copy_io_buffer"));
+                sipRes = copy ? copy(result, a0, a1, false) : -1;
+                if (sipRes < 0)
                 {
                     sipBadCatcherResult(sipMethod);
                     sipIsErr = 1;
-                }
-                else
-                {
-                    sipRes = (a1 < buffer.size) ? a1 : buffer.size;
-
-                    if (sipRes > 0)
-                        memcpy(a0, buffer.data, static_cast<size_t>(sipRes));
                 }
             }
 
@@ -330,19 +328,14 @@ protected:
                 sipRes = -1L;
             else
             {
-                QPyIODeviceBuffer buffer(result);
-
-                if (!buffer)
+                using CopyBuffer = qint64 (*)(PyObject *, const char *, qint64, bool);
+                auto copy = reinterpret_cast<CopyBuffer>(
+                        sipImportSymbol("pyqt6_copy_io_buffer"));
+                sipRes = copy ? copy(result, a0, a1, false) : -1;
+                if (sipRes < 0)
                 {
                     sipBadCatcherResult(sipMethod);
                     sipIsErr = 1;
-                }
-                else
-                {
-                    sipRes = (a1 < buffer.size) ? a1 : buffer.size;
-
-                    if (sipRes > 0)
-                        memcpy(a0, buffer.data, static_cast<size_t>(sipRes));
                 }
             }
 
@@ -384,19 +377,14 @@ protected:
                 sipRes = -1L;
             else
             {
-                QPyIODeviceBuffer buffer(result, true);
-
-                if (!buffer)
+                using CopyBuffer = qint64 (*)(PyObject *, const char *, qint64, bool);
+                auto copy = reinterpret_cast<CopyBuffer>(
+                        sipImportSymbol("pyqt6_copy_io_buffer"));
+                sipRes = copy ? copy(result, a0, a1, true) : -1;
+                if (sipRes < 0)
                 {
                     sipBadCatcherResult(sipMethod);
                     sipIsErr = 1;
-                }
-                else
-                {
-                    sipRes = (a1 < buffer.size) ? a1 : buffer.size;
-
-                    if (sipRes > 0)
-                        memcpy(buffer.data, a0, static_cast<size_t>(sipRes));
                 }
             }
 

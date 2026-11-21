@@ -24,6 +24,9 @@ class QSaveFile : public QFileDevice
 {
 %TypeHeaderCode
 #include <qsavefile.h>
+%End
+
+%TypeCode
 #include "qpycore_qiodevicebuffer.h"
 %End
 

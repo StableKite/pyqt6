@@ -37,7 +37,8 @@ static void array_dtor(PyObject *capsule);
 // sequence of sequence of floats and return an array that can be passed to
 // QGLShaderProgram::setAttributeArray().  The array is destroyed only when the
 // shader is garbage collected or when replaced by another array.
-const GLfloat *qpyopengl_attribute_array(PyObject *values, PyObject *shader,
+const GLfloat *qpyopengl_attribute_array([[maybe_unused]] QPyOpenGLModuleState *sipMS,
+        PyObject *values, PyObject *shader,
         PyObject *key, int *tsize, sipErrorState *estate)
 {
     // Check the key was created correctly.
@@ -47,26 +48,16 @@ const GLfloat *qpyopengl_attribute_array(PyObject *values, PyObject *shader,
         return 0;
     }
 
-    // Get the dict that holds the converted arrays.
-    PyObject *dict = sipGetUserObject((sipSimpleWrapper *)shader);
-
+    const auto dict = qpyopengl_shader_arrays(shader);
     if (!dict)
     {
-        dict = PyDict_New();
-
-        if (!dict)
-        {
-            Py_DECREF(key);
-
-            *estate = sipErrorFail;
-            return 0;
-        }
-
-        sipSetUserObject((sipSimpleWrapper *)shader, dict);
+        Py_DECREF(key);
+        *estate = sipErrorFail;
+        return nullptr;
     }
 
     // Check that values is a non-empty sequence.
-    values = PySequence_Fast(values, "an attribute array must be a sequence");
+    values = qpyopengl_sequence(values, "an attribute array must be a sequence");
 
     if (!values)
     {
@@ -93,7 +84,7 @@ const GLfloat *qpyopengl_attribute_array(PyObject *values, PyObject *shader,
     // The first element determines the type expected.
     PyObject *itm = Sequence_Fast_GetItem(values, 0);
 
-    const sipTypeDef *td;
+    QPyOpenGLTypeRef td;
     Py_ssize_t nr_dim;
 
     if (sipCanConvertToType(itm, sipType_QVector2D, SIP_NOT_NONE))
@@ -151,7 +142,11 @@ const GLfloat *qpyopengl_attribute_array(PyObject *values, PyObject *shader,
             {
                 PyErr_Format(PyExc_TypeError,
                         "attribute array elements should all be '%s', not '%s'",
+#if SIP_ABI_MAJOR_VERSION >= 14
+                        sipTypeName(td),
+#else
                         sipPyTypeName(sipTypeAsPyTypeObject(td)),
+#endif
                         sipPyTypeName(Py_TYPE(itm)));
             }
             else if (td == sipType_QVector2D)
@@ -181,7 +176,7 @@ const GLfloat *qpyopengl_attribute_array(PyObject *values, PyObject *shader,
         }
         else
         {
-            itm = PySequence_Fast(itm,
+            itm = qpyopengl_sequence(itm,
                     "attribute array elements should all be sequences");
 
             if (itm)
@@ -247,7 +242,7 @@ const GLfloat *qpyopengl_attribute_array(PyObject *values, PyObject *shader,
         return 0;
     }
 
-    int rc = PyDict_SetItem(dict, key, array_obj);
+    int rc = PyDict_SetItem(dict.get(), key, array_obj);
 
     Py_DECREF(key);
     Py_DECREF(array_obj);

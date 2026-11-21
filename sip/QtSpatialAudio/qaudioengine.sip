@@ -29,29 +29,33 @@ class QAudioEngine : public QObject
 %End
 
 %ConvertToSubClassCode
-    static struct class_graph {
+    using SubclassType = decltype(sipType);
+    static const struct class_graph {
         const char *name;
-        sipTypeDef **type;
+        SubclassType (*type)();
         int yes, no;
     } graph[] = {
-        {sipName_QAmbientSound, &sipType_QAmbientSound, -1, 1},
-        {sipName_QAudioEngine, &sipType_QAudioEngine, -1, 2},
-        {sipName_QAudioListener, &sipType_QAudioListener, -1, 3},
-        {sipName_QAudioRoom, &sipType_QAudioRoom, -1, 4},
-        {sipName_QSpatialSound, &sipType_QSpatialSound, -1, -1},
+#define QT_CLASS_ENTRY(name, yes, no) \
+        {#name, []() -> SubclassType { return sipType_##name; }, yes, no}
+        QT_CLASS_ENTRY(QAmbientSound, -1, 1),
+        QT_CLASS_ENTRY(QAudioEngine, -1, 2),
+        QT_CLASS_ENTRY(QAudioListener, -1, 3),
+        QT_CLASS_ENTRY(QAudioRoom, -1, 4),
+        QT_CLASS_ENTRY(QSpatialSound, -1, -1),
+#undef QT_CLASS_ENTRY
     };
     
     int i = 0;
     
-    sipType = NULL;
+    sipType = 0;
     
     do
     {
-        struct class_graph *cg = &graph[i];
+        const struct class_graph *cg = &graph[i];
     
         if (cg->name != NULL && sipCpp->inherits(cg->name))
         {
-            sipType = *cg->type;
+            sipType = cg->type();
             i = cg->yes;
         }
         else

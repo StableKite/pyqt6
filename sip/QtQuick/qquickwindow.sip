@@ -27,39 +27,43 @@ class QQuickWindow : public QWindow /ExportDerived/
 %End
 
 %ConvertToSubClassCode
-    static struct class_graph {
+    using SubclassType = decltype(sipType);
+    static const struct class_graph {
         const char *name;
-        sipTypeDef **type;
+        SubclassType (*type)();
         int yes, no;
     } graph[] = {
-        {sipName_QQuickImageProvider, &sipType_QQuickImageProvider, 10, 1},
-        {sipName_QQuickItem, &sipType_QQuickItem, 11, 2},
-        {sipName_QQuickImageResponse, &sipType_QQuickImageResponse, -1, 3},
-        {sipName_QQuickItemGrabResult, &sipType_QQuickItemGrabResult, -1, 4},
-        {sipName_QQuickRenderControl, &sipType_QQuickRenderControl, -1, 5},
-        {sipName_QQuickTextDocument, &sipType_QQuickTextDocument, -1, 6},
-        {sipName_QQuickTextureFactory, &sipType_QQuickTextureFactory, -1, 7},
-        {sipName_QQuickWindow, &sipType_QQuickWindow, 13, 8},
-        {sipName_QSGTexture, &sipType_QSGTexture, 14, 9},
-        {sipName_QSGTextureProvider, &sipType_QSGTextureProvider, -1, -1},
-        {sipName_QQuickAsyncImageProvider, &sipType_QQuickAsyncImageProvider, -1, -1},
-        {sipName_QQuickFramebufferObject, &sipType_QQuickFramebufferObject, -1, 12},
-        {sipName_QQuickPaintedItem, &sipType_QQuickPaintedItem, -1, -1},
-        {sipName_QQuickView, &sipType_QQuickView, -1, -1},
-        {sipName_QSGDynamicTexture, &sipType_QSGDynamicTexture, -1, -1},
+#define QT_CLASS_ENTRY(name, yes, no) \
+        {#name, []() -> SubclassType { return sipType_##name; }, yes, no}
+        QT_CLASS_ENTRY(QQuickImageProvider, 10, 1),
+        QT_CLASS_ENTRY(QQuickItem, 11, 2),
+        QT_CLASS_ENTRY(QQuickImageResponse, -1, 3),
+        QT_CLASS_ENTRY(QQuickItemGrabResult, -1, 4),
+        QT_CLASS_ENTRY(QQuickRenderControl, -1, 5),
+        QT_CLASS_ENTRY(QQuickTextDocument, -1, 6),
+        QT_CLASS_ENTRY(QQuickTextureFactory, -1, 7),
+        QT_CLASS_ENTRY(QQuickWindow, 13, 8),
+        QT_CLASS_ENTRY(QSGTexture, 14, 9),
+        QT_CLASS_ENTRY(QSGTextureProvider, -1, -1),
+        QT_CLASS_ENTRY(QQuickAsyncImageProvider, -1, -1),
+        QT_CLASS_ENTRY(QQuickFramebufferObject, -1, 12),
+        QT_CLASS_ENTRY(QQuickPaintedItem, -1, -1),
+        QT_CLASS_ENTRY(QQuickView, -1, -1),
+        QT_CLASS_ENTRY(QSGDynamicTexture, -1, -1),
+#undef QT_CLASS_ENTRY
     };
     
     int i = 0;
     
-    sipType = NULL;
+    sipType = 0;
     
     do
     {
-        struct class_graph *cg = &graph[i];
+        const struct class_graph *cg = &graph[i];
     
         if (cg->name != NULL && sipCpp->inherits(cg->name))
         {
-            sipType = *cg->type;
+            sipType = cg->type();
             i = cg->yes;
         }
         else

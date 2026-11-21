@@ -39,6 +39,9 @@ struct QtGui_QImage_closure
 {
     PyObject *py_cleanup;
     PyObject *py_closure;
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyInterpreterView *view;
+#endif
 };
 
 
@@ -53,7 +56,15 @@ static QtGui_QImage_closure *QtGui_QImage_buffer(PyObject *py_cleanup,
     if (!py_cleanup)
         return nullptr;
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+    auto *view = PyInterpreterView_FromCurrent();
+    if (!view)
+        return nullptr;
+#endif
     QtGui_QImage_closure *closure = new QtGui_QImage_closure;
+#if SIP_ABI_MAJOR_VERSION >= 14
+    closure->view = view;
+#endif
 
     Py_INCREF(py_cleanup);
 
@@ -72,9 +83,21 @@ static QtGui_QImage_closure *QtGui_QImage_buffer(PyObject *py_cleanup,
 // The cleanup function for a QImage ctor.
 static void QtGui_QImage_cleanup(void *c)
 {
+    auto *closure = reinterpret_cast<QtGui_QImage_closure *>(c);
+#if SIP_ABI_MAJOR_VERSION >= 14
+    auto *view = closure->view;
+    auto *token = PyThreadState_EnsureFromView(view);
+    if (!token)
+    {
+        PyInterpreterView_Close(view);
+        delete closure;
+        return;
+    }
+    PyObject *saved_error = PyErr_GetRaisedException();
+#else
     SIP_BLOCK_THREADS
+#endif
 
-    QtGui_QImage_closure *closure = reinterpret_cast<QtGui_QImage_closure *>(c);
     bool is_exception = false;
 
     PyObject *res = PyObject_CallFunctionObjArgs(closure->py_cleanup,
@@ -93,7 +116,13 @@ static void QtGui_QImage_cleanup(void *c)
     if (is_exception)
         pyqt6_qtgui_err_print();
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyErr_SetRaisedException(saved_error);
+    PyThreadState_Release(token);
+    PyInterpreterView_Close(view);
+#else
     SIP_UNBLOCK_THREADS
+#endif
 }
 %End
 
@@ -165,6 +194,11 @@ public:
     QImage(const uchar *data /KeepReference/, int width, int height, QImage::Format format, SIP_PYCALLABLE cleanupFunction /AllowNone/ = 0, SIP_PYOBJECT cleanupInfo /AllowNone/ = 0) [(const uchar *data, int width, int height, QImage::Format format, QImageCleanupFunction cleanupFunction = 0, void *cleanupInfo = 0)];
 %MethodCode
         QtGui_QImage_closure *closure = QtGui_QImage_buffer(a4, a5);
+        if (!closure && PyErr_Occurred())
+        {
+            sipError = sipErrorFail;
+            return NULL;
+        }
         
         sipCpp = new sipQImage(a0, a1, a2, a3,
                 (closure ? QtGui_QImage_cleanup : nullptr), closure);
@@ -173,6 +207,11 @@ public:
     QImage(const uchar *data /KeepReference/, int width, int height, qsizetype bytesPerLine, QImage::Format format, SIP_PYCALLABLE cleanupFunction /AllowNone/ = 0, SIP_PYOBJECT cleanupInfo /AllowNone/ = 0) [(const uchar *data, int width, int height, qsizetype bytesPerLine, QImage::Format format, QImageCleanupFunction cleanupFunction = 0, void *cleanupInfo = 0)];
 %MethodCode
         QtGui_QImage_closure *closure = QtGui_QImage_buffer(a5, a6);
+        if (!closure && PyErr_Occurred())
+        {
+            sipError = sipErrorFail;
+            return NULL;
+        }
         
         sipCpp = new sipQImage(a0, a1, a2, a3, a4,
                 (closure ? QtGui_QImage_cleanup : nullptr), closure);
@@ -181,6 +220,11 @@ public:
     QImage(void *data /KeepReference/, int width, int height, QImage::Format format, SIP_PYCALLABLE cleanupFunction /AllowNone/ = 0, SIP_PYOBJECT cleanupInfo /AllowNone/ = 0) /NoTypeHint/ [(uchar *data, int width, int height, QImage::Format format, QImageCleanupFunction cleanupFunction = 0, void *cleanupInfo = 0)];
 %MethodCode
         QtGui_QImage_closure *closure = QtGui_QImage_buffer(a4, a5);
+        if (!closure && PyErr_Occurred())
+        {
+            sipError = sipErrorFail;
+            return NULL;
+        }
         
         sipCpp = new sipQImage(reinterpret_cast<uchar *>(a0), a1, a2, a3,
                 (closure ? QtGui_QImage_cleanup : nullptr), closure);
@@ -189,6 +233,11 @@ public:
     QImage(void *data /KeepReference/, int width, int height, qsizetype bytesPerLine, QImage::Format format, SIP_PYCALLABLE cleanupFunction /AllowNone/ = 0, SIP_PYOBJECT cleanupInfo /AllowNone/ = 0) /NoTypeHint/ [(uchar *data, int width, int height, qsizetype bytesPerLine, QImage::Format format, QImageCleanupFunction cleanupFunction = 0, void *cleanupInfo = 0)];
 %MethodCode
         QtGui_QImage_closure *closure = QtGui_QImage_buffer(a5, a6);
+        if (!closure && PyErr_Occurred())
+        {
+            sipError = sipErrorFail;
+            return NULL;
+        }
         
         sipCpp = new sipQImage(reinterpret_cast<uchar *>(a0), a1, a2, a3, a4,
                 (closure ? QtGui_QImage_cleanup : nullptr), closure);
@@ -206,7 +255,7 @@ public:
             QtGui_DeleteArray(str);
         }
         else
-            sipIsErr = 1;
+            sipError = sipErrorFail;
 %End
 
     QImage(const QString &fileName, const char *format = 0) /ReleaseGIL/;
@@ -373,11 +422,23 @@ const char **QtGui_ListToArray(PyObject *lst)
 
     for (Py_ssize_t i = 0; i < nstr; ++i)
     {
-        PyObject *ascii_obj = PyList_GetItem(lst, i);
-        const char *ascii = sipString_AsASCIIString(&ascii_obj);
+        PyObject *item = PySequence_GetItem(lst, i);
+        PyObject *ascii_obj = nullptr;
+        if (item)
+        {
+            if (PyUnicode_Check(item))
+                ascii_obj = PyUnicode_AsASCIIString(item);
+            else if (PyObject_CheckBuffer(item))
+                ascii_obj = PyBytes_FromObject(item);
+            else
+                PyErr_SetString(PyExc_TypeError, "XPM lines must be ASCII strings or bytes");
+            Py_DECREF(item);
+        }
+        const char *ascii = ascii_obj ? PyBytes_AsString(ascii_obj) : nullptr;
 
         if (!ascii)
         {
+            Py_XDECREF(ascii_obj);
             while (i-- > 0)
                 delete[] arr[i];
 

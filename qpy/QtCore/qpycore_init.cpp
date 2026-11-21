@@ -21,6 +21,7 @@
 #include <Python.h>
 
 #include "qpycore_api.h"
+#include "qpycore_misc.h"
 #include "qpycore_public_api.h"
 #include "qpycore_qobject_helpers.h"
 
@@ -102,6 +103,7 @@ void qpycore_init()
         {"qtcore_qt_metacall", reinterpret_cast<void *>(qpycore_qobject_qt_metacall)},
         {"qtcore_qt_metacast", reinterpret_cast<void *>(qpycore_qobject_qt_metacast)},
         {"qtcore_qobject_sender", reinterpret_cast<void *>(qpycore_qobject_sender)},
+        {"pyqt6_copy_io_buffer", reinterpret_cast<void *>(qpycore_copy_io_buffer)},
         {"pyqt6_cleanup_qobjects", reinterpret_cast<void *>(pyqt6_cleanup_qobjects)},
         {"pyqt6_err_print", reinterpret_cast<void *>(pyqt6_err_print)},
         {"pyqt6_from_argv_list", reinterpret_cast<void *>(pyqt6_from_argv_list)},
@@ -115,6 +117,9 @@ void qpycore_init()
         {"pyqt6_register_to_qvariant_convertor", reinterpret_cast<void *>(pyqt6_register_to_qvariant_convertor)},
         {"pyqt6_register_to_qvariant_data_convertor", reinterpret_cast<void *>(pyqt6_register_to_qvariant_data_convertor)},
         {"pyqt6_update_argv_list", reinterpret_cast<void *>(pyqt6_update_argv_list)},
+#if SIP_ABI_MAJOR_VERSION >= 14
+        {"pyqt6_resource_provider", reinterpret_cast<void *>(qpycore_resource_provider)},
+#endif
         {nullptr, nullptr}
     };
 #if SIP_ABI_MAJOR_VERSION >= 14

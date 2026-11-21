@@ -26,6 +26,10 @@ class QUdpSocket : public QAbstractSocket
 #include <qudpsocket.h>
 %End
 
+%TypeCode
+#include "qpycore_qiodevicebuffer.h"
+%End
+
 public:
     explicit QUdpSocket(QObject *parent /TransferThis/ = 0);
     virtual ~QUdpSocket();
@@ -37,7 +41,7 @@ public:
         if (a0 < 0)
         {
             PyErr_SetString(PyExc_ValueError, "maximum length of data to be read cannot be negative");
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         }
         else
         {
@@ -58,7 +62,7 @@ public:
                 sipRes = PyBytes_FromStringAndSize(s, len);
         
                 if (!sipRes)
-                    sipIsErr = 1;
+                    sipError = sipErrorFail;
             }
         
             delete[] s;
@@ -68,20 +72,18 @@ public:
     QNetworkDatagram receiveDatagram(qint64 maxSize = -1) /ReleaseGIL/;
     qint64 writeDatagram(SIP_PYBUFFER, const QHostAddress &, quint16) /ReleaseGIL/;
 %MethodCode
-        sipBufferInfoDef bi;
+        QPyIODeviceBuffer buffer(a0);
         
-        if (sipGetBufferInfo(a0, &bi) > 0)
+        if (buffer)
         {
             Py_BEGIN_ALLOW_THREADS
-            sipRes = sipCpp->writeDatagram(reinterpret_cast<char *>(bi.bi_buf),
-                    bi.bi_len, *a1, a2);
+            sipRes = sipCpp->writeDatagram(reinterpret_cast<char *>(buffer.data),
+                    buffer.size, *a1, a2);
             Py_END_ALLOW_THREADS
-        
-            sipReleaseBufferInfo(&bi);
         }
         else
         {
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         }
 %End
 

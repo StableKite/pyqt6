@@ -50,25 +50,19 @@ protected:
 %MethodCode
         // Ownership of the user data is with the document not the syntax highlighter.
         
-        typedef PyObject *(*helper_func)(QObject *, const sipTypeDef *);
-        
-        static helper_func helper = 0;
-        
-        if (!helper)
-        {
-            helper = (helper_func)sipImportSymbol("qtgui_wrap_ancestors");
-            Q_ASSERT(helper);
-        }
-        
+#if SIP_ABI_MAJOR_VERSION < 14
+        QtGuiModuleState *sipMS = nullptr;
+#endif
+
         QTextDocument *td = sipCpp->document();
         
         if (td)
         {
-            PyObject *py_td = helper(td, sipType_QTextDocument);
+            PyObject *py_td = qtgui_wrap_ancestors(sipMS, td, sipType_QTextDocument);
         
             if (!py_td)
             {
-                sipIsErr = 1;
+                sipError = sipErrorFail;
             }
             else
             {

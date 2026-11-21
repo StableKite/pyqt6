@@ -24,6 +24,9 @@ class QFileDevice : public QIODevice /NoDefaultCtors/
 {
 %TypeHeaderCode
 #include <qfiledevice.h>
+%End
+
+%TypeCode
 #include "qpycore_qiodevicebuffer.h"
 %End
 

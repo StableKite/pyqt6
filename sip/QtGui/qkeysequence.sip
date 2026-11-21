@@ -210,7 +210,7 @@ public:
         Py_ssize_t idx = sipConvertFromSequenceIndex(a0, sipCpp->count());
         
         if (idx < 0)
-            sipIsErr = 1;
+            sipError = sipErrorFail;
         else
             sipRes = new QKeyCombination(sipCpp->operator[]((uint)idx));
 %End

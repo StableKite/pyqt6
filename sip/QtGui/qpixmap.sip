@@ -43,7 +43,7 @@ public:
             QtGui_DeleteArray(str);
         }
         else
-            sipIsErr = 1;
+            sipError = sipErrorFail;
 %End
 
     QPixmap(const QPixmap &);
