@@ -55,8 +55,18 @@ void pyqt6_err_print();
 // argument count.
 char **pyqt6_from_argv_list(PyObject *argv_list, int &argc);
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+using QPyCoreModuleState = sipModuleState;
+#else
+using QPyCoreModuleState = void;
+#endif
+
 // Convert a QVariant to a Python object according to an optional Python type.
+#if SIP_ABI_MAJOR_VERSION >= 14
+PyObject *pyqt6_from_qvariant_by_type(QVariant &value, PyObject *type, sipModuleState *sipMS);
+#else
 PyObject *pyqt6_from_qvariant_by_type(QVariant &value, PyObject *type);
+#endif
 
 // Get the receiver object and slot signature to allow a signal to be connected
 // to an optional transmitter.  single_shot is true if the signal will only

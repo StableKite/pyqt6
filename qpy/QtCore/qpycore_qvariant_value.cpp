@@ -24,6 +24,7 @@
 #include <QMetaType>
 #include <QVariant>
 
+#include "qpycore_api.h"
 #include "qpycore_chimera.h"
 
 #include "sipAPIQtCore.h"
@@ -39,13 +40,20 @@ static int add_variant_to_dict(const Chimera *ct, PyObject *dict,
 
 
 // Convert a QVariant to a Python object according to an optional type.
+#if SIP_ABI_MAJOR_VERSION >= 14
+PyObject *pyqt6_from_qvariant_by_type(QVariant &value, PyObject *type, sipModuleState *sipMS)
+#else
 PyObject *pyqt6_from_qvariant_by_type(QVariant &value, PyObject *type)
+#endif
 {
+#if SIP_ABI_MAJOR_VERSION < 14
+    Chimera::ModuleState *sipMS = nullptr;
+#endif
     PyObject *value_obj;
 
     if (type)
     {
-        const Chimera *ct = Chimera::parse(type);
+        const Chimera *ct = Chimera::parse(type, sipMS);
 
         if (!ct)
             return 0;
@@ -202,14 +210,10 @@ static PyObject *convert(const Chimera *ct, const QVariant &value)
 static int add_variant_to_dict(const Chimera *ct, PyObject *dict,
         const QString &key, const QVariant &value)
 {
-    QString *key_heap = new QString(key);
-    PyObject *key_obj = sipConvertFromNewType(key_heap, sipType_QString, 0);
+    PyObject *key_obj = qpycore_PyObject_FromQString(key);
 
     if (!key_obj)
-    {
-        delete key_heap;
         return -1;
-    }
 
     PyObject *value_obj = convert(ct, value);
 

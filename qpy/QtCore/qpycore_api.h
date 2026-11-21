@@ -53,12 +53,28 @@ PyObject *qpycore_PyObject_FromQString(const QString &qstr);
 QString qpycore_PyObject_AsQString(PyObject *obj);
 
 // Support for converting between PyObject and QVariant.
-PyObject *qpycore_PyObject_FromQVariant(const QVariant &qvar);
-QVariant qpycore_PyObject_AsQVariant(PyObject *obj, int *is_err);
+PyObject *qpycore_PyObject_FromQVariant(const QVariant &qvar, QPyCoreModuleState *sipMS
+#if SIP_ABI_MAJOR_VERSION < 14
+        = nullptr
+#endif
+        );
+QVariant qpycore_PyObject_AsQVariant(PyObject *obj, int *is_err, QPyCoreModuleState *sipMS
+#if SIP_ABI_MAJOR_VERSION < 14
+        = nullptr
+#endif
+        );
 PyObject *qpycore_PyObject_FromQVariant(const QMetaProperty &mprop,
-        const QVariant &qvar);
+        const QVariant &qvar, QPyCoreModuleState *sipMS
+#if SIP_ABI_MAJOR_VERSION < 14
+        = nullptr
+#endif
+        );
 QVariant qpycore_PyObject_AsQVariant(const QMetaProperty &mprop, PyObject *obj,
-        bool *ok);
+        bool *ok, QPyCoreModuleState *sipMS
+#if SIP_ABI_MAJOR_VERSION < 14
+        = nullptr
+#endif
+        );
 
 // Support for pyqtClassInfo() and pyqtEnum().
 PyObject *qpycore_pyqtClassInfo(PyObject *args, PyObject *kwds);

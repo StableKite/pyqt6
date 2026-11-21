@@ -27,7 +27,6 @@
 #include "qpycore_chimera.h"
 #include "qpycore_misc.h"
 #include "qpycore_pyqtpyobject.h"
-#include "qpycore_types.h"
 
 #include "sipAPIQtCore.h"
 
@@ -37,6 +36,8 @@ QHash<PyObject *, QByteArray> Chimera::_py_enum_types;
 
 // The cache of previously parsed argument type lists.
 QHash<QByteArray, QList<const Chimera *> > Chimera::_previously_parsed;
+
+QMutex Chimera::_convertor_lock;
 
 // The registered QVariant to PyObject convertors.
 Chimera::FromQVariantConvertors Chimera::registeredFromQVariantConvertors;
@@ -48,74 +49,50 @@ Chimera::ToQVariantConvertors Chimera::registeredToQVariantConvertors;
 Chimera::ToQVariantDataConvertors Chimera::registeredToQVariantDataConvertors;
 
 
-// The base class for convenience wrappers around mapped type convertors.
-class BaseMappedTypeConvertor
+// Convert supported QVariant containers using the active SIP module.
+template <class T>
+class MappedTypeConvertor
 {
 public:
-    BaseMappedTypeConvertor(const char *name) : td(nullptr), _name(name) {}
+    explicit MappedTypeConvertor(const char *name) : name(name) {}
 
-protected:
-    void ensureType();
-    const sipTypeDef *td;
+    PyObject *fromMappedType([[maybe_unused]] Chimera::ModuleState *sipMS, void *cpp) const
+    {
+        auto type = sipFindType(name);
+        if (!type)
+        {
+            PyErr_Format(PyExc_TypeError, "unavailable Qt mapped type '%s'", name);
+            return nullptr;
+        }
+
+        return sipConvertFromNewType(new T(*static_cast<T *>(cpp)), type, nullptr);
+    }
+
+    int toMappedType([[maybe_unused]] Chimera::ModuleState *sipMS,
+            PyObject *py, T &cpp) const
+    {
+        auto type = sipFindType(name);
+        if (!type)
+        {
+            PyErr_Format(PyExc_TypeError, "unavailable Qt mapped type '%s'", name);
+            return 1;
+        }
+
+        int state, error = 0;
+        void *converted = sipForceConvertToType(py, type, nullptr, SIP_NOT_NONE,
+                &state, &error);
+        if (!error)
+        {
+            cpp = *static_cast<T *>(converted);
+            sipReleaseType(converted, type, state);
+        }
+
+        return error;
+    }
 
 private:
-    const char *_name;
+    const char *const name;
 };
-
-
-// Ensure that the type definition is available.
-void BaseMappedTypeConvertor::ensureType()
-{
-    if (!td)
-    {
-        td = sipFindType(_name);
-        Q_ASSERT(td);
-    }
-}
-
-
-// A convenience wrapper around a mapped type convertor.
-template <class T>
-class MappedTypeConvertor : public BaseMappedTypeConvertor
-{
-public:
-    MappedTypeConvertor(const char *name) : BaseMappedTypeConvertor(name) {}
-
-    PyObject *fromMappedType(void *cpp);
-    int toMappedType(PyObject *py, T &cpp);
-};
-
-
-// Convert an instance of the mapped type to a Python object.  A NULL pointer
-// is returned if there was an error.
-template <class T>
-PyObject *MappedTypeConvertor<T>::fromMappedType(void *cpp)
-{
-    ensureType();
-
-    return sipConvertFromNewType(new T(*reinterpret_cast<T *>(cpp)), td, NULL);
-}
-
-
-// Convert a Python object to an instance of the mapped type.  A non-zero value
-// is returned if there was an error.
-template <class T>
-int MappedTypeConvertor<T>::toMappedType(PyObject *py, T &cpp)
-{
-    ensureType();
-
-    int state, iserr = 0;
-    void *p = sipForceConvertToType(py, td, NULL, SIP_NOT_NONE, &state,
-            &iserr);
-
-    if (!iserr)
-    {
-        cpp = *reinterpret_cast<T *>(p);
-        sipReleaseType(p, td, state);
-    }
-
-    return iserr;
-}
 
 
 // The different mapped type convertors.
@@ -127,9 +104,46 @@ static MappedTypeConvertor<QVariantPair> variant_pair(
         "std::pair<QVariant,QVariant>");
 
 
+// Resolve QObject in the same module as the type being inspected.
+static bool is_qobject_type([[maybe_unused]] Chimera::ModuleState *sipMS,
+        PyTypeObject *type)
+{
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyTypeObject *qobject = sipGetPyTypeRef(sipType_QObject);
+    if (!qobject)
+        return false;
+
+    bool result = PyType_IsSubtype(type, qobject);
+    Py_DECREF(qobject);
+    return result;
+#else
+    return PyType_IsSubtype(type, sipTypeAsPyTypeObject(sipType_QObject));
+#endif
+}
+
+
+void Chimera::registerConvertor(FromQVariantConvertorFn convertor)
+{
+    QMutexLocker lock(&_convertor_lock);
+    registeredFromQVariantConvertors.append(convertor);
+}
+
+void Chimera::registerConvertor(ToQVariantConvertorFn convertor)
+{
+    QMutexLocker lock(&_convertor_lock);
+    registeredToQVariantConvertors.append(convertor);
+}
+
+void Chimera::registerConvertor(ToQVariantDataConvertorFn convertor)
+{
+    QMutexLocker lock(&_convertor_lock);
+    registeredToQVariantDataConvertors.append(convertor);
+}
+
+
 // Construct an invalid type.
-Chimera::Chimera()
-    : _type(0), _py_type(0), _inexact(false), _is_qflags(false),
+Chimera::Chimera(ModuleState *sipMS)
+    : _sip_module_state(sipMS), _type(0), _py_type(0), _inexact(false), _is_qflags(false),
       _is_char_star(false)
 {
 }
@@ -138,6 +152,7 @@ Chimera::Chimera()
 // Construct a copy.
 Chimera::Chimera(const Chimera &other)
 {
+    _sip_module_state = other._sip_module_state;
     _type = other._type;
 
     _py_type = other._py_type;
@@ -169,9 +184,9 @@ void Chimera::registerPyEnum(PyObject *enum_type,
 
 
 // Parse an object as a type.
-const Chimera *Chimera::parse(PyObject *obj)
+const Chimera *Chimera::parse(PyObject *obj, ModuleState *sipMS)
 {
-    Chimera *ct = new Chimera;
+    Chimera *ct = new Chimera(sipMS);
     bool parse_ok;
 
     if (PyType_Check(obj))
@@ -215,9 +230,9 @@ const Chimera *Chimera::parse(PyObject *obj)
 
 
 // Parse a C++ type name as a type.
-const Chimera *Chimera::parse(const QByteArray &name)
+const Chimera *Chimera::parse(const QByteArray &name, ModuleState *sipMS)
 {
-    Chimera *ct = new Chimera;
+    Chimera *ct = new Chimera(sipMS);
 
     if (!ct->parse_cpp_type(name))
     {
@@ -233,9 +248,9 @@ const Chimera *Chimera::parse(const QByteArray &name)
 
 
 // Parse a meta-property as a type.
-const Chimera *Chimera::parse(const QMetaProperty &mprop)
+const Chimera *Chimera::parse(const QMetaProperty &mprop, ModuleState *sipMS)
 {
-    Chimera *ct = new Chimera;
+    Chimera *ct = new Chimera(sipMS);
     QByteArray type_name;
 
     // The type name of an enum property sometimes includes the scope in the
@@ -277,7 +292,7 @@ const Chimera *Chimera::parse(const QMetaProperty &mprop)
 
 
 // Parse a normalised C++ signature as a list of types.
-Chimera::Signature *Chimera::parse(const QByteArray &sig, const char *context)
+Chimera::Signature *Chimera::parse(const QByteArray &sig, const char *context, ModuleState *sipMS)
 {
     // Extract the argument list.
     int start_idx = sig.indexOf('(');
@@ -297,14 +312,19 @@ Chimera::Signature *Chimera::parse(const QByteArray &sig, const char *context)
         len = end_idx - start_idx;
 
     // Parse each argument type.
-    Chimera::Signature *parsed_sig = new Chimera::Signature(sig, true);
+    // The legacy ABI has a single permanent context. ABI 14 may unload a
+    // module, so it must retain no process-wide cache of wrapped types.
+    constexpr bool use_cache = SIP_ABI_MAJOR_VERSION < 14;
+    Chimera::Signature *parsed_sig = new Chimera::Signature(sig, use_cache);
 
     if (len > 0)
     {
         QByteArray args_str = sig.mid(start_idx, len);
 
         // Check we haven't already done it.
-        QList<const Chimera *> parsed_args = _previously_parsed.value(args_str);
+        QList<const Chimera *> parsed_args;
+        if (use_cache)
+            parsed_args = _previously_parsed.value(args_str);
 
         if (parsed_args.isEmpty())
         {
@@ -344,7 +364,7 @@ Chimera::Signature *Chimera::parse(const QByteArray &sig, const char *context)
 
                 if (!arg.isEmpty())
                 {
-                    Chimera *ct = new Chimera;
+                    Chimera *ct = new Chimera(sipMS);
 
                     if (!ct->parse_cpp_type(arg))
                     {
@@ -368,7 +388,8 @@ Chimera::Signature *Chimera::parse(const QByteArray &sig, const char *context)
             }
 
             // Only parse once.
-            _previously_parsed.insert(args_str, parsed_args);
+            if (use_cache)
+                _previously_parsed.insert(args_str, parsed_args);
         }
 
         parsed_sig->parsed_arguments = parsed_args;
@@ -381,7 +402,7 @@ Chimera::Signature *Chimera::parse(const QByteArray &sig, const char *context)
 // Parses a C++ signature given as a Python tuple of types and an optional
 // name.  Return 0 if there was an error.
 Chimera::Signature *Chimera::parse(PyObject *types, const char *name,
-        const char *context)
+        const char *context, ModuleState *sipMS)
 {
     if (!name)
         name = "";
@@ -394,7 +415,7 @@ Chimera::Signature *Chimera::parse(PyObject *types, const char *name,
     for (Py_ssize_t i = 0; i < PyTuple_Size(types); ++i)
     {
         PyObject *type = PyTuple_GetItem(types, i);
-        const Chimera *parsed_type = parse(type);
+        const Chimera *parsed_type = parse(type, sipMS);
 
         if (!parsed_type)
         {
@@ -465,7 +486,8 @@ void Chimera::raiseParseCppException(const char *type, const char *context)
 // Parse the given Python type object.
 bool Chimera::parse_py_type(PyTypeObject *type_obj)
 {
-    const sipTypeDef *td = sipTypeFromPyTypeObject(type_obj);
+    [[maybe_unused]] auto *sipMS = _sip_module_state;
+    TypeId td = sipTypeFromPyTypeObject(type_obj);
 
     if (td)
     {
@@ -502,7 +524,7 @@ bool Chimera::parse_py_type(PyTypeObject *type_obj)
             // about but was registered by Qt.
             if (metatype.id() < QMetaType::User)
             {
-                if (PyType_IsSubtype(type_obj, sipTypeAsPyTypeObject(sipType_QObject)))
+                if (is_qobject_type(sipMS, type_obj))
                 {
                     metatype = QMetaType(QMetaType::QObjectStar);
                 }
@@ -550,7 +572,11 @@ bool Chimera::parse_py_type(PyTypeObject *type_obj)
     {
         metatype = QMetaType(QMetaType::Double);
     }
+#if SIP_ABI_MAJOR_VERSION >= 14
+    else if (type_obj == sipGetVoidPtrType())
+#else
     else if (type_obj == sipVoidPtr_Type)
+#endif
     {
         metatype = QMetaType(QMetaType::VoidStar);
         _name = "void*";
@@ -572,8 +598,15 @@ bool Chimera::parse_py_type(PyTypeObject *type_obj)
 
 
 // Set the internal QFlags flag.
-void Chimera::set_qflags(const sipTypeDef *td)
+void Chimera::set_qflags(TypeId td)
 {
+#if SIP_ABI_MAJOR_VERSION >= 14
+    if (sipTypeIsMapped(td))
+    {
+        auto *sipMS = _sip_module_state;
+        _is_qflags = QByteArrayView(sipTypeName(td)).startsWith("QFlags<");
+    }
+#else
     if (sipTypeIsMapped(td) && qpycore_is_pyqt_type(_type))
     {
         const pyqt6MappedTypePluginDef *plugin = reinterpret_cast<const pyqt6MappedTypePluginDef *>(sipTypePluginData(_type));
@@ -581,12 +614,14 @@ void Chimera::set_qflags(const sipTypeDef *td)
         if (plugin)
             _is_qflags = plugin->flags & 0x01;
     }
+#endif
 }
 
 
 // Update a C++ type so that any typedefs are resolved.
-QByteArray Chimera::resolve_types(const QByteArray &type)
+QByteArray Chimera::resolve_types(const QByteArray &type) const
 {
+    [[maybe_unused]] auto *sipMS = _sip_module_state;
     // Split into a base type and a possible list of template arguments.
     QByteArray resolved = type.simplified();
 
@@ -703,6 +738,7 @@ QByteArray Chimera::resolve_types(const QByteArray &type)
 // Parse the given C++ type name.
 bool Chimera::parse_cpp_type(const QByteArray &type)
 {
+    [[maybe_unused]] auto *sipMS = _sip_module_state;
     _name = type;
     QByteArray nonconst_name = type.mid(type.startsWith("const ") ? 6 : 0);
 
@@ -784,10 +820,19 @@ bool Chimera::parse_cpp_type(const QByteArray &type)
         }
         else if (sipTypeIsClass(_type))
         {
+#if SIP_ABI_MAJOR_VERSION >= 14
+            PyTypeObject *type_obj = sipGetPyTypeRef(_type);
+            if (!type_obj)
+                return false;
+#else
             PyTypeObject *type_obj = sipTypeAsPyTypeObject(_type);
+#endif
 
-            if (PyType_IsSubtype(type_obj, sipTypeAsPyTypeObject(sipType_QObject)))
+            if (is_qobject_type(sipMS, type_obj))
                 metatype = QMetaType(QMetaType::QObjectStar);
+#if SIP_ABI_MAJOR_VERSION >= 14
+            Py_DECREF(type_obj);
+#endif
         }
     }
 
@@ -801,12 +846,19 @@ bool Chimera::parse_cpp_type(const QByteArray &type)
 // convert exactly as requested.
 bool Chimera::fromPyObject(PyObject *py, void *cpp) const
 {
+    [[maybe_unused]] auto *sipMS = _sip_module_state;
     // Let any registered convertors have a go first.
-    for (int i = 0; i < registeredToQVariantDataConvertors.count(); ++i)
+    ToQVariantDataConvertors convertors;
+    {
+        QMutexLocker lock(&_convertor_lock);
+        convertors = registeredToQVariantDataConvertors;
+    }
+
+    for (auto convertor : std::as_const(convertors))
     {
         bool ok;
 
-        if (registeredToQVariantDataConvertors.at(i)(py, cpp, metatype, &ok))
+        if (convertor(py, cpp, metatype, &ok))
             return ok;
     }
 
@@ -915,7 +967,7 @@ bool Chimera::fromPyObject(PyObject *py, void *cpp) const
         {
             QVariantHash qvh;
 
-            iserr = variant_hash.toMappedType(py, qvh);
+            iserr = variant_hash.toMappedType(sipMS, py, qvh);
 
             if (!iserr)
                 *reinterpret_cast<QVariantHash *>(cpp) = qvh;
@@ -927,7 +979,7 @@ bool Chimera::fromPyObject(PyObject *py, void *cpp) const
         {
             QVariantList qvl;
 
-            iserr = variant_list.toMappedType(py, qvl);
+            iserr = variant_list.toMappedType(sipMS, py, qvl);
 
             if (!iserr)
                 *reinterpret_cast<QVariantList *>(cpp) = qvl;
@@ -939,7 +991,7 @@ bool Chimera::fromPyObject(PyObject *py, void *cpp) const
         {
             QVariantMap qvm;
 
-            iserr = variant_map.toMappedType(py, qvm);
+            iserr = variant_map.toMappedType(sipMS, py, qvm);
 
             if (!iserr)
                 *reinterpret_cast<QVariantMap *>(cpp) = qvm;
@@ -951,7 +1003,7 @@ bool Chimera::fromPyObject(PyObject *py, void *cpp) const
         {
             QVariantPair qvp;
 
-            iserr = variant_pair.toMappedType(py, qvp);
+            iserr = variant_pair.toMappedType(sipMS, py, qvp);
 
             if (!iserr)
                 *reinterpret_cast<QVariantPair *>(cpp) = qvp;
@@ -1035,9 +1087,24 @@ bool Chimera::fromPyObject(PyObject *py, void *cpp) const
 }
 
 
+bool Chimera::isType(TypeId type) const
+{
+#if SIP_ABI_MAJOR_VERSION >= 14
+    auto *sipMS = _sip_module_state;
+    return _type == type || (_type && type && sipMakeAbsolute(_type) == sipMakeAbsolute(type));
+#else
+    return _type == type;
+#endif
+}
+
+
 // Return the assignment helper for the type, if any.
 sipAssignFunc Chimera::get_assign_helper() const
 {
+    [[maybe_unused]] auto *sipMS = _sip_module_state;
+#if SIP_ABI_MAJOR_VERSION >= 14
+    return _type ? sipGetAssignmentFunction(_type) : nullptr;
+#else
     if (sipTypeIsClass(_type))
         return ((sipClassTypeDef *)_type)->ctd_assign;
 
@@ -1045,15 +1112,17 @@ sipAssignFunc Chimera::get_assign_helper() const
         return ((sipMappedTypeDef *)_type)->mtd_assign;
 
     return 0;
+#endif
 }
 
 
 // Convert a Python object to a QVariant.
 bool Chimera::fromPyObject(PyObject *py, QVariant *var, bool strict) const
 {
+    [[maybe_unused]] auto *sipMS = _sip_module_state;
     // Deal with the simple case of wrapping the Python object rather than
     // converting it.
-    if (_type != sipType_QVariant && metatype == QMetaType::fromType<PyQt_PyObject>())
+    if (!isType(sipType_QVariant) && metatype == QMetaType::fromType<PyQt_PyObject>())
     {
         // If the type was specified by a Python type (as opposed to
         // 'PyQt_PyObject') then check the object is an instance of it.
@@ -1069,11 +1138,17 @@ bool Chimera::fromPyObject(PyObject *py, QVariant *var, bool strict) const
     // null QString.
     if (py != Py_None)
     {
-        for (int i = 0; i < registeredToQVariantConvertors.count(); ++i)
+        ToQVariantConvertors convertors;
+        {
+            QMutexLocker lock(&_convertor_lock);
+            convertors = registeredToQVariantConvertors;
+        }
+
+        for (auto convertor : std::as_const(convertors))
         {
             bool ok;
 
-            if (registeredToQVariantConvertors.at(i)(py, *var, &ok))
+            if (convertor(py, *var, &ok))
                 return ok;
         }
     }
@@ -1250,7 +1325,7 @@ bool Chimera::fromPyObject(PyObject *py, QVariant *var, bool strict) const
         {
             QVariantHash qvh;
 
-            iserr = variant_hash.toMappedType(py, qvh);
+            iserr = variant_hash.toMappedType(sipMS, py, qvh);
 
             if (!iserr)
             {
@@ -1274,7 +1349,7 @@ bool Chimera::fromPyObject(PyObject *py, QVariant *var, bool strict) const
         {
             QVariantList qvl;
 
-            iserr = variant_list.toMappedType(py, qvl);
+            iserr = variant_list.toMappedType(sipMS, py, qvl);
 
             if (!iserr)
             {
@@ -1289,7 +1364,7 @@ bool Chimera::fromPyObject(PyObject *py, QVariant *var, bool strict) const
         {
             QVariantMap qvm;
 
-            iserr = variant_map.toMappedType(py, qvm);
+            iserr = variant_map.toMappedType(sipMS, py, qvm);
 
             if (!iserr)
             {
@@ -1313,7 +1388,7 @@ bool Chimera::fromPyObject(PyObject *py, QVariant *var, bool strict) const
         {
             QVariantPair qvp;
 
-            iserr = variant_pair.toMappedType(py, qvp);
+            iserr = variant_pair.toMappedType(sipMS, py, qvp);
 
             if (!iserr)
             {
@@ -1378,7 +1453,7 @@ bool Chimera::fromPyObject(PyObject *py, QVariant *var, bool strict) const
 
         iserr = 1;
     }
-    else if (_type == sipType_QVariant)
+    else if (isType(sipType_QVariant))
     {
         *var = QVariant(*reinterpret_cast<QVariant *>(variant_data));
     }
@@ -1397,19 +1472,25 @@ bool Chimera::fromPyObject(PyObject *py, QVariant *var, bool strict) const
 
 
 // Convert a Python object to a QVariant based on the type of the object.
-QVariant Chimera::fromAnyPyObject(PyObject *py, int *is_err)
+QVariant Chimera::fromAnyPyObject(PyObject *py, int *is_err, ModuleState *sipMS)
 {
     QVariant variant;
 
     if (py != Py_None)
     {
         // Let any registered convertors have a go first.
-        for (int i = 0; i < registeredToQVariantConvertors.count(); ++i)
+        ToQVariantConvertors convertors;
+        {
+            QMutexLocker lock(&_convertor_lock);
+            convertors = registeredToQVariantConvertors;
+        }
+
+        for (auto convertor : std::as_const(convertors))
         {
             QVariant var;
             bool ok;
 
-            if (registeredToQVariantConvertors.at(i)(py, var, &ok))
+            if (convertor(py, var, &ok))
             {
                 *is_err = !ok;
 
@@ -1417,7 +1498,7 @@ QVariant Chimera::fromAnyPyObject(PyObject *py, int *is_err)
             }
         }
 
-        Chimera ct;
+        Chimera ct(sipMS);
 
         if (ct.parse_py_type(Py_TYPE(py)))
         {
@@ -1446,7 +1527,8 @@ QVariant Chimera::fromAnyPyObject(PyObject *py, int *is_err)
 // Convert a QVariant to Python.
 PyObject *Chimera::toPyObject(const QVariant &var) const
 {
-    if (_type != sipType_QVariant)
+    [[maybe_unused]] auto *sipMS = _sip_module_state;
+    if (!isType(sipType_QVariant))
     {
         // For some reason (see qvariant_p.h) an invalid QVariant can be
         // returned when a QMetaType::Void is expected.
@@ -1462,7 +1544,7 @@ PyObject *Chimera::toPyObject(const QVariant &var) const
         {
             QVariantMap qvm = var.toMap();
 
-            return variant_map.fromMappedType(&qvm);
+            return variant_map.fromMappedType(sipMS, &qvm);
         }
 
         // A sanity check.
@@ -1502,11 +1584,17 @@ PyObject *Chimera::toPyObject(const QVariant &var) const
     }
 
     // Let any registered convertors have a go first.
-    for (int i = 0; i < registeredFromQVariantConvertors.count(); ++i)
+    FromQVariantConvertors convertors;
+    {
+        QMutexLocker lock(&_convertor_lock);
+        convertors = registeredFromQVariantConvertors;
+    }
+
+    for (auto convertor : std::as_const(convertors))
     {
         PyObject *py;
 
-        if (registeredFromQVariantConvertors.at(i)(var, &py))
+        if (convertor(var, &py))
             return py;
     }
 
@@ -1517,6 +1605,7 @@ PyObject *Chimera::toPyObject(const QVariant &var) const
 // Convert a C++ object at an arbitary address to Python.
 PyObject *Chimera::toPyObject(void *cpp) const
 {
+    [[maybe_unused]] auto *sipMS = _sip_module_state;
     if (metatype == QMetaType::fromType<PyQt_PyObject>())
     {
         if (_is_char_star)
@@ -1648,19 +1737,19 @@ PyObject *Chimera::toPyObject(void *cpp) const
         break;
 
     case QMetaType::QVariantHash:
-        py = variant_hash.fromMappedType(cpp);
+        py = variant_hash.fromMappedType(sipMS, cpp);
         break;
 
     case QMetaType::QVariantList:
-        py = variant_list.fromMappedType(cpp);
+        py = variant_list.fromMappedType(sipMS, cpp);
         break;
 
     case QMetaType::QVariantMap:
-        py = variant_map.fromMappedType(cpp);
+        py = variant_map.fromMappedType(sipMS, cpp);
         break;
 
     case QMetaType::QVariantPair:
-        py = variant_pair.fromMappedType(cpp);
+        py = variant_pair.fromMappedType(sipMS, cpp);
         break;
 
     default:
@@ -1718,7 +1807,7 @@ PyObject *Chimera::toPyObject(void *cpp) const
 
 
 // Convert a QVariant to a Python object based on the type of the object.
-PyObject *Chimera::toAnyPyObject(const QVariant &var)
+PyObject *Chimera::toAnyPyObject(const QVariant &var, ModuleState *sipMS)
 {
     if (!var.isValid())
     {
@@ -1737,8 +1826,8 @@ PyObject *Chimera::toAnyPyObject(const QVariant &var)
         return Py_None;
     }
 
-    const sipTypeDef *td = sipFindType(type_name);
-    Chimera *ct = new Chimera;
+    TypeId td = sipFindType(type_name);
+    Chimera *ct = new Chimera(sipMS);
 
     ct->_type = td;
     ct->_name = type_name;

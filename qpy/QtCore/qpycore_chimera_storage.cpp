@@ -32,6 +32,7 @@
 Chimera::Storage::Storage(const Chimera *ct, PyObject *py)
     : _parsed_type(ct), _ptr_storage(0), _tmp_state(0)
 {
+    [[maybe_unused]] auto *sipMS = _parsed_type->moduleState();
     // We convert to a QVariant even for pointer types because this has the
     // side-effect of ensuring the object doesn't get garbage collected.
     _valid = _parsed_type->fromPyObject(py, &_value_storage);
@@ -70,6 +71,7 @@ Chimera::Storage::Storage(const Chimera *ct)
 // Destroy the storage and any temporary value.
 Chimera::Storage::~Storage()
 {
+    [[maybe_unused]] auto *sipMS = _parsed_type->moduleState();
     if (_tmp_state)
         sipReleaseType(_ptr_storage, _parsed_type->typeDef(), _tmp_state);
 }
@@ -78,6 +80,7 @@ Chimera::Storage::~Storage()
 // Return the address of the storage.
 void *Chimera::Storage::address()
 {
+    [[maybe_unused]] auto *sipMS = _parsed_type->moduleState();
     if (isPointerType())
     {
         if (_parsed_type->name().endsWith('*'))
@@ -86,7 +89,7 @@ void *Chimera::Storage::address()
         return _ptr_storage;
     }
 
-    if (_parsed_type->typeDef() == sipType_QVariant)
+    if (_parsed_type->isType(sipType_QVariant))
         return &_value_storage;
 
     return _value_storage.data();
@@ -107,6 +110,7 @@ bool Chimera::Storage::isPointerType() const
 // Convert the stored value to a Python object.
 PyObject *Chimera::Storage::toPyObject() const
 {
+    [[maybe_unused]] auto *sipMS = _parsed_type->moduleState();
     // Pointer-class and mapped types are not stored in the QVariant.
     if (isPointerType())
     {
@@ -119,8 +123,8 @@ PyObject *Chimera::Storage::toPyObject() const
         return sipConvertFromType(_ptr_storage, _parsed_type->typeDef(), 0);
     }
 
-    if (_parsed_type->typeDef() == sipType_QVariant)
-        return Chimera::toAnyPyObject(_value_storage);
+    if (_parsed_type->isType(sipType_QVariant))
+        return Chimera::toAnyPyObject(_value_storage, _parsed_type->moduleState());
 
     return _parsed_type->toPyObject(_value_storage);
 }

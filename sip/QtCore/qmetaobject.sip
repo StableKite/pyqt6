@@ -210,7 +210,13 @@ public:
 %MethodCode
         // Make use of the QMetaProperty to provide the extra information to correctly
         // handle enums.
+#if SIP_ABI_MAJOR_VERSION >= 14
+        sipRes = qpycore_PyObject_FromQVariant(*sipCpp, sipCpp->read(a0), sipMS);
+        if (!sipRes)
+            sipError = sipErrorFail;
+#else
         sipRes = qpycore_PyObject_FromQVariant(*sipCpp, sipCpp->read(a0));
+#endif
 %End
 
     bool write(QObject *obj, const QVariant &value) const;

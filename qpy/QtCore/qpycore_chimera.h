@@ -29,6 +29,7 @@
 #include <QList>
 #include <QMetaType>
 #include <QMetaProperty>
+#include <QMutex>
 #include <QVariant>
 
 #include "sipAPIQtCore.h"
@@ -39,6 +40,14 @@
 class Chimera
 {
 public:
+#if SIP_ABI_MAJOR_VERSION >= 14
+    using TypeId = sipTypeID;
+    using ModuleState = sipModuleState;
+#else
+    using TypeId = const sipTypeDef *;
+    using ModuleState = void;
+#endif
+
     // Construct a copy.
     Chimera(const Chimera &other);
 
@@ -46,29 +55,44 @@ public:
     ~Chimera();
 
     // Parses a Python object as a type.  Return 0 if there was an error.
-    static const Chimera *parse(PyObject *obj);
+    static const Chimera *parse(PyObject *obj,
+            ModuleState *sipMS
+#if SIP_ABI_MAJOR_VERSION < 14
+                = nullptr
+#endif
+            );
 
     // Parses a Qt meta-property as a type.  Return 0 if there was an error.
-    static const Chimera *parse(const QMetaProperty &mprop);
+    static const Chimera *parse(const QMetaProperty &mprop,
+            ModuleState *sipMS
+#if SIP_ABI_MAJOR_VERSION < 14
+                = nullptr
+#endif
+            );
 
     // Parses a C++ type name as a type.  Return 0 if there was an error.
-    static const Chimera *parse(const QByteArray &name);
+    static const Chimera *parse(const QByteArray &name,
+            ModuleState *sipMS
+#if SIP_ABI_MAJOR_VERSION < 14
+                = nullptr
+#endif
+            );
 
     // The registered QVariant to PyObject convertors.
     typedef bool (*FromQVariantConvertorFn)(const QVariant &, PyObject **);
     typedef QList<FromQVariantConvertorFn> FromQVariantConvertors;
-    static FromQVariantConvertors registeredFromQVariantConvertors;
+    static void registerConvertor(FromQVariantConvertorFn convertor);
 
     // Register a function for converting a Python object to a QVariant.
     typedef bool (*ToQVariantConvertorFn)(PyObject *, QVariant &, bool *);
     typedef QList<ToQVariantConvertorFn> ToQVariantConvertors;
-    static ToQVariantConvertors registeredToQVariantConvertors;
+    static void registerConvertor(ToQVariantConvertorFn convertor);
 
     // Register a function for converting a Python object to QVariant data.
     typedef bool (*ToQVariantDataConvertorFn)(PyObject *, void *, QMetaType,
             bool *);
     typedef QList<ToQVariantDataConvertorFn> ToQVariantDataConvertors;
-    static ToQVariantDataConvertors registeredToQVariantDataConvertors;
+    static void registerConvertor(ToQVariantDataConvertorFn convertor);
 
     class Signature
     {
@@ -126,12 +150,22 @@ public:
     };
 
     // Parses a normalised C++ signature.  Return 0 if there was an error.
-    static Signature *parse(const QByteArray &sig, const char *context);
+    static Signature *parse(const QByteArray &sig, const char *context,
+            ModuleState *sipMS
+#if SIP_ABI_MAJOR_VERSION < 14
+                = nullptr
+#endif
+            );
 
     // Parses a C++ signature given as a Python tuple of types and an optional
     // name.  Return 0 if there was an error.
     static Signature *parse(PyObject *types, const char *name,
-            const char *context);
+            const char *context,
+            ModuleState *sipMS
+#if SIP_ABI_MAJOR_VERSION < 14
+                = nullptr
+#endif
+            );
 
     // Raise an exception after parse() has failed.
     static void raiseParseException(PyObject *type, const char *context = 0);
@@ -198,7 +232,12 @@ public:
     bool fromPyObject(PyObject *py, QVariant *var, bool strict = true) const;
 
     // Convert a Python object to a QVariant based on the type of the object.
-    static QVariant fromAnyPyObject(PyObject *py, int *is_err);
+    static QVariant fromAnyPyObject(PyObject *py, int *is_err,
+            ModuleState *sipMS
+#if SIP_ABI_MAJOR_VERSION < 14
+                = nullptr
+#endif
+            );
 
     // Convert a QVariant to a Python object.
     PyObject *toPyObject(const QVariant &var) const;
@@ -207,7 +246,12 @@ public:
     PyObject *toPyObject(void *cpp) const;
 
     // Convert a QVariant to a Python object based on the type of the object.
-    static PyObject *toAnyPyObject(const QVariant &var);
+    static PyObject *toAnyPyObject(const QVariant &var,
+            ModuleState *sipMS
+#if SIP_ABI_MAJOR_VERSION < 14
+                = nullptr
+#endif
+            );
 
     // Returns a borrowed reference to the Python type object that was used to
     // define the type (if any).
@@ -220,7 +264,9 @@ public:
     bool isEnumOrFlag() const;
 
     // Returns the SIP generated type structure.
-    const sipTypeDef *typeDef() const {return _type;}
+    TypeId typeDef() const {return _type;}
+    bool isType(TypeId type) const;
+    ModuleState *moduleState() const {return _sip_module_state;}
 
     // Register a type as a Python enum.
     static void registerPyEnum(PyObject *enum_type,
@@ -236,7 +282,8 @@ public:
 private:
     // The generated type structure.  This may be 0 if the type is known by Qt
     // but hasn't been wrapped.
-    const sipTypeDef *_type;
+    ModuleState *_sip_module_state;
+    TypeId _type;
 
     // The Python type object if a Python type (rather than a C++ type string)
     // was given.
@@ -254,25 +301,30 @@ private:
     // Set if the C++ type is char *.  This needs special handling.
     bool _is_char_star;
 
+    static QMutex _convertor_lock;
+    static FromQVariantConvertors registeredFromQVariantConvertors;
+    static ToQVariantConvertors registeredToQVariantConvertors;
+    static ToQVariantDataConvertors registeredToQVariantDataConvertors;
+
     // The registered user-defined enums.
     static QHash<PyObject *, QByteArray> _py_enum_types;
 
     // The cache of previously parsed argument type lists.
     static QHash<QByteArray, QList<const Chimera *> > _previously_parsed;
 
-    Chimera();
+    explicit Chimera(ModuleState *sipMS);
 
     bool parse_cpp_type(const QByteArray &type);
     bool parse_py_type(PyTypeObject *type_obj);
     sipAssignFunc get_assign_helper() const;
-    void set_qflags(const sipTypeDef *td);
+    void set_qflags(TypeId td);
     static bool to_char16_t(PyObject *py, char16_t &cpp);
     static bool to_char32_t(PyObject *py, char32_t &cpp);
     static void raiseParseCppException(const char *type,
             const char *context = 0);
     static QVariant keep_as_pyobject(PyObject *py);
     static int extract_raw_type(const QByteArray &type, QByteArray &raw_type);
-    static QByteArray resolve_types(const QByteArray &type);
+    QByteArray resolve_types(const QByteArray &type) const;
     int get_enum_value(PyObject *py) const;
     PyObject *get_enum_key(int cpp) const;
 

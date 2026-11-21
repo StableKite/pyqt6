@@ -28,9 +28,9 @@
 
 
 // Return the Python object from the variant.
-PyObject *qpycore_PyObject_FromQVariant(const QVariant &qvar)
+PyObject *qpycore_PyObject_FromQVariant(const QVariant &qvar, QPyCoreModuleState *sipMS)
 {
-    return Chimera::toAnyPyObject(qvar);
+    return Chimera::toAnyPyObject(qvar, sipMS);
 }
 
 
@@ -39,16 +39,16 @@ PyObject *qpycore_PyObject_FromQVariant(const QVariant &qvar)
 // wrapped type).  Otherwise it is left as a Python object (with an increased
 // reference count).  An exception is raised if there was a conversion error.
 // (The type of the object will never be the cause of an error.)
-QVariant qpycore_PyObject_AsQVariant(PyObject *obj, int *is_err)
+QVariant qpycore_PyObject_AsQVariant(PyObject *obj, int *is_err, QPyCoreModuleState *sipMS)
 {
-    return Chimera::fromAnyPyObject(obj, is_err);
+    return Chimera::fromAnyPyObject(obj, is_err, sipMS);
 }
 
 
 // Return the Python object from the variant using the information provided by
 // a QMetaProperty.
 PyObject *qpycore_PyObject_FromQVariant(const QMetaProperty &mprop,
-        const QVariant &qvar)
+        const QVariant &qvar, QPyCoreModuleState *sipMS)
 {
     if (!qvar.isValid())
     {
@@ -56,7 +56,7 @@ PyObject *qpycore_PyObject_FromQVariant(const QMetaProperty &mprop,
         return Py_None;
     }
 
-    const Chimera *ct = Chimera::parse(mprop);
+    const Chimera *ct = Chimera::parse(mprop, sipMS);
     PyObject *py = ct->toPyObject(qvar);
     delete ct;
 
@@ -68,9 +68,9 @@ PyObject *qpycore_PyObject_FromQVariant(const QMetaProperty &mprop,
 // by a QMetaProperty.  An exception is raised if there was a conversion error.
 // (The type of the object will never be the cause of an error.)
 QVariant qpycore_PyObject_AsQVariant(const QMetaProperty &mprop, PyObject *obj,
-        bool *ok)
+        bool *ok, QPyCoreModuleState *sipMS)
 {
-    const Chimera *ct = Chimera::parse(mprop);
+    const Chimera *ct = Chimera::parse(mprop, sipMS);
     QVariant value;
     *ok = ct->fromPyObject(obj, &value);
     delete ct;

@@ -100,7 +100,11 @@ public:
         value = sipCpp->value(*a0, *a1);
         Py_END_ALLOW_THREADS
         
+#if SIP_ABI_MAJOR_VERSION >= 14
+        sipRes = pyqt6_from_qvariant_by_type(value, a2, sipMS);
+#else
         sipRes = pyqt6_from_qvariant_by_type(value, a2);
+#endif
         
         if (!sipRes)
             sipError = sipErrorFail;
@@ -118,7 +122,11 @@ public:
         value = sipCpp->value(*a0, *a1);
         Py_END_ALLOW_THREADS
         
+#if SIP_ABI_MAJOR_VERSION >= 14
+        sipRes = pyqt6_from_qvariant_by_type(value, a2, sipMS);
+#else
         sipRes = pyqt6_from_qvariant_by_type(value, a2);
+#endif
         
         if (!sipRes)
             sipError = sipErrorFail;

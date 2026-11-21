@@ -53,7 +53,11 @@ if (Py_TYPE(sipPy) == sipTypeAsPyTypeObject(sipType_QVariant))
 }
 
 // Convert it to a QVariant.
+#if SIP_ABI_MAJOR_VERSION >= 14
+QVariant var = qpycore_PyObject_AsQVariant(sipPy, sipIsErr, sipMS);
+#else
 QVariant var = qpycore_PyObject_AsQVariant(sipPy, sipIsErr);
+#endif
 
 if (*sipIsErr)
     return 0;
@@ -64,7 +68,11 @@ return sipGetState(sipTransferObj);
 %End
 
 %ConvertFromTypeCode
+#if SIP_ABI_MAJOR_VERSION >= 14
+return qpycore_PyObject_FromQVariant(*sipCpp, sipMS);
+#else
 return qpycore_PyObject_FromQVariant(*sipCpp);
+#endif
 %End
 
 public:
@@ -72,7 +80,11 @@ public:
     QVariant(SIP_PYOBJECT obj);
 %MethodCode
         int is_err = 0;
+#if SIP_ABI_MAJOR_VERSION >= 14
+        QVariant var = qpycore_PyObject_AsQVariant(a0, &is_err, sipMS);
+#else
         QVariant var = qpycore_PyObject_AsQVariant(a0, &is_err);
+#endif
         
         if (is_err)
             sipCpp = 0;
@@ -83,7 +95,11 @@ public:
     ~QVariant();
     SIP_PYOBJECT value() const;
 %MethodCode
+#if SIP_ABI_MAJOR_VERSION >= 14
+        sipRes = qpycore_PyObject_FromQVariant(*sipCpp, sipMS);
+#else
         sipRes = qpycore_PyObject_FromQVariant(*sipCpp);
+#endif
 %End
 
     int userType() const;

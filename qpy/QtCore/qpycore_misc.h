@@ -30,7 +30,9 @@
 
 
 QByteArray qpycore_convert_ASCII(PyObject *str_obj);
+#if SIP_ABI_MAJOR_VERSION < 14
 bool qpycore_is_pyqt_type(const sipTypeDef *td);
+#endif
 
 
 #endif

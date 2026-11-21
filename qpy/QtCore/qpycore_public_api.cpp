@@ -443,7 +443,7 @@ sipErrorState pyqt6_get_signal_signature(PyObject *signal,
 void pyqt6_register_from_qvariant_convertor(
         bool (*convertor)(const QVariant &, PyObject **))
 {
-    Chimera::registeredFromQVariantConvertors.append(convertor);
+    Chimera::registerConvertor(convertor);
 }
 
 
@@ -451,7 +451,7 @@ void pyqt6_register_from_qvariant_convertor(
 void pyqt6_register_to_qvariant_convertor(
         bool (*convertor)(PyObject *, QVariant &, bool *))
 {
-    Chimera::registeredToQVariantConvertors.append(convertor);
+    Chimera::registerConvertor(convertor);
 }
 
 
@@ -460,7 +460,7 @@ void pyqt6_register_to_qvariant_convertor(
 void pyqt6_register_to_qvariant_data_convertor(
         bool (*convertor)(PyObject *, void *, QMetaType, bool *))
 {
-    Chimera::registeredToQVariantDataConvertors.append(convertor);
+    Chimera::registerConvertor(convertor);
 }
 
 

@@ -59,10 +59,12 @@ QByteArray qpycore_convert_ASCII(PyObject *str_obj)
 
 
 // Return true if the given type was wrapped for PyQt.
+#if SIP_ABI_MAJOR_VERSION < 14
 bool qpycore_is_pyqt_type(const sipTypeDef *td)
 {
     return sipCheckPluginForType(td, "PyQt6.QtCore");
 }
+#endif
 
 
 void qpycore_Unicode_ConcatAndDel(PyObject **string, PyObject *newpart)
