@@ -184,20 +184,19 @@ const Chimera *Chimera::parse(PyObject *obj)
     }
     else
     {
-        const char *cpp_type_name = sipString_AsASCIIString(&obj);
+        const QByteArray cpp_type_name = qpycore_convert_ASCII(obj);
 
-        if (cpp_type_name)
+        if (!cpp_type_name.isNull())
         {
             // Always use normalised type names so that we have a consistent
             // standard.
-            QByteArray norm_name = QMetaObject::normalizedType(cpp_type_name);
-            Py_DECREF(obj);
+            QByteArray norm_name = QMetaObject::normalizedType(cpp_type_name.constData());
 
             // Parse the type name.
             parse_ok = ct->parse_cpp_type(norm_name);
 
             if (!parse_ok)
-                raiseParseCppException(cpp_type_name);
+                raiseParseCppException(cpp_type_name.constData());
         }
         else
         {
@@ -444,13 +443,10 @@ void Chimera::raiseParseException(PyObject *type, const char *context)
     }
     else
     {
-        const char *cpp_type_name = sipString_AsASCIIString(&type);
+        const QByteArray cpp_type_name = qpycore_convert_ASCII(type);
 
-        if (cpp_type_name)
-        {
-            raiseParseCppException(cpp_type_name, context);
-            Py_DECREF(type);
-        }
+        if (!cpp_type_name.isNull())
+            raiseParseCppException(cpp_type_name.constData(), context);
     }
 }
 

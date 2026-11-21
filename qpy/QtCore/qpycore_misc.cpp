@@ -31,19 +31,30 @@
 // Convert a borrowed ASCII string object to a QByteArray.
 QByteArray qpycore_convert_ASCII(PyObject *str_obj)
 {
-    const char *str = sipString_AsASCIIString(&str_obj);
+    if (!str_obj)
+        return QByteArray();
 
-    if (!str)
+    PyObject *bytes;
+    if (PyUnicode_Check(str_obj))
     {
-        Py_DECREF(str_obj);
+        bytes = PyUnicode_AsASCIIString(str_obj);
+    }
+    else if (PyBytes_Check(str_obj))
+    {
+        bytes = Py_NewRef(str_obj);
+    }
+    else
+    {
+        PyErr_SetString(PyExc_TypeError, "bytes or an ASCII string expected");
         return QByteArray();
     }
 
-    QByteArray ba(str);
+    if (!bytes)
+        return QByteArray();
 
-    Py_DECREF(str_obj);
-
-    return ba;
+    QByteArray converted(PyBytes_AsString(bytes));
+    Py_DECREF(bytes);
+    return converted;
 }
 
 
