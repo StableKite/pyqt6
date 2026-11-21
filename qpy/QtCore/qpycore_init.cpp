@@ -29,6 +29,11 @@
 #include <QCoreApplication>
 
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+void qpycore_clear_qt_message_handler(sipModuleState *sipMS);
+#endif
+
+
 // Set if any QCoreApplication (or sub-class) instance was created from Python.
 bool qpycore_created_qapp;
 
@@ -41,6 +46,7 @@ static PyObject *cleanup_on_exit(PyObject *module, PyObject *)
     auto *sipMS = static_cast<sipModuleState *>(PyModule_GetState(module));
     if (!sipMS)
         return nullptr;
+    qpycore_clear_qt_message_handler(sipMS);
     pyqt6_cleanup_qobjects(sipMS);
 #else
     (void)module;

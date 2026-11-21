@@ -189,6 +189,9 @@ void qWarning(const char *msg) /ReleaseGIL/;
 
 SIP_PYCALLABLE qInstallMessageHandler(SIP_PYCALLABLE /AllowNone,TypeHint="Optional[Callable[[QtMsgType, QMessageLogContext, QString], None]]"/) /TypeHint="Optional[Callable[[QtMsgType, QMessageLogContext, QString], None]]"/;
 %MethodCode
+#if SIP_ABI_MAJOR_VERSION >= 14
+    sipRes = qtcore_set_message_handler(sipMS, a0);
+#else
     PyObject *previous;
     {
         QMutexLocker lock(&qtcore_MessageHandlerMutex);
@@ -196,38 +199,202 @@ SIP_PYCALLABLE qInstallMessageHandler(SIP_PYCALLABLE /AllowNone,TypeHint="Option
                 a0 != Py_None ? qtcore_MessageHandler : nullptr);
 
         previous = qtcore_PyMessageHandler;
-        sipRes = old == qtcore_MessageHandler ? previous : Py_None;
-        Py_INCREF(sipRes);
-        Py_INCREF(a0);
-        qtcore_PyMessageHandler = a0;
+        sipRes = Py_NewRef(old == qtcore_MessageHandler ? previous : Py_None);
+        qtcore_PyMessageHandler = a0 != Py_None ? Py_NewRef(a0) : nullptr;
     }
     // A callable's destructor can re-enter qInstallMessageHandler().
     Py_XDECREF(previous);
+#endif
 %End
 
 // Module code needed by qInstallMessageHandler().
 %ModuleCode
 #include <QMutex>
+#if SIP_ABI_MAJOR_VERSION >= 14
+#include <limits>
+#include <memory>
+#include <utility>
+#endif
 
 // The user supplied Python handler.
 static QMutex qtcore_MessageHandlerMutex;
 static PyObject *qtcore_PyMessageHandler = nullptr;
+#if SIP_ABI_MAJOR_VERSION >= 14
+static sipModuleState *qtcore_MessageHandlerState = nullptr;
+static PyObject *qtcore_MessageHandlerModule = nullptr;
+static std::shared_ptr<PyInterpreterView> qtcore_MessageHandlerView;
+#endif
+
+#if SIP_ABI_MAJOR_VERSION >= 14
+static void qtcore_MessageHandler(QtMsgType, const QMessageLogContext &,
+        const QString &);
+
+static PyObject *qtcore_set_message_handler(sipModuleState *sipMS,
+        PyObject *handler)
+{
+    std::shared_ptr<PyInterpreterView> view;
+    PyObject *module = nullptr;
+
+    if (handler != Py_None)
+    {
+        PyInterpreterView *current_view = PyInterpreterView_FromCurrent();
+        if (!current_view)
+            return nullptr;
+
+        view.reset(current_view, PyInterpreterView_Close);
+        PyObject *name = PyUnicode_FromString("PyQt6.QtCore");
+        if (!name)
+            return nullptr;
+
+        module = PyImport_GetModule(name);
+        Py_DECREF(name);
+        if (!module || PyModule_GetState(module) != sipMS)
+        {
+            Py_XDECREF(module);
+            if (!PyErr_Occurred())
+                PyErr_SetString(PyExc_RuntimeError, "QtCore module state is unavailable");
+            return nullptr;
+        }
+    }
+
+    PyObject *previous = nullptr;
+    PyObject *result = nullptr;
+    {
+        QMutexLocker lock(&qtcore_MessageHandlerMutex);
+        if (!qtcore_MessageHandlerState || qtcore_MessageHandlerState == sipMS)
+        {
+            QtMessageHandler old = qInstallMessageHandler(
+                    view ? qtcore_MessageHandler : nullptr);
+            previous = qtcore_PyMessageHandler;
+            result = Py_NewRef(old == qtcore_MessageHandler && previous ? previous : Py_None);
+            qtcore_PyMessageHandler = view ? Py_NewRef(handler) : nullptr;
+            qtcore_MessageHandlerState = view ? sipMS : nullptr;
+            std::swap(qtcore_MessageHandlerModule, module);
+            qtcore_MessageHandlerView.swap(view);
+        }
+    }
+
+    Py_XDECREF(previous);
+    Py_XDECREF(module);
+    if (!result)
+        PyErr_SetString(PyExc_RuntimeError, "the Qt message handler belongs to another interpreter");
+    return result;
+}
+
+void qpycore_clear_qt_message_handler(sipModuleState *sipMS)
+{
+    std::shared_ptr<PyInterpreterView> view;
+    PyObject *module;
+    PyObject *handler;
+    {
+        QMutexLocker lock(&qtcore_MessageHandlerMutex);
+        if (qtcore_MessageHandlerState != sipMS)
+            return;
+
+        QtMessageHandler old = qInstallMessageHandler(nullptr);
+        if (old != qtcore_MessageHandler)
+            qInstallMessageHandler(old);
+
+        view.swap(qtcore_MessageHandlerView);
+        module = std::exchange(qtcore_MessageHandlerModule, nullptr);
+        handler = std::exchange(qtcore_PyMessageHandler, nullptr);
+        qtcore_MessageHandlerState = nullptr;
+    }
+    Py_DECREF(module);
+    Py_DECREF(handler);
+}
+
+// A Qt callback's context is only valid during the call. Give Python a copy
+// with its own backing strings so it can keep the context.
+static PyObject *qtcore_copy_log_context(sipModuleState *sipMS,
+        const QMessageLogContext &context)
+{
+    PyObject *strings = PyTuple_New(3);
+    if (!strings)
+        return nullptr;
+
+    const char *fields[] = {context.file, context.function, context.category};
+    for (Py_ssize_t i = 0; i < 3; ++i)
+    {
+        PyObject *value = fields[i] ? PyBytes_FromString(fields[i])
+                : Py_NewRef(Py_None);
+        if (!value || PyTuple_SetItem(strings, i, value) < 0)
+        {
+            Py_DECREF(strings);
+            return nullptr;
+        }
+
+        if (fields[i])
+            fields[i] = PyBytes_AsString(value);
+    }
+
+    auto *copy = new QMessageLogContext(fields[0], context.line, fields[1],
+            fields[2]);
+    PyObject *wrapped = sipConvertFromNewType(copy, sipType_QMessageLogContext,
+            nullptr);
+    if (!wrapped)
+        delete copy;
+    else if (sipKeepReference(wrapped, std::numeric_limits<int>::min(), strings) < 0)
+        Py_CLEAR(wrapped);
+
+    Py_DECREF(strings);
+    return wrapped;
+}
+#endif
+
 
 // The C++ wrapper around the Python handler.
 static void qtcore_MessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
-    SIP_BLOCK_THREADS
-
-    PyObject *handler;
+#if SIP_ABI_MAJOR_VERSION >= 14
+    std::shared_ptr<PyInterpreterView> view;
     {
         QMutexLocker lock(&qtcore_MessageHandlerMutex);
-        handler = qtcore_PyMessageHandler;
-        Py_XINCREF(handler);
+        view = qtcore_MessageHandlerView;
+    }
+    if (!view)
+        return;
+
+    PyThreadStateToken *thread = PyThreadState_EnsureFromView(view.get());
+    if (thread == nullptr)
+        return;
+
+    PyObject *previous_error = PyErr_GetRaisedException();
+    PyObject *module = nullptr;
+#else
+    SIP_BLOCK_THREADS
+#endif
+
+    PyObject *handler = nullptr;
+    {
+        QMutexLocker lock(&qtcore_MessageHandlerMutex);
+#if SIP_ABI_MAJOR_VERSION >= 14
+        if (view == qtcore_MessageHandlerView)
+        {
+            module = Py_XNewRef(qtcore_MessageHandlerModule);
+            handler = Py_XNewRef(qtcore_PyMessageHandler);
+        }
+#else
+        handler = Py_XNewRef(qtcore_PyMessageHandler);
+#endif
     }
 
     if (handler != nullptr && handler != Py_None)
     {
+#if SIP_ABI_MAJOR_VERSION >= 14
+        auto *sipMS = static_cast<sipModuleState *>(PyModule_GetState(module));
+        PyObject *py_type = sipConvertFromEnum(type, sipType_QtMsgType);
+        PyObject *py_context = py_type ? qtcore_copy_log_context(sipMS, context)
+                : nullptr;
+        PyObject *py_msg = py_context ? qpycore_PyObject_FromQString(msg) : nullptr;
+        PyObject *res = py_msg ? PyObject_CallFunctionObjArgs(
+                handler, py_type, py_context, py_msg, nullptr) : nullptr;
+        Py_XDECREF(py_msg);
+        Py_XDECREF(py_context);
+        Py_XDECREF(py_type);
+#else
         PyObject *res = sipCallMethod(0, handler, "FDD", type, sipType_QtMsgType, &context, sipType_QMessageLogContext, NULL, &msg, sipType_QString, NULL);
+#endif
 
         if (res != nullptr && res != Py_None)
         {
@@ -242,7 +409,13 @@ static void qtcore_MessageHandler(QtMsgType type, const QMessageLogContext &cont
     }
 
     Py_XDECREF(handler);
+#if SIP_ABI_MAJOR_VERSION >= 14
+    Py_XDECREF(module);
+    PyErr_SetRaisedException(previous_error);
+    PyThreadState_Release(thread);
+#else
     SIP_UNBLOCK_THREADS
+#endif
 }
 %End
 void qSetMessagePattern(const QString &messagePattern);

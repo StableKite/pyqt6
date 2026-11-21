@@ -26,6 +26,86 @@ class QThreadPool : public QObject
 #include <qthreadpool.h>
 %End
 
+%TypeCode
+#include <functional>
+#include <memory>
+#include <utility>
+
+namespace
+{
+class QtCoreThreadPoolCall
+{
+public:
+#if SIP_ABI_MAJOR_VERSION >= 14
+    QtCoreThreadPoolCall(PyObject *callable, PyInterpreterView *view)
+        : callable(Py_NewRef(callable)), view(view) {}
+#else
+    explicit QtCoreThreadPoolCall(PyObject *callable) : callable(Py_NewRef(callable)) {}
+#endif
+
+    ~QtCoreThreadPoolCall()
+    {
+#if SIP_ABI_MAJOR_VERSION >= 14
+        if (auto *thread = PyThreadState_EnsureFromView(view))
+        {
+            Py_DECREF(callable);
+            PyThreadState_Release(thread);
+        }
+        PyInterpreterView_Close(view);
+#else
+        SIP_BLOCK_THREADS
+        Py_DECREF(callable);
+        SIP_UNBLOCK_THREADS
+#endif
+    }
+
+    void run() const
+    {
+#if SIP_ABI_MAJOR_VERSION >= 14
+        auto *thread = PyThreadState_EnsureFromView(view);
+        if (!thread)
+            return;
+
+        PyObject *previous_error = PyErr_GetRaisedException();
+#else
+        SIP_BLOCK_THREADS
+#endif
+        PyObject *result = PyObject_CallNoArgs(callable);
+        if (result)
+            Py_DECREF(result);
+        else
+            pyqt6_err_print();
+#if SIP_ABI_MAJOR_VERSION >= 14
+        PyErr_SetRaisedException(previous_error);
+        PyThreadState_Release(thread);
+#else
+        SIP_UNBLOCK_THREADS
+#endif
+    }
+
+private:
+    PyObject *const callable;
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyInterpreterView *const view;
+#endif
+};
+}
+
+static std::function<void()> qtcore_thread_pool_function(PyObject *callable)
+{
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyInterpreterView *view = PyInterpreterView_FromCurrent();
+    if (!view)
+        return {};
+
+    auto call = std::make_shared<QtCoreThreadPoolCall>(callable, view);
+#else
+    auto call = std::make_shared<QtCoreThreadPoolCall>(callable);
+#endif
+    return [call] { call->run(); };
+}
+%End
+
 public:
     QThreadPool(QObject *parent /TransferThis/ = 0);
     virtual ~QThreadPool() /ReleaseGIL/;
@@ -43,28 +123,17 @@ public:
 
     void start(SIP_PYCALLABLE functionToRun /TypeHint="Callable[[], None]"/, int priority = 0) /ReleaseGIL/;
 %MethodCode
-        Py_INCREF(a0);
-        
-        Py_BEGIN_ALLOW_THREADS
-        
-        sipCpp->start([a0]() {
-            SIP_BLOCK_THREADS
-        
-            PyObject *res;
-        
-            res = PyObject_CallObject(a0, NULL);
-        
-            Py_DECREF(a0);
-        
-            if (res)
-                Py_DECREF(res);
-            else
-                pyqt6_err_print();
-        
-            SIP_UNBLOCK_THREADS
-        }, a1);
-        
-        Py_END_ALLOW_THREADS
+        auto run = qtcore_thread_pool_function(a0);
+        if (!run)
+        {
+            sipError = sipErrorFail;
+        }
+        else
+        {
+            Py_BEGIN_ALLOW_THREADS
+            sipCpp->start(std::move(run), a1);
+            Py_END_ALLOW_THREADS
+        }
 %End
 
     bool tryStart(QRunnable *runnable /GetWrapper/) /ReleaseGIL/;
@@ -80,28 +149,17 @@ public:
 
     bool tryStart(SIP_PYCALLABLE functionToRun /TypeHint="Callable[[], None]"/) /ReleaseGIL/;
 %MethodCode
-        Py_INCREF(a0);
-        
-        Py_BEGIN_ALLOW_THREADS
-        
-        sipRes = sipCpp->tryStart([a0]() {
-            SIP_BLOCK_THREADS
-        
-            PyObject *res;
-        
-            res = PyObject_CallObject(a0, NULL);
-        
-            Py_DECREF(a0);
-        
-            if (res)
-                Py_DECREF(res);
-            else
-                pyqt6_err_print();
-        
-            SIP_UNBLOCK_THREADS
-        });
-        
-        Py_END_ALLOW_THREADS
+        auto run = qtcore_thread_pool_function(a0);
+        if (!run)
+        {
+            sipError = sipErrorFail;
+        }
+        else
+        {
+            Py_BEGIN_ALLOW_THREADS
+            sipRes = sipCpp->tryStart(std::move(run));
+            Py_END_ALLOW_THREADS
+        }
 %End
 
     bool tryTake(QRunnable *runnable /GetWrapper/) /ReleaseGIL/;
@@ -152,28 +210,17 @@ public:
 %If (Qt_6_3_0 -)
     void startOnReservedThread(SIP_PYCALLABLE functionToRun /TypeHint="Callable[[], None]"/) /ReleaseGIL/;
 %MethodCode
-        Py_INCREF(a0);
-        
-        Py_BEGIN_ALLOW_THREADS
-        
-        sipCpp->startOnReservedThread([a0]() {
-            SIP_BLOCK_THREADS
-        
-            PyObject *res;
-        
-            res = PyObject_CallObject(a0, NULL);
-        
-            Py_DECREF(a0);
-        
-            if (res)
-                Py_DECREF(res);
-            else
-                pyqt6_err_print();
-        
-            SIP_UNBLOCK_THREADS
-        });
-        
-        Py_END_ALLOW_THREADS
+        auto run = qtcore_thread_pool_function(a0);
+        if (!run)
+        {
+            sipError = sipErrorFail;
+        }
+        else
+        {
+            Py_BEGIN_ALLOW_THREADS
+            sipCpp->startOnReservedThread(std::move(run));
+            Py_END_ALLOW_THREADS
+        }
 %End
 
 %End
