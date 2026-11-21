@@ -106,8 +106,16 @@ bool qpycore_qt_conf();
 void qpycore_Unicode_ConcatAndDel(PyObject **string, PyObject *newpart);
 
 // Initialisation.
+#if SIP_ABI_MAJOR_VERSION >= 14
+void qpycore_init(PyObject *module, sipModuleState *sipMS);
+#else
 void qpycore_init();
+#endif
+#if SIP_ABI_MAJOR_VERSION >= 14
+int qpycore_post_init(PyObject *module_dict, sipModuleState *sipMS, PyObject *module);
+#else
 void qpycore_post_init(PyObject *module_dict);
+#endif
 
 
 // Termination.

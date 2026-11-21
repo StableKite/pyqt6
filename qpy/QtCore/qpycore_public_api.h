@@ -40,7 +40,11 @@ QT_END_NAMESPACE
 
 // Call the C++ dtors of all QObject instances (except for QCoreApplication
 // instances) owned by Python.
+#if SIP_ABI_MAJOR_VERSION >= 14
+void pyqt6_cleanup_qobjects(sipModuleState *sipMS);
+#else
 void pyqt6_cleanup_qobjects();
+#endif
 
 // A replacement for PyErr_Print().  In PyQt v5.4 it raises a deprecation
 // warning and calls PyErr_Print().  In PyQt v5.5 and later it passes the text

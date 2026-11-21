@@ -411,7 +411,7 @@ callable.
         sipRes = qtcore_FindChild(sipCpp, qtcore_type_to_tuple(a0), *a1, *a2);
         
         if (!sipRes)
-            sipIsErr = 1;
+            sipError = sipErrorFail;
 %End
 
     SIP_PYOBJECT findChild(SIP_PYTUPLE types /TypeHint="Tuple[Type[QObjectT], ...]", TypeHintValue="()"/, const QString &name = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const /TypeHint="QObjectT"/;
@@ -419,7 +419,7 @@ callable.
         sipRes = qtcore_FindChild(sipCpp, qtcore_check_tuple_types(a0), *a1, *a2);
         
         if (!sipRes)
-            sipIsErr = 1;
+            sipError = sipErrorFail;
 %End
 
     SIP_PYLIST findChildren(SIP_PYTYPE type /TypeHint="Type[QObjectT]"/, const QString &name = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const /TypeHint="List[QObjectT]"/;
@@ -427,7 +427,7 @@ callable.
         sipRes = qtcore_FindChildren(sipCpp, qtcore_type_to_tuple(a0), *a1, *a2);
         
         if (!sipRes)
-            sipIsErr = 1;
+            sipError = sipErrorFail;
 %End
 
     SIP_PYLIST findChildren(SIP_PYTUPLE types /TypeHint="Tuple[Type[QObjectT], ...]", TypeHintValue="()"/, const QString &name = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const /TypeHint="List[QObjectT]"/;
@@ -435,7 +435,7 @@ callable.
         sipRes = qtcore_FindChildren(sipCpp, qtcore_check_tuple_types(a0), *a1, *a2);
         
         if (!sipRes)
-            sipIsErr = 1;
+            sipError = sipErrorFail;
 %End
 
     SIP_PYLIST findChildren(SIP_PYTYPE type /TypeHint="Type[QObjectT]"/, const QRegularExpression &re, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const /TypeHint="List[QObjectT]"/;
@@ -443,7 +443,7 @@ callable.
         sipRes = qtcore_FindChildren(sipCpp, qtcore_type_to_tuple(a0), *a1, *a2);
         
         if (!sipRes)
-            sipIsErr = 1;
+            sipError = sipErrorFail;
 %End
 
     SIP_PYLIST findChildren(SIP_PYTUPLE types /TypeHint="Tuple[Type[QObjectT], ...]", TypeHintValue="()"/, const QRegularExpression &re, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const /TypeHint="List[QObjectT]"/;
@@ -451,7 +451,7 @@ callable.
         sipRes = qtcore_FindChildren(sipCpp, qtcore_check_tuple_types(a0), *a1, *a2);
         
         if (!sipRes)
-            sipIsErr = 1;
+            sipError = sipErrorFail;
 %End
 
     QString objectName() const;
@@ -665,9 +665,18 @@ private:
 %End
 
 %InitialisationCode
+#if SIP_ABI_MAJOR_VERSION >= 14
+qpycore_init(sipModule, sipMS);
+#else
 qpycore_init();
+#endif
 %End
 
 %PostInitialisationCode
+#if SIP_ABI_MAJOR_VERSION >= 14
+if (qpycore_post_init(sipModuleDict, sipMS, sipModule) < 0)
+    return -1;
+#else
 qpycore_post_init(sipModuleDict);
+#endif
 %End

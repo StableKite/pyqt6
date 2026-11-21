@@ -43,10 +43,19 @@ PyObject *qpycore_dunder_pyqtsignature;
 
 
 // Perform any required post-initialisation.
+#if SIP_ABI_MAJOR_VERSION >= 14
+int qpycore_post_init(PyObject *module_dict, sipModuleState *sipMS, PyObject *module)
+#else
 void qpycore_post_init(PyObject *module_dict)
+#endif
 {
     // Register the event handlers.
+#if SIP_ABI_MAJOR_VERSION >= 14
+    if (qpycore_register_event_handlers(sipMS, module) < 0)
+        return -1;
+#else
     qpycore_register_event_handlers();
+#endif
 
     // Initialise the pyqtProperty type and add it to the module dictionary.
     if (!qpycore_pyqtProperty_init_type())
@@ -109,4 +118,7 @@ void qpycore_post_init(PyObject *module_dict)
     // Load the embedded qt.conf file if there is a bundled copy of Qt.
     if (!qpycore_qt_conf())
         Py_FatalError("PyQt6.QtCore: Unable to embed qt.conf");
+#if SIP_ABI_MAJOR_VERSION >= 14
+    return 0;
+#endif
 }

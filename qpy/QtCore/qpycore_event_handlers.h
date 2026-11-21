@@ -22,9 +22,16 @@
 #define _QPYCORE_EVENT_HANDLERS_H
 
 
-#include <atomic>
-
 #include <sip.h>
+
+#if SIP_ABI_MAJOR_VERSION >= 14
+
+int qpycore_register_event_handlers(sipModuleState *sipMS, PyObject *module);
+void qpycore_disable_monitoring(sipModuleState *sipMS);
+
+#else
+
+#include <atomic>
 
 #include <QMutex>
 #include <QObject>
@@ -52,6 +59,8 @@ private:
 
 
 void qpycore_register_event_handlers();
+
+#endif
 
 
 #endif

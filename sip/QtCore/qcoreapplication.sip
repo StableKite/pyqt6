@@ -58,7 +58,16 @@ public:
 
     virtual ~QCoreApplication() /ReleaseGIL/;
 %MethodCode
+#if SIP_ABI_MAJOR_VERSION >= 14
+        if (sipState)
+        {
+            auto *wrapper = static_cast<sipQCoreApplication *>(sipCpp);
+            if (wrapper->sipMS)
+                pyqt6_cleanup_qobjects(wrapper->sipMS);
+        }
+#else
         pyqt6_cleanup_qobjects();
+#endif
 %End
 
     static void setOrganizationDomain(const QString &orgDomain);

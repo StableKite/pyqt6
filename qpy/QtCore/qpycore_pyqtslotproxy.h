@@ -72,8 +72,6 @@ public:
     static int visitSlotProxies(const QObject *transmitter, visitproc visit,
             void *arg);
 
-    static QObject *lastSender();
-
     // The signature of the slot that receives connections.
     static const QByteArray proxy_slot_signature;
 
@@ -85,7 +83,6 @@ public:
 
 private:
     // The last QObject sender.
-    static QObject *last_sender;
 
     // The type of a proxy hash.
     typedef QMultiHash<const QObject *, PyQtSlotProxy *> ProxyHash;

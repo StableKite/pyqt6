@@ -44,8 +44,8 @@
                                     // should not be checked.
 
 
-// The last QObject sender.
-QObject *PyQtSlotProxy::last_sender = 0;
+// The active sender, including nested calls on this thread.
+static thread_local QObject *last_sender = nullptr;
 
 
 // Create a universal proxy used as a slot.  Note that this will leak if there
@@ -393,7 +393,7 @@ int qpycore_visitSlotProxies(const QObject *transmitter, visitproc visit,
 
 
 // Get the last sender.
-QObject *PyQtSlotProxy::lastSender()
+QObject *qpycore_qobject_sender()
 {
     return last_sender;
 }

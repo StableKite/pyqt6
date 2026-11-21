@@ -35,14 +35,29 @@
 #include <QThread>
 
 
+struct QObjectCleanup
+{
+#if SIP_ABI_MAJOR_VERSION >= 14
+    sipModuleState *sipMS;
+#endif
+    const QCoreApplication *application;
+    PyTypeObject *qobject_type;
+    PyTypeObject *qthread_type;
+};
+
+
 // The visitor called for each wrapper to clean up if it is a QObject.
 static void cleanup_qobject(sipSimpleWrapper *sw, void *closure)
 {
+    const auto &context = *static_cast<QObjectCleanup *>(closure);
+#if SIP_ABI_MAJOR_VERSION >= 14
+    auto *sipMS = context.sipMS;
+#endif
     // Ignore any wrapper for QCoreApplication (or sub-class) instances or that
     // have already been destroyed.
     void *addr = sipGetAddress(sw);
 
-    if (!addr || addr == closure)
+    if (!addr || addr == context.application)
         return;
 
     // Ignore anything not owned by Python.
@@ -50,11 +65,11 @@ static void cleanup_qobject(sipSimpleWrapper *sw, void *closure)
         return;
 
     // Ignore non-QObjects.
-    if (!PyObject_TypeCheck((PyObject *)sw, sipTypeAsPyTypeObject(sipType_QObject)))
+    if (!PyObject_TypeCheck((PyObject *)sw, context.qobject_type))
         return;
 
     // Ignore running threads.
-    if (PyObject_TypeCheck((PyObject *)sw, sipTypeAsPyTypeObject(sipType_QThread)))
+    if (PyObject_TypeCheck((PyObject *)sw, context.qthread_type))
     {
         QThread *thr = reinterpret_cast<QThread *>(addr);
 
@@ -72,12 +87,37 @@ static void cleanup_qobject(sipSimpleWrapper *sw, void *closure)
 
 // Call the C++ dtors of all QObject instances (except for QCoreApplication
 // instances) owned by Python.
+#if SIP_ABI_MAJOR_VERSION >= 14
+void pyqt6_cleanup_qobjects(sipModuleState *sipMS)
+#else
 void pyqt6_cleanup_qobjects()
+#endif
 {
     // Disable any monitoring.
+#if SIP_ABI_MAJOR_VERSION >= 14
+    qpycore_disable_monitoring(sipMS);
+#else
     PyQtMonitor::enabled = false;
+#endif
 
-    sipVisitWrappers(cleanup_qobject, QCoreApplication::instance());
+    QObjectCleanup context;
+    context.application = QCoreApplication::instance();
+#if SIP_ABI_MAJOR_VERSION >= 14
+    context.sipMS = sipMS;
+    context.qobject_type = sipGetPyTypeRef(sipType_QObject);
+    context.qthread_type = context.qobject_type ? sipGetPyTypeRef(sipType_QThread) : nullptr;
+#else
+    context.qobject_type = sipTypeAsPyTypeObject(sipType_QObject);
+    context.qthread_type = sipTypeAsPyTypeObject(sipType_QThread);
+#endif
+
+    if (context.qobject_type && context.qthread_type)
+        sipVisitWrappers(cleanup_qobject, &context);
+
+#if SIP_ABI_MAJOR_VERSION >= 14
+    Py_XDECREF(context.qthread_type);
+    Py_XDECREF(context.qobject_type);
+#endif
 }
 
 

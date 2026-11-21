@@ -22,7 +22,6 @@
 
 #include "qpycore_api.h"
 #include "qpycore_public_api.h"
-#include "qpycore_pyqtslotproxy.h"
 #include "qpycore_qobject_helpers.h"
 
 #include "sipAPIQtCore.h"
@@ -36,9 +35,17 @@ bool qpycore_created_qapp;
 
 // This is called to clean up on exit.  It is done in case the QCoreApplication
 // dealloc code hasn't been called.
-static PyObject *cleanup_on_exit(PyObject *, PyObject *)
+static PyObject *cleanup_on_exit(PyObject *module, PyObject *)
 {
+#if SIP_ABI_MAJOR_VERSION >= 14
+    auto *sipMS = static_cast<sipModuleState *>(PyModule_GetState(module));
+    if (!sipMS)
+        return nullptr;
+    pyqt6_cleanup_qobjects(sipMS);
+#else
+    (void)module;
     pyqt6_cleanup_qobjects();
+#endif
 
     // Never destroy a QCoreApplication if we didn't create it (eg. if we are
     // embedded in a C++ application).
@@ -60,47 +67,71 @@ static PyObject *cleanup_on_exit(PyObject *, PyObject *)
 
 
 // Perform any required initialisation.
+#if SIP_ABI_MAJOR_VERSION >= 14
+void qpycore_init(PyObject *module, sipModuleState *sipMS)
+#else
 void qpycore_init()
+#endif
 {
     // We haven't created a QCoreApplication instance.
     qpycore_created_qapp = false;
 
     // Export the private helpers, ie. those that should not be used by
     // external handwritten code.
-    sipExportSymbol("qtcore_qt_metaobject",
-            (void *)qpycore_qobject_metaobject);
-    sipExportSymbol("qtcore_qt_metacall", (void *)qpycore_qobject_qt_metacall);
-    sipExportSymbol("qtcore_qt_metacast", (void *)qpycore_qobject_qt_metacast);
-    sipExportSymbol("qtcore_qobject_sender",
-            (void *)PyQtSlotProxy::lastSender);
-
-    // Export the public API.
-    sipExportSymbol("pyqt6_cleanup_qobjects", (void *)pyqt6_cleanup_qobjects);
-    sipExportSymbol("pyqt6_err_print", (void *)pyqt6_err_print);
-    sipExportSymbol("pyqt6_from_argv_list", (void *)pyqt6_from_argv_list);
-    sipExportSymbol("pyqt6_from_qvariant_by_type",
-            (void *)pyqt6_from_qvariant_by_type);
-    sipExportSymbol("pyqt6_get_connection_parts",
-            (void *)pyqt6_get_connection_parts);
-    sipExportSymbol("pyqt6_get_pyqtsignal_parts",
-            (void *)pyqt6_get_pyqtsignal_parts);
-    sipExportSymbol("pyqt6_get_pyqtslot_parts",
-            (void *)pyqt6_get_pyqtslot_parts);
-    sipExportSymbol("pyqt6_get_qmetaobject", (void *)pyqt6_get_qmetaobject);
-    sipExportSymbol("pyqt6_get_signal_signature",
-            (void *)pyqt6_get_signal_signature);
-    sipExportSymbol("pyqt6_register_from_qvariant_convertor",
-            (void *)pyqt6_register_from_qvariant_convertor);
-    sipExportSymbol("pyqt6_register_to_qvariant_convertor",
-            (void *)pyqt6_register_to_qvariant_convertor);
-    sipExportSymbol("pyqt6_register_to_qvariant_data_convertor",
-            (void *)pyqt6_register_to_qvariant_data_convertor);
-    sipExportSymbol("pyqt6_update_argv_list", (void *)pyqt6_update_argv_list);
+#if SIP_ABI_MAJOR_VERSION >= 14
+    using Symbol = sipSymbolSpec;
+#else
+    struct Symbol {
+        const char *name;
+        void *symbol;
+    };
+#endif
+    static const Symbol exports[] = {
+        {"qtcore_qt_metaobject", reinterpret_cast<void *>(qpycore_qobject_metaobject)},
+        {"qtcore_qt_metacall", reinterpret_cast<void *>(qpycore_qobject_qt_metacall)},
+        {"qtcore_qt_metacast", reinterpret_cast<void *>(qpycore_qobject_qt_metacast)},
+        {"qtcore_qobject_sender", reinterpret_cast<void *>(qpycore_qobject_sender)},
+        {"pyqt6_cleanup_qobjects", reinterpret_cast<void *>(pyqt6_cleanup_qobjects)},
+        {"pyqt6_err_print", reinterpret_cast<void *>(pyqt6_err_print)},
+        {"pyqt6_from_argv_list", reinterpret_cast<void *>(pyqt6_from_argv_list)},
+        {"pyqt6_from_qvariant_by_type", reinterpret_cast<void *>(pyqt6_from_qvariant_by_type)},
+        {"pyqt6_get_connection_parts", reinterpret_cast<void *>(pyqt6_get_connection_parts)},
+        {"pyqt6_get_pyqtsignal_parts", reinterpret_cast<void *>(pyqt6_get_pyqtsignal_parts)},
+        {"pyqt6_get_pyqtslot_parts", reinterpret_cast<void *>(pyqt6_get_pyqtslot_parts)},
+        {"pyqt6_get_qmetaobject", reinterpret_cast<void *>(pyqt6_get_qmetaobject)},
+        {"pyqt6_get_signal_signature", reinterpret_cast<void *>(pyqt6_get_signal_signature)},
+        {"pyqt6_register_from_qvariant_convertor", reinterpret_cast<void *>(pyqt6_register_from_qvariant_convertor)},
+        {"pyqt6_register_to_qvariant_convertor", reinterpret_cast<void *>(pyqt6_register_to_qvariant_convertor)},
+        {"pyqt6_register_to_qvariant_data_convertor", reinterpret_cast<void *>(pyqt6_register_to_qvariant_data_convertor)},
+        {"pyqt6_update_argv_list", reinterpret_cast<void *>(pyqt6_update_argv_list)},
+        {nullptr, nullptr}
+    };
+#if SIP_ABI_MAJOR_VERSION >= 14
+    sipExportSymbols(exports);
+#else
+    for (const Symbol *symbol = exports; symbol->name; ++symbol)
+        sipExportSymbol(symbol->name, symbol->symbol);
+#endif
 
     // Register the cleanup function.
     static PyMethodDef cleanup_md = {
         "_qtcore_cleanup", cleanup_on_exit, METH_NOARGS, SIP_NULLPTR
     };
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyObject *callback = PyCFunction_New(&cleanup_md, module);
+    if (!callback)
+        return;
+
+    PyObject *atexit = PyImport_ImportModule("atexit");
+    if (atexit)
+    {
+        PyObject *registered = PyObject_CallMethod(atexit, "register", "O", callback);
+        Py_XDECREF(registered);
+        Py_DECREF(atexit);
+    }
+    Py_DECREF(callback);
+#else
     sipRegisterExitNotifier(&cleanup_md);
+#endif
 }

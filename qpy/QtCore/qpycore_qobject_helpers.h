@@ -29,12 +29,25 @@
 #include "sipAPIQtCore.h"
 
 
+QObject *qpycore_qobject_sender();
+
+#if SIP_ABI_MAJOR_VERSION >= 14
+const QMetaObject *qpycore_qobject_metaobject(sipModuleState *sipMS,
+        sipSimpleWrapper *pySelf, sipTypeID base);
+int qpycore_qobject_qt_metacall(sipModuleState *sipMS,
+        sipSimpleWrapper *pySelf, sipTypeID base, QMetaObject::Call _c,
+        int _id, void **_a);
+bool qpycore_qobject_qt_metacast(sipModuleState *sipMS,
+        sipSimpleWrapper *pySelf, sipTypeID base, const char *_clname,
+        void **);
+#else
 const QMetaObject *qpycore_qobject_metaobject(sipSimpleWrapper *pySelf,
         sipTypeDef *base);
 int qpycore_qobject_qt_metacall(sipSimpleWrapper *pySelf, sipTypeDef *base,
         QMetaObject::Call _c, int _id, void **_a);
 bool qpycore_qobject_qt_metacast(sipSimpleWrapper *pySelf,
         const sipTypeDef *base, const char *_clname, void **);
+#endif
 
 
 #endif

@@ -25,6 +25,204 @@
 #include "sipAPIQtCore.h"
 
 
+#if SIP_ABI_MAJOR_VERSION >= 14
+
+#include <memory>
+
+#include <QHash>
+#include <QMutex>
+#include <QObject>
+
+namespace {
+
+class QObjectMonitor : public std::enable_shared_from_this<QObjectMonitor>
+{
+public:
+    QObjectMonitor(PyInterpreterView *view, PyObject *module_ref)
+        : view(view), module_ref(module_ref)
+    {
+    }
+
+    ~QObjectMonitor()
+    {
+        PyInterpreterView_Close(view);
+    }
+
+    void watch(QObject *object)
+    {
+        {
+            QMutexLocker lock(&mutex);
+            if (!enabled)
+                return;
+
+            auto watcher = watchers.find(object);
+            if (watcher != watchers.end())
+            {
+                watcher.value() = true;
+                return;
+            }
+            watchers.insert(object, true);
+        }
+
+        QObject::connect(object, &QObject::destroyed,
+                [watcher = weak_from_this()](QObject *destroyed) {
+                    if (auto monitor = watcher.lock())
+                        monitor->destroyed(destroyed);
+                });
+    }
+
+    void ignore(QObject *object)
+    {
+        QMutexLocker lock(&mutex);
+        auto watcher = watchers.find(object);
+        if (watcher != watchers.end())
+            watcher.value() = false;
+    }
+
+    void disable()
+    {
+        QMutexLocker lock(&mutex);
+        enabled = false;
+        watchers.clear();
+    }
+
+    void clear()
+    {
+        PyObject *previous;
+        {
+            QMutexLocker lock(&mutex);
+            enabled = false;
+            watchers.clear();
+            previous = module_ref;
+            module_ref = nullptr;
+        }
+        Py_XDECREF(previous);
+    }
+
+private:
+    void destroyed(QObject *object)
+    {
+        {
+            QMutexLocker lock(&mutex);
+            if (!watchers.take(object))
+                return;
+        }
+
+        PyThreadStateToken *thread = PyThreadState_EnsureFromView(view);
+        if (!thread)
+            return;
+
+        PyObject *saved_exception = PyErr_GetRaisedException();
+        PyObject *module = nullptr;
+        {
+            QMutexLocker lock(&mutex);
+            if (module_ref && PyWeakref_GetRef(module_ref, &module) < 0)
+                PyErr_Clear();
+        }
+        if (module)
+        {
+            auto *sipMS = static_cast<sipModuleState *>(PyModule_GetState(module));
+            PyObject *wrapper = sipMS ? sipGetPyObjectRef(object, sipType_QObject) : nullptr;
+            if (wrapper)
+            {
+                auto *instance = reinterpret_cast<sipSimpleWrapper *>(wrapper);
+                sipInstanceDestroyed(sipMS, &instance);
+                Py_DECREF(wrapper);
+            }
+            if (PyErr_Occurred())
+                PyErr_WriteUnraisable(module);
+            Py_DECREF(module);
+        }
+
+        PyErr_SetRaisedException(saved_exception);
+        PyThreadState_Release(thread);
+    }
+
+    QMutex mutex;
+    QHash<QObject *, bool> watchers;
+    bool enabled = true;
+    PyInterpreterView *const view;
+    PyObject *module_ref;
+};
+
+using MonitorOwner = std::shared_ptr<QObjectMonitor>;
+
+static QObjectMonitor *get_monitor(sipModuleState *sipMS)
+{
+    auto *owner = static_cast<MonitorOwner *>(sipGetModuleUserState());
+    return owner ? owner->get() : nullptr;
+}
+
+static void wrapped_instance_eh(sipModuleState *sipMS, sipTypeID, void *cpp)
+{
+    if (auto *monitor = get_monitor(sipMS))
+        monitor->watch(static_cast<QObject *>(cpp));
+}
+
+static void collecting_wrapper_eh(sipModuleState *sipMS, sipTypeID,
+        sipSimpleWrapper *self)
+{
+    if (auto *monitor = get_monitor(sipMS))
+    {
+        if (void *address = sipGetAddress(self))
+            monitor->ignore(static_cast<QObject *>(address));
+    }
+}
+
+static int clear_monitor(sipModuleState *, void *data)
+{
+    auto *owner = static_cast<MonitorOwner *>(data);
+    (*owner)->clear();
+    return 0;
+}
+
+static void free_monitor(sipModuleState *sipMS, void *data)
+{
+    clear_monitor(sipMS, data);
+    delete static_cast<MonitorOwner *>(data);
+}
+
+} // namespace
+
+int qpycore_register_event_handlers(sipModuleState *sipMS, PyObject *module)
+{
+    static const sipEventHandlerSpec handlers[] = {
+        {sipEventWrappedInstance, sipType_QObject, reinterpret_cast<void *>(wrapped_instance_eh)},
+        {sipEventCollectingWrapper, sipType_QObject, reinterpret_cast<void *>(collecting_wrapper_eh)},
+        {sipEventNone, 0, nullptr}
+    };
+
+    PyObject *module_ref = PyWeakref_NewRef(module, nullptr);
+    if (!module_ref)
+        return -1;
+
+    PyInterpreterView *view = PyInterpreterView_FromCurrent();
+    if (!view)
+    {
+        Py_DECREF(module_ref);
+        return -1;
+    }
+
+    auto monitor = std::make_shared<QObjectMonitor>(view, module_ref);
+    if (sipRegisterEventHandlers(handlers) < 0)
+    {
+        monitor->clear();
+        return -1;
+    }
+
+    sipSetModuleUserState(new MonitorOwner(std::move(monitor)), clear_monitor,
+            free_monitor, nullptr);
+    return 0;
+}
+
+void qpycore_disable_monitoring(sipModuleState *sipMS)
+{
+    if (auto *monitor = get_monitor(sipMS))
+        monitor->disable();
+}
+
+#else
+
 // The singleton that monitors the destruction of QObject instances created by
 // C++.
 PyQtMonitor *PyQtMonitor::instance = SIP_NULLPTR;
@@ -129,3 +327,5 @@ void PyQtMonitor::on_destroyed(QObject *cppInst)
         SIP_UNBLOCK_THREADS
     }
 }
+
+#endif
