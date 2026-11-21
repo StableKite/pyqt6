@@ -33,6 +33,13 @@ class QObject /Supertype=PyQt6.sip.wrapper/
 #include <qcoreapplication.h>
 
 
+
+#if SIP_ABI_MAJOR_VERSION >= 14
+using QtCoreModuleState = sipModuleState;
+#else
+using QtCoreModuleState = void;
+#endif
+
 // These are the helper functions for QObject::findChild() and
 // QObject::findChildren.
 
@@ -69,7 +76,7 @@ static PyObject *qtcore_check_tuple_types(PyObject *types)
 
 
 // Do the main work of finding a child.
-static PyObject *qtcore_do_find_child(const QObject *parent, PyObject *types, const QString &name, Qt::FindChildOptions options)
+static PyObject *qtcore_do_find_child([[maybe_unused]] QtCoreModuleState *sipMS, const QObject *parent, PyObject *types, const QString &name, Qt::FindChildOptions options)
 {
     const QObjectList &children = parent->children();
     int i;
@@ -96,7 +103,7 @@ static PyObject *qtcore_do_find_child(const QObject *parent, PyObject *types, co
     if (options == Qt::FindChildrenRecursively)
         for (i = 0; i < children.size(); ++i)
         {
-            PyObject *pyo = qtcore_do_find_child(children.at(i), types, name, options);
+            PyObject *pyo = qtcore_do_find_child(sipMS, children.at(i), types, name, options);
 
             if (pyo != Py_None)
                 return pyo;
@@ -110,13 +117,13 @@ static PyObject *qtcore_do_find_child(const QObject *parent, PyObject *types, co
 
 
 // Find a child that is one of a number of types and with an optional name.
-static PyObject *qtcore_FindChild(const QObject *parent, PyObject *types, const QString &name, Qt::FindChildOptions options)
+static PyObject *qtcore_FindChild([[maybe_unused]] QtCoreModuleState *sipMS, const QObject *parent, PyObject *types, const QString &name, Qt::FindChildOptions options)
 {
     // Check that the types checking was successful.
     if (!types)
         return 0;
 
-    PyObject *child = qtcore_do_find_child(parent, types, name, options);
+    PyObject *child = qtcore_do_find_child(sipMS, parent, types, name, options);
 
     Py_DECREF(types);
 
@@ -125,7 +132,7 @@ static PyObject *qtcore_FindChild(const QObject *parent, PyObject *types, const 
 
 
 // Do the main work of finding the children with a string name.
-static bool qtcore_do_find_children(const QObject *parent, PyObject *types, const QString &name, Qt::FindChildOptions options, PyObject *list)
+static bool qtcore_do_find_children([[maybe_unused]] QtCoreModuleState *sipMS, const QObject *parent, PyObject *types, const QString &name, Qt::FindChildOptions options, PyObject *list)
 {
     const QObjectList &children = parent->children();
     int i;
@@ -154,7 +161,7 @@ static bool qtcore_do_find_children(const QObject *parent, PyObject *types, cons
 
         if (options == Qt::FindChildrenRecursively)
         {
-            bool ok = qtcore_do_find_children(obj, types, name, options, list);
+            bool ok = qtcore_do_find_children(sipMS, obj, types, name, options, list);
 
             if (!ok)
                 return false;
@@ -167,7 +174,7 @@ static bool qtcore_do_find_children(const QObject *parent, PyObject *types, cons
 
 // Find a child that is one of a number of types and with an optional string
 // name.
-static PyObject *qtcore_FindChildren(const QObject *parent, PyObject *types, const QString &name, Qt::FindChildOptions options)
+static PyObject *qtcore_FindChildren([[maybe_unused]] QtCoreModuleState *sipMS, const QObject *parent, PyObject *types, const QString &name, Qt::FindChildOptions options)
 {
     // Check that the types checking was successful.
     if (!types)
@@ -176,8 +183,8 @@ static PyObject *qtcore_FindChildren(const QObject *parent, PyObject *types, con
     PyObject *list = PyList_New(0);
 
     if (list)
-        if (!qtcore_do_find_children(parent, types, name, options, list))
-            Py_DECREF(list);
+        if (!qtcore_do_find_children(sipMS, parent, types, name, options, list))
+            Py_CLEAR(list);
 
     Py_DECREF(types);
 
@@ -186,7 +193,7 @@ static PyObject *qtcore_FindChildren(const QObject *parent, PyObject *types, con
 
 
 // Do the main work of finding the children with a QRegularExpression name.
-static bool qtcore_do_find_children(const QObject *parent, PyObject *types, const QRegularExpression &re, Qt::FindChildOptions options, PyObject *list)
+static bool qtcore_do_find_children([[maybe_unused]] QtCoreModuleState *sipMS, const QObject *parent, PyObject *types, const QRegularExpression &re, Qt::FindChildOptions options, PyObject *list)
 {
     const QObjectList &children = parent->children();
     int i;
@@ -214,7 +221,7 @@ static bool qtcore_do_find_children(const QObject *parent, PyObject *types, cons
 
         if (options == Qt::FindChildrenRecursively)
         {
-            bool ok = qtcore_do_find_children(obj, types, re, options, list);
+            bool ok = qtcore_do_find_children(sipMS, obj, types, re, options, list);
 
             if (!ok)
                 return false;
@@ -227,7 +234,7 @@ static bool qtcore_do_find_children(const QObject *parent, PyObject *types, cons
 
 // Find a child that is one of a number of types and with an optional
 // QRegularExpression name.
-static PyObject *qtcore_FindChildren(const QObject *parent, PyObject *types, const QRegularExpression &re, Qt::FindChildOptions options)
+static PyObject *qtcore_FindChildren([[maybe_unused]] QtCoreModuleState *sipMS, const QObject *parent, PyObject *types, const QRegularExpression &re, Qt::FindChildOptions options)
 {
     // Check that the types checking was successful.
     if (!types)
@@ -236,8 +243,8 @@ static PyObject *qtcore_FindChildren(const QObject *parent, PyObject *types, con
     PyObject *list = PyList_New(0);
 
     if (list)
-        if (!qtcore_do_find_children(parent, types, re, options, list))
-            Py_DECREF(list);
+        if (!qtcore_do_find_children(sipMS, parent, types, re, options, list))
+            Py_CLEAR(list);
 
     Py_DECREF(types);
 
@@ -408,7 +415,11 @@ callable.
 
     SIP_PYOBJECT findChild(SIP_PYTYPE type /TypeHint="Type[QObjectT]"/, const QString &name = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const /TypeHint="QObjectT"/;
 %MethodCode
-        sipRes = qtcore_FindChild(sipCpp, qtcore_type_to_tuple(a0), *a1, *a2);
+#if SIP_ABI_MAJOR_VERSION >= 14
+        sipRes = qtcore_FindChild(sipMS, sipCpp, qtcore_type_to_tuple(a0), *a1, *a2);
+#else
+        sipRes = qtcore_FindChild(nullptr, sipCpp, qtcore_type_to_tuple(a0), *a1, *a2);
+#endif
         
         if (!sipRes)
             sipError = sipErrorFail;
@@ -416,7 +427,11 @@ callable.
 
     SIP_PYOBJECT findChild(SIP_PYTUPLE types /TypeHint="Tuple[Type[QObjectT], ...]", TypeHintValue="()"/, const QString &name = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const /TypeHint="QObjectT"/;
 %MethodCode
-        sipRes = qtcore_FindChild(sipCpp, qtcore_check_tuple_types(a0), *a1, *a2);
+#if SIP_ABI_MAJOR_VERSION >= 14
+        sipRes = qtcore_FindChild(sipMS, sipCpp, qtcore_check_tuple_types(a0), *a1, *a2);
+#else
+        sipRes = qtcore_FindChild(nullptr, sipCpp, qtcore_check_tuple_types(a0), *a1, *a2);
+#endif
         
         if (!sipRes)
             sipError = sipErrorFail;
@@ -424,7 +439,11 @@ callable.
 
     SIP_PYLIST findChildren(SIP_PYTYPE type /TypeHint="Type[QObjectT]"/, const QString &name = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const /TypeHint="List[QObjectT]"/;
 %MethodCode
-        sipRes = qtcore_FindChildren(sipCpp, qtcore_type_to_tuple(a0), *a1, *a2);
+#if SIP_ABI_MAJOR_VERSION >= 14
+        sipRes = qtcore_FindChildren(sipMS, sipCpp, qtcore_type_to_tuple(a0), *a1, *a2);
+#else
+        sipRes = qtcore_FindChildren(nullptr, sipCpp, qtcore_type_to_tuple(a0), *a1, *a2);
+#endif
         
         if (!sipRes)
             sipError = sipErrorFail;
@@ -432,7 +451,11 @@ callable.
 
     SIP_PYLIST findChildren(SIP_PYTUPLE types /TypeHint="Tuple[Type[QObjectT], ...]", TypeHintValue="()"/, const QString &name = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const /TypeHint="List[QObjectT]"/;
 %MethodCode
-        sipRes = qtcore_FindChildren(sipCpp, qtcore_check_tuple_types(a0), *a1, *a2);
+#if SIP_ABI_MAJOR_VERSION >= 14
+        sipRes = qtcore_FindChildren(sipMS, sipCpp, qtcore_check_tuple_types(a0), *a1, *a2);
+#else
+        sipRes = qtcore_FindChildren(nullptr, sipCpp, qtcore_check_tuple_types(a0), *a1, *a2);
+#endif
         
         if (!sipRes)
             sipError = sipErrorFail;
@@ -440,7 +463,11 @@ callable.
 
     SIP_PYLIST findChildren(SIP_PYTYPE type /TypeHint="Type[QObjectT]"/, const QRegularExpression &re, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const /TypeHint="List[QObjectT]"/;
 %MethodCode
-        sipRes = qtcore_FindChildren(sipCpp, qtcore_type_to_tuple(a0), *a1, *a2);
+#if SIP_ABI_MAJOR_VERSION >= 14
+        sipRes = qtcore_FindChildren(sipMS, sipCpp, qtcore_type_to_tuple(a0), *a1, *a2);
+#else
+        sipRes = qtcore_FindChildren(nullptr, sipCpp, qtcore_type_to_tuple(a0), *a1, *a2);
+#endif
         
         if (!sipRes)
             sipError = sipErrorFail;
@@ -448,7 +475,11 @@ callable.
 
     SIP_PYLIST findChildren(SIP_PYTUPLE types /TypeHint="Tuple[Type[QObjectT], ...]", TypeHintValue="()"/, const QRegularExpression &re, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const /TypeHint="List[QObjectT]"/;
 %MethodCode
-        sipRes = qtcore_FindChildren(sipCpp, qtcore_check_tuple_types(a0), *a1, *a2);
+#if SIP_ABI_MAJOR_VERSION >= 14
+        sipRes = qtcore_FindChildren(sipMS, sipCpp, qtcore_check_tuple_types(a0), *a1, *a2);
+#else
+        sipRes = qtcore_FindChildren(nullptr, sipCpp, qtcore_check_tuple_types(a0), *a1, *a2);
+#endif
         
         if (!sipRes)
             sipError = sipErrorFail;

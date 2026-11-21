@@ -251,7 +251,7 @@ protected:
 
         if (!result)
         {
-            sipError = sipErrorFail;
+            sipIsErr = 1;
         }
         else
         {
@@ -264,7 +264,7 @@ protected:
                 if (!buffer)
                 {
                     sipBadCatcherResult(sipMethod);
-                    sipError = sipErrorFail;
+                    sipIsErr = 1;
                 }
                 else
                 {
@@ -322,7 +322,7 @@ protected:
 
         if (!result)
         {
-            sipError = sipErrorFail;
+            sipIsErr = 1;
         }
         else
         {
@@ -335,7 +335,7 @@ protected:
                 if (!buffer)
                 {
                     sipBadCatcherResult(sipMethod);
-                    sipError = sipErrorFail;
+                    sipIsErr = 1;
                 }
                 else
                 {
@@ -376,7 +376,7 @@ protected:
 
         if (!result)
         {
-            sipError = sipErrorFail;
+            sipIsErr = 1;
         }
         else
         {
@@ -389,7 +389,7 @@ protected:
                 if (!buffer)
                 {
                     sipBadCatcherResult(sipMethod);
-                    sipError = sipErrorFail;
+                    sipIsErr = 1;
                 }
                 else
                 {
