@@ -22,15 +22,37 @@
 
 #include "qpycore_api.h"
 
+#include "qpycore_api.h"
+
 #include "sipAPIQtCore.h"
 
 
+static bool is_json_value_type(PyObject *py,
+        [[maybe_unused]] QPyCoreModuleState *sipMS)
+{
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyTypeObject *type = sipGetPyTypeRef(sipType_QJsonValue_Type);
+    if (!type)
+        return false;
+
+    bool matches = PyObject_TypeCheck(py, type);
+    Py_DECREF(type);
+    return matches;
+#else
+    return PyObject_TypeCheck(py, sipTypeAsPyTypeObject(sipType_QJsonValue_Type));
+#endif
+}
+
+
 // See if a Python object can be converted to a QJsonValue.
-int qpycore_canConvertTo_QJsonValue(PyObject *py)
+int qpycore_canConvertTo_QJsonValue(PyObject *py,
+        [[maybe_unused]] QPyCoreModuleState *sipMS)
 {
     // Note that the API doesn't provide a test for constrained named enums.
-    if (PyObject_TypeCheck(py, sipTypeAsPyTypeObject(sipType_QJsonValue_Type)))
+    if (is_json_value_type(py, sipMS))
         return 1;
+    if (PyErr_Occurred())
+        return 0;
 
     if (PyBool_Check(py))
         return 1;
@@ -58,7 +80,7 @@ int qpycore_canConvertTo_QJsonValue(PyObject *py)
 
 // Convert a Python object to a QJsonValue.
 int qpycore_convertTo_QJsonValue(PyObject *py, PyObject *transferObj,
-        QJsonValue **cpp, int *isErr)
+        QJsonValue **cpp, int *isErr, [[maybe_unused]] QPyCoreModuleState *sipMS)
 {
     if (py == Py_None)
     {
@@ -67,7 +89,7 @@ int qpycore_convertTo_QJsonValue(PyObject *py, PyObject *transferObj,
         return sipGetState(transferObj);
     }
 
-    if (PyObject_TypeCheck(py, sipTypeAsPyTypeObject(sipType_QJsonValue_Type)))
+    if (is_json_value_type(py, sipMS))
     {
         int v = sipConvertToEnum(py, sipType_QJsonValue_Type);
 
@@ -82,6 +104,12 @@ int qpycore_convertTo_QJsonValue(PyObject *py, PyObject *transferObj,
         return sipGetState(transferObj);
     }
 
+    if (PyErr_Occurred())
+    {
+        *isErr = 1;
+        return 0;
+    }
+
     if (PyBool_Check(py))
     {
         *cpp = new QJsonValue(py == Py_True);
@@ -91,7 +119,14 @@ int qpycore_convertTo_QJsonValue(PyObject *py, PyObject *transferObj,
 
     if (PyLong_Check(py))
     {
-        *cpp = new QJsonValue((qint64)PyLong_AsLong(py));
+        long long value = PyLong_AsLongLong(py);
+        if (PyErr_Occurred())
+        {
+            *isErr = 1;
+            return 0;
+        }
+
+        *cpp = new QJsonValue(static_cast<qint64>(value));
 
         return sipGetState(transferObj);
     }

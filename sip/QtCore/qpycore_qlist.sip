@@ -1409,7 +1409,7 @@ template<qreal, _TYPE_>
     {
 #if SIP_ABI_MAJOR_VERSION >= 14
         Qt::DayOfWeek day = sipCpp->at(i);
-        PyObject *eobj = sipConvertFromEnum(&day, sipType_Qt_DayOfWeek);
+        PyObject *eobj = sipConvertFromBasedEnum(&day, sipType_Qt_DayOfWeek);
 #else
         PyObject *eobj = sipConvertFromEnum(sipCpp->at(i),
                 sipType_Qt_DayOfWeek);
@@ -1469,7 +1469,7 @@ template<qreal, _TYPE_>
 
 #if SIP_ABI_MAJOR_VERSION >= 14
         Qt::DayOfWeek v{};
-        if (sipConvertToEnum(itm, &v, sipType_Qt_DayOfWeek) < 0)
+        if (sipConvertToBasedEnum(itm, &v, sipType_Qt_DayOfWeek) < 0)
 #else
         int v = sipConvertToEnum(itm, sipType_Qt_DayOfWeek);
         if (PyErr_Occurred())

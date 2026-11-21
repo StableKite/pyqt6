@@ -123,7 +123,7 @@ return 0;
 %BIGetBufferCode
     // We may be building against a debug Python build.
     
-    #if defined(Py_LIMITED_API)
+    #if defined(Py_LIMITED_API) && SIP_ABI_MAJOR_VERSION < 14
         Q_UNUSED(sipSelf);
     
         sipBuffer->bd_buffer = sipCpp->data();

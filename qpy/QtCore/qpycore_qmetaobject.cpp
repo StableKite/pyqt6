@@ -31,14 +31,16 @@
 
 
 // Forward declarations.
-static PyObject *ArgumentStorage_New(PyObject *type, PyObject *data);
+static PyObject *ArgumentStorage_New(PyObject *type, PyObject *data,
+        QPyCoreModuleState *sipMS);
 extern "C" {static void ArgumentStorage_delete(PyObject *cap);}
 
 
 // Return a wrapped QGenericArgument for the given type and Python object.
-PyObject *qpycore_ArgumentFactory(PyObject *type, PyObject *data)
+PyObject *qpycore_ArgumentFactory(PyObject *type, PyObject *data,
+        [[maybe_unused]] QPyCoreModuleState *sipMS)
 {
-    PyObject *as_obj = ArgumentStorage_New(type, data);
+    PyObject *as_obj = ArgumentStorage_New(type, data, sipMS);
 
     if (!as_obj)
     {
@@ -59,6 +61,9 @@ PyObject *qpycore_ArgumentFactory(PyObject *type, PyObject *data)
         // Stash the storage in the user field so that everything will be
         // properly garbage collected.
         sipSetUserObject((sipSimpleWrapper *)ga_obj, as_obj);
+#if SIP_ABI_MAJOR_VERSION >= 14
+        Py_DECREF(as_obj);
+#endif
     }
     else
     {
@@ -71,9 +76,10 @@ PyObject *qpycore_ArgumentFactory(PyObject *type, PyObject *data)
 
 
 // Return a wrapped QGenericReturnArgument for the given type.
-PyObject *qpycore_ReturnFactory(PyObject *type)
+PyObject *qpycore_ReturnFactory(PyObject *type,
+        [[maybe_unused]] QPyCoreModuleState *sipMS)
 {
-    PyObject *as_obj = ArgumentStorage_New(type, 0);
+    PyObject *as_obj = ArgumentStorage_New(type, 0, sipMS);
 
     if (!as_obj)
     {
@@ -95,6 +101,9 @@ PyObject *qpycore_ReturnFactory(PyObject *type)
         // Stash the storage in the user field so that everything will be
         // properly garbage collected.
         sipSetUserObject((sipSimpleWrapper *)gra_obj, as_obj);
+#if SIP_ABI_MAJOR_VERSION >= 14
+        Py_DECREF(as_obj);
+#endif
     }
     else
     {
@@ -109,12 +118,22 @@ PyObject *qpycore_ReturnFactory(PyObject *type)
 // Return the Python result from a QGenericReturnArgument.
 PyObject *qpycore_ReturnValue(PyObject *gra_obj)
 {
-    PyObject *as_obj = sipGetUserObject((sipSimpleWrapper *)gra_obj);
+#if SIP_ABI_MAJOR_VERSION >= 14
+    PyObject *as_obj = sipGetUserObjectRef((sipSimpleWrapper *)gra_obj);
+#else
+    PyObject *as_obj = Py_XNewRef(sipGetUserObject((sipSimpleWrapper *)gra_obj));
+#endif
+    if (!as_obj)
+    {
+        PyErr_SetString(PyExc_TypeError, "invalid QGenericReturnArgument");
+        return nullptr;
+    }
 
-    Chimera::Storage *st = reinterpret_cast<Chimera::Storage *>(
-            PyCapsule_GetPointer(as_obj, NULL));
-
-    return st->toPyObject();
+    auto *storage = static_cast<Chimera::Storage *>(PyCapsule_GetPointer(as_obj,
+            nullptr));
+    PyObject *result = storage ? storage->toPyObject() : nullptr;
+    Py_DECREF(as_obj);
+    return result;
 }
 
 
@@ -131,9 +150,10 @@ static void ArgumentStorage_delete(PyObject *cap)
 
 
 // Returns a Python object wrapping an ArgumentStorage instance.
-static PyObject *ArgumentStorage_New(PyObject *type, PyObject *data)
+static PyObject *ArgumentStorage_New(PyObject *type, PyObject *data,
+        QPyCoreModuleState *sipMS)
 {
-    const Chimera *ct = Chimera::parse(type);
+    const Chimera *ct = Chimera::parse(type, sipMS);
 
     if (!ct)
         return 0;

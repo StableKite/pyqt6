@@ -176,7 +176,11 @@ public:
 
 SIP_PYOBJECT Q_ARG(SIP_PYOBJECT type, SIP_PYOBJECT data) /TypeHint="QGenericArgument"/;
 %MethodCode
+#if SIP_ABI_MAJOR_VERSION >= 14
+    sipRes = qpycore_ArgumentFactory(a0, a1, sipMS);
+#else
     sipRes = qpycore_ArgumentFactory(a0, a1);
+#endif
 %End
 
 
@@ -193,5 +197,9 @@ public:
 
 SIP_PYOBJECT Q_RETURN_ARG(SIP_PYOBJECT type) /TypeHint="QGenericReturnArgument"/;
 %MethodCode
+#if SIP_ABI_MAJOR_VERSION >= 14
+    sipRes = qpycore_ReturnFactory(a0, sipMS);
+#else
     sipRes = qpycore_ReturnFactory(a0);
+#endif
 %End

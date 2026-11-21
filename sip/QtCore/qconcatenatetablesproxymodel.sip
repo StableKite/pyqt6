@@ -31,41 +31,72 @@ public:
     virtual ~QConcatenateTablesProxyModel();
     void addSourceModel(QAbstractItemModel *sourceModel /GetWrapper/);
 %MethodCode
-        // We want to keep a reference to the model but this is in addition to the
-        // existing ones and does not replace them - so we can't use /KeepReference/.
-        sipCpp->addSourceModel(a0);
-        
-        // Use the user object as a list of the references.
-        PyObject *user = sipGetUserObject((sipSimpleWrapper *)sipSelf);
-        
+        // Keep all source models alive for the lifetime of the proxy.
+        auto *wrapper = reinterpret_cast<sipSimpleWrapper *>(sipSelf);
+#if SIP_ABI_MAJOR_VERSION >= 14
+        PyObject *user = sipGetUserObjectRef(wrapper);
+#else
+        PyObject *user = Py_XNewRef(sipGetUserObject(wrapper));
+#endif
         if (!user)
         {
             user = PyList_New(0);
-            sipSetUserObject((sipSimpleWrapper *)sipSelf, user);
+            if (user)
+            {
+#if SIP_ABI_MAJOR_VERSION >= 14
+                sipSetUserObject(wrapper, user);
+#else
+                sipSetUserObject(wrapper, Py_NewRef(user));
+#endif
+            }
         }
-        
-        if (user)
-            PyList_Append(user, a0Wrapper);
+
+        if (!user || PyList_Append(user, a0Wrapper) < 0)
+            sipError = sipErrorFail;
+        else
+            sipCpp->addSourceModel(a0);
+
+        Py_XDECREF(user);
 %End
 
     void removeSourceModel(QAbstractItemModel *sourceModel /GetWrapper/);
 %MethodCode
-        // Discard the extra model reference that we took in addSourceModel().
+        // Discard all retained references for the model being removed.
         sipCpp->removeSourceModel(a0);
-        
-        // Use the user object as a list of the references.
-        PyObject *user = sipGetUserObject((sipSimpleWrapper *)sipSelf);
-        
+
+        auto *wrapper = reinterpret_cast<sipSimpleWrapper *>(sipSelf);
+#if SIP_ABI_MAJOR_VERSION >= 14
+        PyObject *user = sipGetUserObjectRef(wrapper);
+#else
+        PyObject *user = Py_XNewRef(sipGetUserObject(wrapper));
+#endif
         if (user)
         {
             Py_ssize_t i = 0;
-        
-            // Note that we deal with an object appearing in the list more than once.
             while (i < PyList_Size(user))
-                if (PyList_GetItem(user, i) == a0Wrapper)
-                    PyList_SetSlice(user, i, i + 1, NULL);
-                else
+            {
+#if SIP_ABI_MAJOR_VERSION >= 14
+                PyObject *model = PyList_GetItemRef(user, i);
+#else
+                PyObject *model = Py_XNewRef(PyList_GetItem(user, i));
+#endif
+                if (!model)
+                {
+                    sipError = sipErrorFail;
+                    break;
+                }
+
+                bool matches = model == a0Wrapper;
+                Py_DECREF(model);
+                if (!matches)
                     ++i;
+                else if (PyList_SetSlice(user, i, i + 1, nullptr) < 0)
+                {
+                    sipError = sipErrorFail;
+                    break;
+                }
+            }
+            Py_DECREF(user);
         }
 %End
 

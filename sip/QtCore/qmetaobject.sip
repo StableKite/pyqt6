@@ -226,18 +226,19 @@ public:
         // name of the corresponding key should work (although this isn't a documented
         // feature).
         
+        QVariant value = *a1;
         QMetaEnum me = sipCpp->enumerator();
-        if (me.isValid() && a1->typeId() == QMetaType::Int)
+        if (me.isValid() && value.typeId() == QMetaType::Int)
         {
             QString key;
         
             if (me.isFlag())
             {
-                key = QString(me.valueToKeys(a1->toInt()));
+                key = QString(me.valueToKeys(value.toInt()));
             }
             else
             {
-                const char *key_s = me.valueToKey(a1->toInt());
+                const char *key_s = me.valueToKey(value.toInt());
                 
                 if (key_s)
                 {
@@ -245,17 +246,17 @@ public:
                 }
                 else
                 {
-                    PyErr_Format(PyExc_ValueError, "%S is not a valid enum member", a1);
-                    sipIsErr = 1;
+                    PyErr_Format(PyExc_ValueError, "%d is not a valid enum member", value.toInt());
+                    sipError = sipErrorFail;
                 }
             }
         
-            if (!sipIsErr)
-                *const_cast<QVariant *>(a1) = QVariant(key);
+            if (sipError == sipErrorNone)
+                value = QVariant(key);
         }
         
-        if (!sipIsErr)
-            sipRes = sipCpp->write(a0, *a1);
+        if (sipError == sipErrorNone)
+            sipRes = sipCpp->write(a0, value);
 %End
 
     bool reset(QObject *obj) const;

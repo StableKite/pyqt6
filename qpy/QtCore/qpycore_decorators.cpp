@@ -33,29 +33,26 @@ extern "C" {static PyObject *decorator(PyObject *self, PyObject *f);}
 
 
 // This implements the pyqtSlot decorator.
-PyObject *qpycore_pyqtslot(PyObject *args, PyObject *kwds)
+PyObject *qpycore_pyqtslot(PyObject *args, PyObject *kwds,
+        QPyCoreModuleState *sipMS)
 {
     const char *name_str = 0;
     PyObject *res_obj = 0;
     int revision = 0;
     static const char *kwlist[] = {"name", "result", "revision", 0};
 
-    static PyObject *no_args = 0;
-
+    PyObject *no_args = PyTuple_New(0);
     if (!no_args)
-    {
-        no_args = PyTuple_New(0);
+        return nullptr;
 
-        if (!no_args)
-            return 0;
-    }
-
-    if (!PyArg_ParseTupleAndKeywords(no_args, kwds, "|sOi:pyqtSlot",
-            const_cast<char **>(kwlist), &name_str, &res_obj, &revision))
-        return 0;
+    bool parsed = PyArg_ParseTupleAndKeywords(no_args, kwds, "|sOi:pyqtSlot",
+            const_cast<char **>(kwlist), &name_str, &res_obj, &revision);
+    Py_DECREF(no_args);
+    if (!parsed)
+        return nullptr;
 
     Chimera::Signature *parsed_sig = Chimera::parse(args, name_str,
-            "a pyqtSlot argument");
+            "a pyqtSlot argument", sipMS);
 
     if (!parsed_sig)
         return 0;
@@ -67,7 +64,7 @@ PyObject *qpycore_pyqtslot(PyObject *args, PyObject *kwds)
     // Parse any result type.
     if (res_obj)
     {
-        parsed_sig->result = Chimera::parse(res_obj);
+        parsed_sig->result = Chimera::parse(res_obj, sipMS);
 
         if (!parsed_sig->result)
         {

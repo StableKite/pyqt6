@@ -640,7 +640,10 @@ result is type of the value returned by the slot.
 
 %MethodCode
 #if SIP_ABI_MAJOR_VERSION >= 14
-    return qpycore_call_legacy_parser(qpycore_pyqtslot, sipArgs, sipNrArgs, sipKwdNames);
+    const auto slot = [sipMS](PyObject *args, PyObject *kwargs) {
+        return qpycore_pyqtslot(args, kwargs, sipMS);
+    };
+    return qpycore_call_legacy_parser(slot, sipArgs, sipNrArgs, sipKwdNames);
 #else
     return qpycore_pyqtslot(sipArgs, sipKwds);
 #endif

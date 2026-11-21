@@ -27,10 +27,18 @@ class QJsonValue /AllowNone,TypeHintIn="Union[QJsonValue, QJsonValue.Type, QJson
 %End
 
 %ConvertToTypeCode
+#if SIP_ABI_MAJOR_VERSION >= 14
+if (!sipIsErr)
+    return qpycore_canConvertTo_QJsonValue(sipPy, sipMS);
+
+return qpycore_convertTo_QJsonValue(sipPy, sipTransferObj, sipCppPtr,
+        sipIsErr, sipMS);
+#else
 if (!sipIsErr)
     return qpycore_canConvertTo_QJsonValue(sipPy);
 
 return qpycore_convertTo_QJsonValue(sipPy, sipTransferObj, sipCppPtr, sipIsErr);
+#endif
 %End
 
 public:

@@ -28,7 +28,7 @@ template<ENUM>
 %ConvertToTypeCode
 #if SIP_ABI_MAJOR_VERSION >= 14
 ENUM enm{};
-const bool is_enm = sipConvertToEnum(sipPy, &enm, sipType_ENUM) >= 0;
+const bool is_enm = sipConvertToBasedEnum(sipPy, &enm, sipType_ENUM) >= 0;
 
 if (sipIsErr == nullptr)
 {
@@ -67,7 +67,7 @@ return sipGetState(sipTransferObj);
 %ConvertFromTypeCode
 #if SIP_ABI_MAJOR_VERSION >= 14
 ENUM enm = static_cast<ENUM>(sipCpp->operator::QFlags<ENUM>::Int());
-return sipConvertFromEnum(&enm, sipType_ENUM);
+return sipConvertFromBasedEnum(&enm, sipType_ENUM);
 #else
 return sipConvertFromEnum(sipCpp->operator::QFlags<ENUM>::Int(), sipType_ENUM);
 #endif

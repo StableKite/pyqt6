@@ -38,7 +38,11 @@ QT_END_NAMESPACE
 
 
 // Support for pyqtSlot().
-PyObject *qpycore_pyqtslot(PyObject *args, PyObject *kwds);
+PyObject *qpycore_pyqtslot(PyObject *args, PyObject *kwds, QPyCoreModuleState *sipMS
+#if SIP_ABI_MAJOR_VERSION < 14
+        = nullptr
+#endif
+        );
 
 // Support for pyqtConfigure().
 PyObject *qpycore_pyqtconfigure(PyObject *self, PyObject *args,
@@ -81,8 +85,16 @@ PyObject *qpycore_pyqtClassInfo(PyObject *args, PyObject *kwds);
 PyObject *qpycore_pyqtEnum(PyObject *enum_cls);
 
 // Support for creating QGenericArgument and QGenericReturnArgument instances.
-PyObject *qpycore_ArgumentFactory(PyObject *type, PyObject *data);
-PyObject *qpycore_ReturnFactory(PyObject *type);
+PyObject *qpycore_ArgumentFactory(PyObject *type, PyObject *data, QPyCoreModuleState *sipMS
+#if SIP_ABI_MAJOR_VERSION < 14
+        = nullptr
+#endif
+        );
+PyObject *qpycore_ReturnFactory(PyObject *type, QPyCoreModuleState *sipMS
+#if SIP_ABI_MAJOR_VERSION < 14
+        = nullptr
+#endif
+        );
 PyObject *qpycore_ReturnValue(PyObject *gra);
 
 // Support for QObject.__getattr__().
@@ -111,9 +123,17 @@ int qpycore_visitSlotProxies(const QObject *transmitter, visitproc visit,
         void *arg);
 
 // Support for QJsonValue.
-int qpycore_canConvertTo_QJsonValue(PyObject *py);
+int qpycore_canConvertTo_QJsonValue(PyObject *py, QPyCoreModuleState *sipMS
+#if SIP_ABI_MAJOR_VERSION < 14
+        = nullptr
+#endif
+        );
 int qpycore_convertTo_QJsonValue(PyObject *py, PyObject *transferObj,
-        QJsonValue **cpp, int *isErr);
+        QJsonValue **cpp, int *isErr, QPyCoreModuleState *sipMS
+#if SIP_ABI_MAJOR_VERSION < 14
+        = nullptr
+#endif
+        );
 
 // Support for an embedded qt.conf.
 bool qpycore_qt_conf();
